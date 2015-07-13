@@ -12,3 +12,6 @@
 *.exe
 *.stackdump
 solver
+
+# Problem generator
+create_q/
