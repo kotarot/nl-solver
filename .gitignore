@@ -1,0 +1,14 @@
+.DS_Store
+*~
+*.swp
+
+# Object files
+*.o
+
+# Problem files
+*.txt
+
+# Executables
+*.exe
+*.stackdump
+solver
