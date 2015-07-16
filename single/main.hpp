@@ -86,17 +86,9 @@ void generateFixFlag();
 int getConnectedNumber(int x,int y);
 void setAdjacentNumberProc(int x,int y);
 void setAdjacentNumber(int x,int y,int d_1,int d_2);
-bool routing(int trgt_line_id);
-bool isInserted(int x,int y,int d);
-bool isFixed(int x,int y,int d,int c,int num);
-int countLineNum(int x,int y);
-void recording(int trgt_line_id);
-void deleting(int trgt_line_id);
 bool isFinished();
 void resetCandidate();
 void checkLineNonPassed();
-bool routingSourceToI(int trgt_line_id);
-bool routingIToSink(int trgt_line_id);
 void checkCandidateLine(int x,int y);
 
 
