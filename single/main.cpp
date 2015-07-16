@@ -325,7 +325,6 @@ void initialize(char* filename){
 		trgt_line->setSourcePort(x_0[i],y_0[i]);
 		trgt_line->setSinkPort(x_1[i],y_1[i]);
 		trgt_line->setHasLine(!adjacents[i]);
-		cout << i << " " << trgt_line->getHasLine() << endl;
 	}
 	
 	for(int y=0;y<size_y;y++){
