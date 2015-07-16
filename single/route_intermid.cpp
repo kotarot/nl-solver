@@ -11,8 +11,6 @@ extern Board* board;
 extern int penalty_T;
 extern int penalty_C;
 
-//extern vector<int> adj_num;
-
 
 // 中間ポートを利用する場合のルーティング（ソースから中間まで）
 bool routingSourceToI(int trgt_line_id){
