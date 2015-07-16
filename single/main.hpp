@@ -12,6 +12,7 @@
 #include <math.h>
 #include <iomanip>
 #include <limits.h>
+#include <assert.h>
 
 using namespace std;
 

@@ -499,6 +499,9 @@ bool routing(int trgt_line_id){
 			case SW:
 			trgt_d = my_board[now_y][now_x]->d_sw;
 			break;
+			default:
+			assert(!"Undefined Intra-Box");
+			break;
 		}
 		
 		vector<int> next_direction_array;
@@ -669,10 +672,10 @@ bool isFixed(int x,int y,int d,int c,int num){
 	if(trgt_box->isTypeBlank() && trgt_box->isTypeHalfFixed()){
 		// 半固定マスの線方向と来た方向が一致
 		// ＝半固定マスの出口
-		if(c==NORTH && trgt_box->isNorthLineFixed()
-		|| c==EAST && trgt_box->isEastLineFixed()
-		|| c==SOUTH && trgt_box->isSouthLineFixed()
-		|| c==WEST && trgt_box->isWestLineFixed()){
+		if((c==NORTH && trgt_box->isNorthLineFixed())
+		|| (c==EAST && trgt_box->isEastLineFixed())
+		|| (c==SOUTH && trgt_box->isSouthLineFixed())
+		|| (c==WEST && trgt_box->isWestLineFixed())){
 			return true;
 		}
 		else{ // 半固定マスの入口

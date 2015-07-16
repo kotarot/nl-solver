@@ -498,6 +498,9 @@ bool routingSourceToI(int trgt_line_id){
 			case SW:
 			trgt_d = my_board[now_y][now_x]->d_sw;
 			break;
+			default:
+			assert(!"Undefined Intra-Box");
+			break;
 		}
 		
 		vector<int> next_direction_array;
@@ -1116,6 +1119,9 @@ bool routingIToSink(int trgt_line_id){
 			break;
 			case SW:
 			trgt_d = my_board[now_y][now_x]->d_sw;
+			break;
+			default:
+			assert(!"Undefined Intra-Box");
 			break;
 		}
 		

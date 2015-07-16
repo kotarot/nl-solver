@@ -2,7 +2,7 @@ TARGET = solver
 OBJS = $(CPPS:.cpp=.o)
 CPPS = $(wildcard *.cpp)
 CXX = g++
-CXXFLAGS = -O2
+CXXFLAGS = -Wall -O2
 
 all: $(TARGET)
 
