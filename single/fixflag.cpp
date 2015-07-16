@@ -9,7 +9,58 @@
 extern Board* board;
 
 
+////////////////////////////////////////////////////////////////
+// 空白マスに対して「全固定」または「半固定」属性を与える
+//
+// 全固定:
+//   空白マスで線がつながる2ポートが決定している
+//     または
+//   数字マスで線がつながる1ポートが決定している
+//
+// 半固定:
+//   空白マスの1ポートが決定している
 void generateFixFlag(){
+
+	// 隣接数字を全固定にする
+	for(int y=0;y<board->getSizeY();y++){
+		for(int x=0;x<board->getSizeX();x++){
+			Box* trgt_box = board->box(x,y);
+			if(trgt_box->isTypeNumber() && !trgt_box->isTypeAllFixed()){
+				int trgt_num = trgt_box->getNumber();
+
+				// 左端でなければ左隣を調べる
+				if(x!=0){
+					Box* find_box = board->box(x-1,y);
+					// 同じ数字なら接続確定
+					if(find_box->isTypeNumber() && find_box->getNumber() == trgt_num){
+						trgt_box->setTypeAllFixed();
+						trgt_box->fixWestLine();
+						find_box->setTypeAllFixed();
+						find_box->fixEastLine();
+					}
+				}
+
+				// 右端でなければ右隣を調べる必要はない
+				// (左隣を調べる処理に含まれるため)
+
+				// 上端でなければ上隣を調べる
+				if(y!=0){
+					Box* find_box = board->box(x,y-1);
+					// 同じ数字なら接続確定
+					if(find_box->isTypeNumber() && find_box->getNumber() == trgt_num){
+						trgt_box->setTypeAllFixed();
+						trgt_box->fixNorthLine();
+						find_box->setTypeAllFixed();
+						find_box->fixSouthLine();
+					}
+				}
+
+				// 下端でなければ下隣を調べる必要はない
+				// (上隣を調べる処理に含まれるため)
+
+			}
+		}
+	}
 
 	bool complete_flag = false;
 	while(!complete_flag){
@@ -20,53 +71,70 @@ void generateFixFlag(){
 			//cout << x << "," << y << endl;
 			Box* trgt_box = board->box(x,y);
 			if(trgt_box->isTypeAllFixed()) continue;
+			
+			// 接続可能な隣接マス？
 			Direction d = {true,true,true,true};
 			
+			// 左端
 			if(x==0){
 				d.w = false;
 			}
+			// 左端以外
 			else{
+				// 1個左のマスを調べる
 				Box* find_box = board->box(x-1,y);
 				if(find_box->isTypeAllFixed() && !find_box->isEastLineFixed()){
 					d.w = false;
 				}
-				if(trgt_box->isTypeNumber() && find_box->isTypeNumber()){
+				else if(trgt_box->isTypeNumber() && find_box->isTypeNumber()){
 					d.w = false;
 				}
 			}
+			
+			// 右端
 			if(x==(board->getSizeX()-1)){
 				d.e = false;
 			}
+			// 右端以外
 			else{
+				// 1個右のマスを調べる
 				Box* find_box = board->box(x+1,y);
 				if(find_box->isTypeAllFixed() && !find_box->isWestLineFixed()){
 					d.e = false;
 				}
-				if(trgt_box->isTypeNumber() && find_box->isTypeNumber()){
+				else if(trgt_box->isTypeNumber() && find_box->isTypeNumber()){
 					d.e = false;
 				}
 			}
+			
+			// 上端
 			if(y==0){
 				d.n = false;
 			}
+			// 上端以外
 			else{
+				// 1個上のマスを調べる
 				Box* find_box = board->box(x,y-1);
 				if(find_box->isTypeAllFixed() && !find_box->isSouthLineFixed()){
 					d.n = false;
 				}
-				if(trgt_box->isTypeNumber() && find_box->isTypeNumber()){
+				else if(trgt_box->isTypeNumber() && find_box->isTypeNumber()){
 					d.n = false;
 				}
 			}
+			
+			// 下端
 			if(y==(board->getSizeY()-1)){
 				d.s = false;
 			}
+			// 下端
 			else{
+				// 1個下のマスを調べる
 				Box* find_box = board->box(x,y+1);
 				if(find_box->isTypeAllFixed() && !find_box->isNorthLineFixed()){
 					d.s = false;
 				}
-				if(trgt_box->isTypeNumber() && find_box->isTypeNumber()){
+				else if(trgt_box->isTypeNumber() && find_box->isTypeNumber()){
 					d.s = false;
 				}
 			}
@@ -74,8 +142,11 @@ void generateFixFlag(){
 			// 半固定マスに対する操作
 			int half_line = -1;
 			if(trgt_box->isTypeHalfFixed()){
-				// 北にだけ線を持つ
+
+				// 北にだけ固定線を持つ
 				if(trgt_box->isNorthLineFixed()){
+					// 1個上のマスが東 (西) に固定線を持てば、このマスも東 (西) に固定線は持たない
+					// ※迂回を考えない
 					half_line = NORTH;
 					Box* find_box = board->box(x,y-1);
 					if(find_box->isEastLineFixed()){
@@ -91,7 +162,7 @@ void generateFixFlag(){
 						if(find_box->isTypeHalfFixed() && find_box->isNorthLineFixed()){
 							d.w = false;
 						}
-						if(find_box->isTypeNumber()){
+						else if(find_box->isTypeNumber()){
 							int trgt_num = getConnectedNumber(x,y);
 							if(trgt_num>0 && find_box->getNumber()!=trgt_num){
 								d.w = false;
@@ -103,7 +174,7 @@ void generateFixFlag(){
 							if(trgt_num>0 && find_num>0 && trgt_num!=find_num){
 								d.w = false;
 							}
-							if(trgt_num>0 && find_num>0 && trgt_num==find_num){
+							else if(trgt_num>0 && find_num>0 && trgt_num==find_num){
 								d.e = false; d.s = false;
 							}
 						}
@@ -114,7 +185,7 @@ void generateFixFlag(){
 						if(find_box->isTypeHalfFixed() && find_box->isNorthLineFixed()){
 							d.e = false;
 						}
-						if(find_box->isTypeNumber()){
+						else if(find_box->isTypeNumber()){
 							int trgt_num = getConnectedNumber(x,y);
 							if(trgt_num>0 && find_box->getNumber()!=trgt_num){
 								d.e = false;
@@ -126,7 +197,7 @@ void generateFixFlag(){
 							if(trgt_num>0 && find_num>0 && trgt_num!=find_num){
 								d.e = false;
 							}
-							if(trgt_num>0 && find_num>0 && trgt_num==find_num){
+							else if(trgt_num>0 && find_num>0 && trgt_num==find_num){
 								d.w = false; d.s = false;
 							}
 						}
@@ -146,14 +217,17 @@ void generateFixFlag(){
 							if(trgt_num>0 && find_num>0 && trgt_num!=find_num){
 								d.s = false;
 							}
-							if(trgt_num>0 && find_num>0 && trgt_num==find_num){
+							else if(trgt_num>0 && find_num>0 && trgt_num==find_num){
 								d.e = false; d.w = false;
 							}
 						}
 					}
 				}
-				// 東だけに線を持つ
-				if(trgt_box->isEastLineFixed()){
+
+				// 東だけに固定線を持つ
+				else if(trgt_box->isEastLineFixed()){
+					// 1個右のマスが北 (南) に固定線を持てば、このマスも北 (南) に固定線は持たない
+					// ※迂回を考えない
 					half_line = EAST;
 					Box* find_box = board->box(x+1,y);
 					if(find_box->isNorthLineFixed()){
@@ -169,7 +243,7 @@ void generateFixFlag(){
 						if(find_box->isTypeHalfFixed() && find_box->isEastLineFixed()){
 							d.n = false;
 						}
-						if(find_box->isTypeNumber()){
+						else if(find_box->isTypeNumber()){
 							int trgt_num = getConnectedNumber(x,y);
 							if(trgt_num>0 && find_box->getNumber()!=trgt_num){
 								d.n = false;
@@ -181,7 +255,7 @@ void generateFixFlag(){
 							if(trgt_num>0 && find_num>0 && trgt_num!=find_num){
 								d.n = false;
 							}
-							if(trgt_num>0 && find_num>0 && trgt_num==find_num){
+							else if(trgt_num>0 && find_num>0 && trgt_num==find_num){
 								d.s = false; d.w = false;
 							}
 						}
@@ -192,7 +266,7 @@ void generateFixFlag(){
 						if(find_box->isTypeHalfFixed() && find_box->isEastLineFixed()){
 							d.s = false;
 						}
-						if(find_box->isTypeNumber()){
+						else if(find_box->isTypeNumber()){
 							int trgt_num = getConnectedNumber(x,y);
 							if(trgt_num>0 && find_box->getNumber()!=trgt_num){
 								d.s = false;
@@ -204,7 +278,7 @@ void generateFixFlag(){
 							if(trgt_num>0 && find_num>0 && trgt_num!=find_num){
 								d.s = false;
 							}
-							if(trgt_num>0 && find_num>0 && trgt_num==find_num){
+							else if(trgt_num>0 && find_num>0 && trgt_num==find_num){
 								d.n = false; d.w = false;
 							}
 						}
@@ -224,14 +298,17 @@ void generateFixFlag(){
 							if(trgt_num>0 && find_num>0 && trgt_num!=find_num){
 								d.w = false;
 							}
-							if(trgt_num>0 && find_num>0 && trgt_num==find_num){
+							else if(trgt_num>0 && find_num>0 && trgt_num==find_num){
 								d.n = false; d.s = false;
 							}
 						}
 					}
 				}
-				// 南だけに線を持つ
-				if(trgt_box->isSouthLineFixed()){
+
+				// 南だけに固定線を持つ
+				else if(trgt_box->isSouthLineFixed()){
+					// 1個下のマスが東 (西) に固定線を持てば、このマスも東 (西) に固定線は持たない
+					// ※迂回を考えない
 					half_line = SOUTH;
 					Box* find_box = board->box(x,y+1);
 					if(find_box->isEastLineFixed()){
@@ -247,7 +324,7 @@ void generateFixFlag(){
 						if(find_box->isTypeHalfFixed() && find_box->isSouthLineFixed()){
 							d.w = false;
 						}
-						if(find_box->isTypeNumber()){
+						else if(find_box->isTypeNumber()){
 							int trgt_num = getConnectedNumber(x,y);
 							if(trgt_num>0 && find_box->getNumber()!=trgt_num){
 								d.w = false;
@@ -259,7 +336,7 @@ void generateFixFlag(){
 							if(trgt_num>0 && find_num>0 && trgt_num!=find_num){
 								d.w = false;
 							}
-							if(trgt_num>0 && find_num>0 && trgt_num==find_num){
+							else if(trgt_num>0 && find_num>0 && trgt_num==find_num){
 								d.n = false; d.e = false;
 							}
 						}
@@ -270,7 +347,7 @@ void generateFixFlag(){
 						if(find_box->isTypeHalfFixed() && find_box->isSouthLineFixed()){
 							d.e = false;
 						}
-						if(find_box->isTypeNumber()){
+						else if(find_box->isTypeNumber()){
 							int trgt_num = getConnectedNumber(x,y);
 							if(trgt_num>0 && find_box->getNumber()!=trgt_num){
 								d.e = false;
@@ -282,7 +359,7 @@ void generateFixFlag(){
 							if(trgt_num>0 && find_num>0 && trgt_num!=find_num){
 								d.e = false;
 							}
-							if(trgt_num>0 && find_num>0 && trgt_num==find_num){
+							else if(trgt_num>0 && find_num>0 && trgt_num==find_num){
 								d.n = false; d.w = false;
 							}
 						}
@@ -302,14 +379,17 @@ void generateFixFlag(){
 							if(trgt_num>0 && find_num>0 && trgt_num!=find_num){
 								d.n = false;
 							}
-							if(trgt_num>0 && find_num>0 && trgt_num==find_num){
+							else if(trgt_num>0 && find_num>0 && trgt_num==find_num){
 								d.e = false; d.w = false;
 							}
 						}
 					}
 				}
-				// 西だけに線を持つ
-				if(trgt_box->isWestLineFixed()){
+
+				// 西だけに固定線を持つ
+				else if(trgt_box->isWestLineFixed()){
+					// 1個左のマスが北 (南) に固定線を持てば、このマスも北 (南) に固定線は持たない
+					// ※迂回を考えない
 					half_line = WEST;
 					Box* find_box = board->box(x-1,y);
 					if(find_box->isNorthLineFixed()){
@@ -325,7 +405,7 @@ void generateFixFlag(){
 						if(find_box->isTypeHalfFixed() && find_box->isWestLineFixed()){
 							d.n = false;
 						}
-						if(find_box->isTypeNumber()){
+						else if(find_box->isTypeNumber()){
 							int trgt_num = getConnectedNumber(x,y);
 							if(trgt_num>0 && find_box->getNumber()!=trgt_num){
 								d.n = false;
@@ -337,7 +417,7 @@ void generateFixFlag(){
 							if(trgt_num>0 && find_num>0 && trgt_num!=find_num){
 								d.n = false;
 							}
-							if(trgt_num>0 && find_num>0 && trgt_num==find_num){
+							else if(trgt_num>0 && find_num>0 && trgt_num==find_num){
 								d.e = false; d.s = false;
 							}
 						}
@@ -348,7 +428,7 @@ void generateFixFlag(){
 						if(find_box->isTypeHalfFixed() && find_box->isWestLineFixed()){
 							d.s = false;
 						}
-						if(find_box->isTypeNumber()){
+						else if(find_box->isTypeNumber()){
 							int trgt_num = getConnectedNumber(x,y);
 							if(trgt_num>0 && find_box->getNumber()!=trgt_num){
 								d.s = false;
@@ -360,7 +440,7 @@ void generateFixFlag(){
 							if(trgt_num>0 && find_num>0 && trgt_num!=find_num){
 								d.s = false;
 							}
-							if(trgt_num>0 && find_num>0 && trgt_num==find_num){
+							else if(trgt_num>0 && find_num>0 && trgt_num==find_num){
 								d.n = false; d.e = false;
 							}
 						}
@@ -380,11 +460,16 @@ void generateFixFlag(){
 							if(trgt_num>0 && find_num>0 && trgt_num!=find_num){
 								d.e = false;
 							}
-							if(trgt_num>0 && find_num>0 && trgt_num==find_num){
+							else if(trgt_num>0 && find_num>0 && trgt_num==find_num){
 								d.n = false; d.s = false;
 							}
 						}
 					}
+				}
+				
+				// 半固定マスなのにどの報告にも固定線を持たない
+				else {
+					assert(!"No fixed line to any direction");
 				}
 			}
 			
@@ -398,7 +483,7 @@ void generateFixFlag(){
 						if(find_num>0 && trgt_box->getNumber()!=find_num){
 							d.w = false;
 						}
-						if(find_num>0 && trgt_box->getNumber()==find_num){
+						else if(find_num>0 && trgt_box->getNumber()==find_num){
 							d.n = false; d.e = false; d.s = false;
 						}
 					}
@@ -411,7 +496,7 @@ void generateFixFlag(){
 						if(find_num>0 && trgt_box->getNumber()!=find_num){
 							d.e = false;
 						}
-						if(find_num>0 && trgt_box->getNumber()==find_num){
+						else if(find_num>0 && trgt_box->getNumber()==find_num){
 							d.n = false; d.s = false; d.w = false;
 						}
 					}
@@ -424,7 +509,7 @@ void generateFixFlag(){
 						if(find_num>0 && trgt_box->getNumber()!=find_num){
 							d.n = false;
 						}
-						if(find_num>0 && trgt_box->getNumber()==find_num){
+						else if(find_num>0 && trgt_box->getNumber()==find_num){
 							d.e = false; d.s = false; d.w = false;
 						}
 					}
@@ -437,7 +522,7 @@ void generateFixFlag(){
 						if(find_num>0 && trgt_box->getNumber()!=find_num){
 							d.s = false;
 						}
-						if(find_num>0 && trgt_box->getNumber()==find_num){
+						else if(find_num>0 && trgt_box->getNumber()==find_num){
 							d.n = false; d.e = false; d.w = false;
 						}
 					}
@@ -567,7 +652,7 @@ void generateFixFlag(){
 					}
 				}
 			}
-			if(trgt_box->isTypeNumber() && count==1){
+			else if(trgt_box->isTypeNumber() && count==1){
 				complete_flag = false;
 				trgt_box->setTypeAllFixed();
 				if(d.n){
@@ -586,7 +671,7 @@ void generateFixFlag(){
 						find_box->fixSouthLine();
 					}
 				}
-				if(d.e){
+				else if(d.e){
 					trgt_box->fixEastLine();
 					Box* find_box = board->box(x+1,y);
 					if(find_box->isTypeAllFixed()){
@@ -602,7 +687,7 @@ void generateFixFlag(){
 						find_box->fixWestLine();
 					}
 				}
-				if(d.s){
+				else if(d.s){
 					trgt_box->fixSouthLine();
 					Box* find_box = board->box(x,y+1);
 					if(find_box->isTypeAllFixed()){
@@ -618,7 +703,7 @@ void generateFixFlag(){
 						find_box->fixNorthLine();
 					}
 				}
-				if(d.w){
+				else if(d.w){
 					trgt_box->fixWestLine();
 					Box* find_box = board->box(x-1,y);
 					if(find_box->isTypeAllFixed()){

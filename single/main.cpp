@@ -43,12 +43,18 @@ int main(int argc, char *argv[]){
 	
 	// 初期ルーティング
 	for(int i=1;i<=board->getLineNum();i++){
+		// 数字が隣接する場合スキップ
+		if(board->line(i)->getHasLine() == false) continue;
+		
 		if(!routing(i)){
 			cerr << "Cannot solve!! (error: 1)" << endl;
 			exit(1);
 		}
 	}
 	for(int i=1;i<=board->getLineNum();i++){
+		// 数字が隣接する場合スキップ
+		if(board->line(i)->getHasLine() == false) continue;
+		
 		recording(i);
 	}
 	
@@ -77,6 +83,9 @@ int main(int argc, char *argv[]){
 			if(m>INIT && !use_intermediate_port){ checkLineNonPassed(); }
 			int id = rand() % board->getLineNum() + 1;
 			//cout << "(" << m << "," << n << ")Re-route Line" << id << endl;
+			
+			// 数字が隣接してる場合スキップ
+			if (board->line(id)->getHasLine() == false) continue;
 			
 			// 経路の削除
 			deleting(id);
@@ -241,6 +250,10 @@ int main(int argc, char *argv[]){
 	return 0;
 }
 
+/**
+ * 問題盤の初期化
+ * @args: 問題ファイル名
+ */
 void initialize(char* filename){
 
 	ifstream ifs(filename);
@@ -254,6 +267,7 @@ void initialize(char* filename){
 	int size_x, size_y;
 	int line_num;
 	map<int,int> x_0, y_0, x_1, y_1;
+	map<int,bool> adjacents; // 初期状態で数字が隣接している
 
 	while(getline(ifs,str)){
 		if(str.at(0) == '#') continue;
@@ -285,6 +299,15 @@ void initialize(char* filename){
 			istringstream is(str);
 			is >> i >> a >> b >> c >> d;
 			x_0[i] = a; y_0[i] = b; x_1[i] = c; y_1[i] = d;
+			
+			// 初期状態で数字が隣接しているか判断
+			int dx = x_0[i] - x_1[i];
+			int dy = y_0[i] - y_1[i];
+			if ((dx == 0 && (dy == 1 || dy == -1)) || ((dx == 1 || dx == -1) && dy == 0)) {
+				adjacents[i] = true;
+			} else {
+				adjacents[i] = false;
+			}
 		}
 		else continue;
 	}
@@ -301,6 +324,7 @@ void initialize(char* filename){
 		Line* trgt_line = board->line(i);
 		trgt_line->setSourcePort(x_0[i],y_0[i]);
 		trgt_line->setSinkPort(x_1[i],y_1[i]);
+		trgt_line->setHasLine(!adjacents[i]);
 	}
 	
 	for(int y=0;y<size_y;y++){

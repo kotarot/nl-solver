@@ -21,6 +21,10 @@ public:
 	int getSinkX(){return x_1;}
 	int getSinkY(){return y_1;}
 	
+	// スタートとゴールが隣接
+	void setHasLine(bool _has_line){has_line = _has_line;}
+	bool getHasLine(){return has_line;}
+	
 	// 中間ポート
 	void setIntermediatePort(int x,int y){x_i=x;y_i=y;}
 	int getInterX(){return x_i;}
@@ -54,7 +58,9 @@ private:
 	int x_0, y_0;	// ソースポート
 	int x_1, y_1;	// シンクポート
 	int x_i, y_i;	// 中間ポート
-	bool candidate; // 中間ポートを利用する候補か？
+	bool has_line;	// スタートとゴールが隣接してないか？
+					// 隣接してない場合: ラインを持つので true
+	bool candidate;	// 中間ポートを利用する候補か？
 	bool im;		// 中間ポートを利用するか？
 	vector<int> track;
 };
