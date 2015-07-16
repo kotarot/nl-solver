@@ -82,7 +82,6 @@ struct IntraBox{
 /*******************************************************/
 
 void initialize(char* filename);
-void generateFixFlag();
 int getConnectedNumber(int x,int y);
 void setAdjacentNumberProc(int x,int y);
 void setAdjacentNumber(int x,int y,int d_1,int d_2);
