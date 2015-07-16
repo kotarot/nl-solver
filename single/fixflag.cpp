@@ -9,6 +9,14 @@
 extern Board* board;
 
 
+////////////////////////////////////////////////////////////////
+// 空白マスに対して「全固定」または「半固定」属性を与える
+//
+// 全固定:
+//   マスの2ポートが決定している
+//
+// 半固定:
+//   マスの1ポートが決定している
 void generateFixFlag(){
 
 	bool complete_flag = false;
@@ -20,12 +28,17 @@ void generateFixFlag(){
 			//cout << x << "," << y << endl;
 			Box* trgt_box = board->box(x,y);
 			if(trgt_box->isTypeAllFixed()) continue;
+			
+			// 接続可能な隣接マス？
 			Direction d = {true,true,true,true};
 			
+			// 左端
 			if(x==0){
 				d.w = false;
 			}
+			// 左端以外
 			else{
+				// 1個左のマスを調べる
 				Box* find_box = board->box(x-1,y);
 				if(find_box->isTypeAllFixed() && !find_box->isEastLineFixed()){
 					d.w = false;
@@ -34,10 +47,14 @@ void generateFixFlag(){
 					d.w = false;
 				}
 			}
+			
+			// 右端
 			if(x==(board->getSizeX()-1)){
 				d.e = false;
 			}
+			// 右端以外
 			else{
+				// 1個右のマスを調べる
 				Box* find_box = board->box(x+1,y);
 				if(find_box->isTypeAllFixed() && !find_box->isWestLineFixed()){
 					d.e = false;
@@ -46,10 +63,14 @@ void generateFixFlag(){
 					d.e = false;
 				}
 			}
+			
+			// 上端
 			if(y==0){
 				d.n = false;
 			}
+			// 上端以外
 			else{
+				// 1個上のマスを調べる
 				Box* find_box = board->box(x,y-1);
 				if(find_box->isTypeAllFixed() && !find_box->isSouthLineFixed()){
 					d.n = false;
@@ -58,10 +79,14 @@ void generateFixFlag(){
 					d.n = false;
 				}
 			}
+			
+			// 下端
 			if(y==(board->getSizeY()-1)){
 				d.s = false;
 			}
+			// 下端
 			else{
+				// 1個下のマスを調べる
 				Box* find_box = board->box(x,y+1);
 				if(find_box->isTypeAllFixed() && !find_box->isNorthLineFixed()){
 					d.s = false;
