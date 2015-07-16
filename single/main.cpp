@@ -23,8 +23,8 @@ int main(int argc, char *argv[]){
 	
 	// ファイルの読み込み
 	if(argc != 3){
-		cout << "Usage: ./solver.exe InputFile Fixed" << endl;
-		return 0;
+		cerr << "Usage: ./solver.exe InputFile Fixed" << endl;
+		exit(1);
 	}
 	initialize(argv[1]); // 問題盤の生成
 	printBoard(); // 問題盤の表示
@@ -44,8 +44,8 @@ int main(int argc, char *argv[]){
 	// 初期ルーティング
 	for(int i=1;i<=board->getLineNum();i++){
 		if(!routing(i)){
-			cout << "Cannot solve!!" << endl;
-			return 0;
+			cerr << "Cannot solve!! (error: 1)" << endl;
+			exit(1);
 		}
 	}
 	for(int i=1;i<=board->getLineNum();i++){
@@ -100,8 +100,8 @@ int main(int argc, char *argv[]){
 			else{ // 通常経路探索
 				success = routing(id);
 				if(!success){
-					cout << "Cannot solve!!" << endl; // 失敗したらプログラム終了
-					return 0;
+					cerr << "Cannot solve!! (error: 2)" << endl; // 失敗したらプログラム終了
+					exit(1);
 				}
 			}
 			
@@ -110,8 +110,8 @@ int main(int argc, char *argv[]){
 			if(count>10){ // 通常経路探索（中間ポート利用に失敗）
 				success = routing(id);
 				if(!success){
-					cout << "Cannot solve!!" << endl; // 失敗したらプログラム終了
-					return 0;
+					cerr << "Cannot solve!! (error: 3)" << endl; // 失敗したらプログラム終了
+					exit(1);
 				}
 				recording(id);
 				break;
