@@ -1,5 +1,21 @@
 #include "./main.hpp"
 
+/*******************************************************/
+/** グローバル変数定義 **/
+/*******************************************************/
+
+Board* board; // 対象ボード
+
+int penalty_T; // penalty of "touch"
+int penalty_C; // penalty of "cross"
+
+vector<int> adj_num; // 固定線に隣接する数字を格納
+
+//map<int,Cost> cost_table; // コスト表
+//int calc_T; // 計算するとき用
+//int calc_C; // 計算するとき用
+
+
 int main(int argc, char *argv[]){
 	
 	// ファイルの読み込み
