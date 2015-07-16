@@ -21,6 +21,47 @@ extern Board* board;
 //   空白マスの1ポートが決定している
 void generateFixFlag(){
 
+	// 隣接数字を全固定にする
+	for(int y=0;y<board->getSizeY();y++){
+		for(int x=0;x<board->getSizeX();x++){
+			Box* trgt_box = board->box(x,y);
+			if(trgt_box->isTypeNumber() && !trgt_box->isTypeAllFixed()){
+				int trgt_num = trgt_box->getNumber();
+
+				// 左端でなければ左隣を調べる
+				if(x!=0){
+					Box* find_box = board->box(x-1,y);
+					// 同じ数字なら接続確定
+					if(find_box->isTypeNumber() && find_box->getNumber() == trgt_num){
+						trgt_box->setTypeAllFixed();
+						trgt_box->fixWestLine();
+						find_box->setTypeAllFixed();
+						find_box->fixEastLine();
+					}
+				}
+
+				// 右端でなければ右隣を調べる必要はない
+				// (左隣を調べる処理に含まれるため)
+
+				// 上端でなければ上隣を調べる
+				if(y!=0){
+					Box* find_box = board->box(x,y-1);
+					// 同じ数字なら接続確定
+					if(find_box->isTypeNumber() && find_box->getNumber() == trgt_num){
+						trgt_box->setTypeAllFixed();
+						trgt_box->fixNorthLine();
+						find_box->setTypeAllFixed();
+						find_box->fixSouthLine();
+					}
+				}
+
+				// 下端でなければ下隣を調べる必要はない
+				// (上隣を調べる処理に含まれるため)
+
+			}
+		}
+	}
+
 	bool complete_flag = false;
 	while(!complete_flag){
 	complete_flag = true; // フラグオン
