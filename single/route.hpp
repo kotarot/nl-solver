@@ -12,7 +12,5 @@ int countLineNum(int x,int y);
 
 void recording(int trgt_line_id);
 void deleting(int trgt_line_id);
-bool routingSourceToI(int trgt_line_id);
-bool routingIToSink(int trgt_line_id);
 
 #endif
