@@ -2,15 +2,12 @@ TARGET = solver
 OBJS = $(CPPS:.cpp=.o)
 CPPS = $(wildcard *.cpp)
 CXX = g++
-CXXFLAGS = -Wall -O2 -pg
+CXXFLAGS = -Wall -O2
 
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CXX) -pg -o $@ $(OBJS)
-
-profiling.txt: gmon.out
-	gprof $(TARGET) gmon.out > profiling.txt
+	$(CXX) -o $@ $(OBJS)
 
 clean:
 	rm *.o
