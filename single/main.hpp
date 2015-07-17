@@ -34,7 +34,7 @@ using namespace std;
 #define NC 2
 #define BT 1
 
-#define O_LOOP  200 // 外ループ回数
+#define O_LOOP 2000 // 外ループ回数
 #define INIT     30 // 不通過マスをチェックし始める(外ループの)回数
 #define I_LOOP 2000 // 内ループ回数
 #define LIMIT  1800 // 何回以上で不通過マスと判定するか(内ループ)
