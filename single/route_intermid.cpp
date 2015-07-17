@@ -11,6 +11,9 @@ extern Board* board;
 extern int penalty_T;
 extern int penalty_C;
 
+extern int board_x;
+extern int board_y;
+
 
 // 中間ポートを利用する場合のルーティング（ソースから中間まで）
 bool routingSourceToI(int trgt_line_id){
@@ -45,22 +48,22 @@ bool routingSourceToI(int trgt_line_id){
 	
 	queue<Search> qu;
 	// 北方向
-	if(isInserted(start_x,start_y-1,SOUTH) && isFixed(start_x,start_y,NORTH,-1,trgt_line_id)){
+	if (0 < start_y && isInserted(start_x, start_y - 1,SOUTH) && isFixed(start_x, start_y, NORTH, -1, trgt_line_id)) {
 		Search trgt = {start_x,start_y-1,SOUTH,-1};
 		qu.push(trgt);
 	}
 	// 東方向
-	if(isInserted(start_x+1,start_y,WEST) && isFixed(start_x,start_y,EAST,-1,trgt_line_id)){
+	if (start_x + 1 < board_x && isInserted(start_x + 1, start_y, WEST) && isFixed(start_x, start_y, EAST, -1, trgt_line_id)) {
 		Search trgt = {start_x+1,start_y,WEST,-1};
 		qu.push(trgt);
 	}
 	// 南方向
-	if(isInserted(start_x,start_y+1,NORTH) && isFixed(start_x,start_y,SOUTH,-1,trgt_line_id)){
+	if (start_y + 1 < board_y && isInserted(start_x, start_y + 1, NORTH) && isFixed(start_x, start_y, SOUTH, -1, trgt_line_id)) {
 		Search trgt = {start_x,start_y+1,NORTH,-1};
 		qu.push(trgt);
 	}
 	// 西方向
-	if(isInserted(start_x-1,start_y,EAST) && isFixed(start_x,start_y,WEST,-1,trgt_line_id)){
+	if (0 < start_x && isInserted(start_x - 1, start_y, EAST) && isFixed(start_x, start_y, WEST, -1, trgt_line_id)) {
 		Search trgt = {start_x-1,start_y,EAST,-1};
 		qu.push(trgt);
 	}
@@ -320,22 +323,22 @@ bool routingSourceToI(int trgt_line_id){
 		if(!update) continue;
 		
 		// 北方向
-		if(trgt.d!=NORTH && isInserted(trgt.x,trgt.y-1,SOUTH) && isFixed(trgt.x,trgt.y,NORTH,trgt.d,trgt_line_id)){
+		if (trgt.d != NORTH && 0 < trgt.y && isInserted(trgt.x, trgt.y - 1,SOUTH) && isFixed(trgt.x, trgt.y, NORTH, trgt.d, trgt_line_id)) {
 			Search next = {trgt.x,trgt.y-1,SOUTH,trgt.d};
 			qu.push(next);
 		}
 		// 東方向
-		if(trgt.d!=EAST && isInserted(trgt.x+1,trgt.y,WEST) && isFixed(trgt.x,trgt.y,EAST,trgt.d,trgt_line_id)){
+		if (trgt.d != EAST && trgt.x + 1 < board_x && isInserted(trgt.x + 1, trgt.y, WEST) && isFixed(trgt.x, trgt.y, EAST, trgt.d, trgt_line_id)) {
 			Search next = {trgt.x+1,trgt.y,WEST,trgt.d};
 			qu.push(next);
 		}
 		// 南方向
-		if(trgt.d!=SOUTH && isInserted(trgt.x,trgt.y+1,NORTH) && isFixed(trgt.x,trgt.y,SOUTH,trgt.d,trgt_line_id)){
+		if (trgt.d != SOUTH && trgt.y + 1 < board_y && isInserted(trgt.x, trgt.y + 1, NORTH) && isFixed(trgt.x, trgt.y, SOUTH, trgt.d, trgt_line_id)) {
 			Search next = {trgt.x,trgt.y+1,NORTH,trgt.d};
 			qu.push(next);
 		}
 		// 西方向
-		if(trgt.d!=WEST && isInserted(trgt.x-1,trgt.y,EAST) && isFixed(trgt.x,trgt.y,WEST,trgt.d,trgt_line_id)){
+		if (trgt.d!=WEST && 0 < trgt.x && isInserted(trgt.x - 1, trgt.y, EAST) && isFixed(trgt.x, trgt.y, WEST, trgt.d, trgt_line_id)) {
 			Search next = {trgt.x-1,trgt.y,EAST,trgt.d};
 			qu.push(next);
 		}
@@ -664,22 +667,22 @@ bool routingIToSink(int trgt_line_id){
 	
 	queue<Search> qu;
 	// 北方向
-	if(can_pass[start_y-1][start_x] && isInserted(start_x,start_y-1,SOUTH) && isFixed(start_x,start_y,NORTH,-1,trgt_line_id)){
+	if (0 < start_y && can_pass[start_y - 1][start_x] && isInserted(start_x, start_y - 1,SOUTH) && isFixed(start_x, start_y, NORTH, -1, trgt_line_id)) {
 		Search trgt = {start_x,start_y-1,SOUTH,-1};
 		qu.push(trgt);
 	}
 	// 東方向
-	if(can_pass[start_y][start_x+1] && isInserted(start_x+1,start_y,WEST) && isFixed(start_x,start_y,EAST,-1,trgt_line_id)){
+	if (start_x + 1 < board_x && can_pass[start_y][start_x + 1] && isInserted(start_x + 1, start_y, WEST) && isFixed(start_x, start_y, EAST, -1, trgt_line_id)) {
 		Search trgt = {start_x+1,start_y,WEST,-1};
 		qu.push(trgt);
 	}
 	// 南方向
-	if(can_pass[start_y+1][start_x] && isInserted(start_x,start_y+1,NORTH) && isFixed(start_x,start_y,SOUTH,-1,trgt_line_id)){
+	if (start_y + 1 < board_y && can_pass[start_y + 1][start_x] && isInserted(start_x, start_y + 1, NORTH) && isFixed(start_x, start_y, SOUTH, -1, trgt_line_id)) {
 		Search trgt = {start_x,start_y+1,NORTH,-1};
 		qu.push(trgt);
 	}
 	// 西方向
-	if(can_pass[start_y][start_x-1] && isInserted(start_x-1,start_y,EAST) && isFixed(start_x,start_y,WEST,-1,trgt_line_id)){
+	if (0 < start_x && can_pass[start_y][start_x - 1] && isInserted(start_x - 1, start_y, EAST) && isFixed(start_x, start_y, WEST, -1, trgt_line_id)) {
 		Search trgt = {start_x-1,start_y,EAST,-1};
 		qu.push(trgt);
 	}
@@ -939,22 +942,22 @@ bool routingIToSink(int trgt_line_id){
 		if(!update) continue;
 		
 		// 北方向
-		if(trgt.d!=NORTH && can_pass[trgt.y-1][trgt.x] && isInserted(trgt.x,trgt.y-1,SOUTH) && isFixed(trgt.x,trgt.y,NORTH,trgt.d,trgt_line_id)){
+		if (trgt.d != NORTH && 0 < trgt.y && can_pass[trgt.y - 1][trgt.x] && isInserted(trgt.x, trgt.y - 1, SOUTH) && isFixed(trgt.x, trgt.y, NORTH, trgt.d, trgt_line_id)) {
 			Search next = {trgt.x,trgt.y-1,SOUTH,trgt.d};
 			qu.push(next);
 		}
 		// 東方向
-		if(trgt.d!=EAST && can_pass[trgt.y][trgt.x+1] && isInserted(trgt.x+1,trgt.y,WEST) && isFixed(trgt.x,trgt.y,EAST,trgt.d,trgt_line_id)){
+		if (trgt.d != EAST && trgt.x + 1 < board_x && can_pass[trgt.y][trgt.x + 1] && isInserted(trgt.x + 1, trgt.y, WEST) && isFixed(trgt.x, trgt.y, EAST, trgt.d, trgt_line_id)) {
 			Search next = {trgt.x+1,trgt.y,WEST,trgt.d};
 			qu.push(next);
 		}
 		// 南方向
-		if(trgt.d!=SOUTH && can_pass[trgt.y+1][trgt.x] && isInserted(trgt.x,trgt.y+1,NORTH) && isFixed(trgt.x,trgt.y,SOUTH,trgt.d,trgt_line_id)){
+		if (trgt.d != SOUTH && trgt.y + 1 < board_y && can_pass[trgt.y + 1][trgt.x] && isInserted(trgt.x, trgt.y + 1, NORTH) && isFixed(trgt.x, trgt.y, SOUTH, trgt.d, trgt_line_id)) {
 			Search next = {trgt.x,trgt.y+1,NORTH,trgt.d};
 			qu.push(next);
 		}
 		// 西方向
-		if(trgt.d!=WEST && can_pass[trgt.y][trgt.x-1] && isInserted(trgt.x-1,trgt.y,EAST) && isFixed(trgt.x,trgt.y,WEST,trgt.d,trgt_line_id)){
+		if (trgt.d != WEST && 0 < trgt.x && can_pass[trgt.y][trgt.x - 1] && isInserted(trgt.x - 1, trgt.y, EAST) && isFixed(trgt.x, trgt.y, WEST, trgt.d, trgt_line_id)) {
 			Search next = {trgt.x-1,trgt.y,EAST,trgt.d};
 			qu.push(next);
 		}

@@ -13,6 +13,9 @@ extern int penalty_C;
 
 extern vector<int> adj_num;
 
+extern int board_x;
+extern int board_y;
+
 
 bool routing(int trgt_line_id){
 
@@ -46,22 +49,22 @@ bool routing(int trgt_line_id){
 	
 	queue<Search> qu;
 	// 北方向
-	if(isInserted(start_x,start_y-1,SOUTH) && isFixed(start_x,start_y,NORTH,-1,trgt_line_id)){
+	if (0 < start_y && isInserted(start_x, start_y - 1, SOUTH) && isFixed(start_x, start_y, NORTH, -1, trgt_line_id)) {
 		Search trgt = {start_x,start_y-1,SOUTH,-1};
 		qu.push(trgt);
 	}
 	// 東方向
-	if(isInserted(start_x+1,start_y,WEST) && isFixed(start_x,start_y,EAST,-1,trgt_line_id)){
+	if (start_x + 1 < board_x && isInserted(start_x + 1, start_y, WEST) && isFixed(start_x, start_y, EAST, -1, trgt_line_id)) {
 		Search trgt = {start_x+1,start_y,WEST,-1};
 		qu.push(trgt);
 	}
 	// 南方向
-	if(isInserted(start_x,start_y+1,NORTH) && isFixed(start_x,start_y,SOUTH,-1,trgt_line_id)){
+	if (start_y + 1 < board_y && isInserted(start_x, start_y + 1, NORTH) && isFixed(start_x, start_y, SOUTH, -1, trgt_line_id)) {
 		Search trgt = {start_x,start_y+1,NORTH,-1};
 		qu.push(trgt);
 	}
 	// 西方向
-	if(isInserted(start_x-1,start_y,EAST) && isFixed(start_x,start_y,WEST,-1,trgt_line_id)){
+	if (0 < start_x && isInserted(start_x - 1, start_y, EAST) && isFixed(start_x, start_y, WEST, -1, trgt_line_id)) {
 		Search trgt = {start_x-1,start_y,EAST,-1};
 		qu.push(trgt);
 	}
@@ -321,22 +324,22 @@ bool routing(int trgt_line_id){
 		if(!update) continue;
 		
 		// 北方向
-		if(trgt.d!=NORTH && isInserted(trgt.x,trgt.y-1,SOUTH) && isFixed(trgt.x,trgt.y,NORTH,trgt.d,trgt_line_id)){
+		if (trgt.d != NORTH && 0 < trgt.y && isInserted(trgt.x, trgt.y - 1, SOUTH) && isFixed(trgt.x, trgt.y, NORTH, trgt.d, trgt_line_id)) {
 			Search next = {trgt.x,trgt.y-1,SOUTH,trgt.d};
 			qu.push(next);
 		}
 		// 東方向
-		if(trgt.d!=EAST && isInserted(trgt.x+1,trgt.y,WEST) && isFixed(trgt.x,trgt.y,EAST,trgt.d,trgt_line_id)){
+		if (trgt.d != EAST && trgt.x + 1 < board_x && isInserted(trgt.x + 1, trgt.y, WEST) && isFixed(trgt.x, trgt.y, EAST, trgt.d, trgt_line_id)) {
 			Search next = {trgt.x+1,trgt.y,WEST,trgt.d};
 			qu.push(next);
 		}
 		// 南方向
-		if(trgt.d!=SOUTH && isInserted(trgt.x,trgt.y+1,NORTH) && isFixed(trgt.x,trgt.y,SOUTH,trgt.d,trgt_line_id)){
+		if (trgt.d != SOUTH && trgt.y + 1 < board_y && isInserted(trgt.x, trgt.y + 1,NORTH) && isFixed(trgt.x, trgt.y, SOUTH, trgt.d, trgt_line_id)) {
 			Search next = {trgt.x,trgt.y+1,NORTH,trgt.d};
 			qu.push(next);
 		}
 		// 西方向
-		if(trgt.d!=WEST && isInserted(trgt.x-1,trgt.y,EAST) && isFixed(trgt.x,trgt.y,WEST,trgt.d,trgt_line_id)){
+		if(trgt.d != WEST && 0 < trgt.x && isInserted(trgt.x - 1, trgt.y, EAST) && isFixed(trgt.x, trgt.y, WEST, trgt.d, trgt_line_id)) {
 			Search next = {trgt.x-1,trgt.y,EAST,trgt.d};
 			qu.push(next);
 		}
@@ -613,9 +616,6 @@ bool routing(int trgt_line_id){
 
 bool isInserted(int x,int y,int d){
 
-	if(x<0 || x>(board->getSizeX()-1)) return false;
-	if(y<0 || y>(board->getSizeY()-1)) return false;
-	
 	Box* trgt_box = board->box(x,y);
 	
 	if(trgt_box->isTypeNumber()) return false;
@@ -623,13 +623,13 @@ bool isInserted(int x,int y,int d){
 		if(d==NORTH){
 			return trgt_box->isNorthLineFixed();
 		}
-		if(d==EAST){
+		else if(d==EAST){
 			return trgt_box->isEastLineFixed();
 		}
-		if(d==SOUTH){
+		else if(d==SOUTH){
 			return trgt_box->isSouthLineFixed();
 		}
-		if(d==WEST){
+		else if(d==WEST){
 			return trgt_box->isWestLineFixed();
 		}
 	}

@@ -18,6 +18,10 @@ vector<int> adj_num; // 固定線に隣接する数字を格納
 //int calc_T; // 計算するとき用
 //int calc_C; // 計算するとき用
 
+// ボードの X と Y
+int board_x;
+int board_y;
+
 
 int main(int argc, char *argv[]){
 	
@@ -264,7 +268,6 @@ void initialize(char* filename){
 		exit(1);
 	}
 	
-	int size_x, size_y;
 	int line_num;
 	map<int,int> x_0, y_0, x_1, y_1;
 	map<int,bool> adjacents; // 初期状態で数字が隣接している
@@ -275,7 +278,7 @@ void initialize(char* filename){
 			str.replace(str.find("S"),5,"");
 			str.replace(str.find("X"),1," ");
 			istringstream is(str);
-			is >> size_x >> size_y;
+			is >> board_x >> board_y;
 		}
 		else if(str.at(0) == 'L' && str.at(4) == '_'){ // ライン個数の読み込み
 			str.replace(str.find("L"),9,"");
@@ -312,7 +315,7 @@ void initialize(char* filename){
 		else continue;
 	}
 	
-	board = new Board(size_x,size_y,line_num);
+	board = new Board(board_x,board_y,line_num);
 	
 	for(int i=1;i<=line_num;i++){
 		Box* trgt_box_0 = board->box(x_0[i],y_0[i]);
@@ -327,8 +330,8 @@ void initialize(char* filename){
 		trgt_line->setHasLine(!adjacents[i]);
 	}
 	
-	for(int y=0;y<size_y;y++){
-		for(int x=0;x<size_x;x++){
+	for (int y = 0; y < board_y; y++) {
+		for (int x = 0; x < board_x; x++) {
 			Box* trgt_box = board->box(x,y);
 			if(!trgt_box->isTypeNumber()) trgt_box->setTypeBlank();
 		}
