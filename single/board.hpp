@@ -40,8 +40,8 @@ private:
 	int size_x;		// X方向サイズ
 	int size_y;		// Y方向サイズ
 	int line_num;	// ライン数
-	map<int,map<int,Box*> > boxes;	// マスの集合
-	map<int,Line*> lines;	// ラインの集合
+	Box* boxes[36][36];	// マスの集合
+	Line* lines[100];	// ラインの集合
 };
 
 #endif
