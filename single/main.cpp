@@ -500,7 +500,7 @@ void setAdjacentNumber(int x,int y,int d_1,int d_2){
 
 bool isFinished(){
 
-	map<int,map<int,int> > for_check;
+	int for_check[MAX_BOXES][MAX_BOXES];
 	for(int y=0;y<board->getSizeY();y++){
 		for(int x=0;x<board->getSizeX();x++){
 			for_check[y][x] = 0;
