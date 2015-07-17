@@ -508,9 +508,9 @@ bool isFinished(){
 	}
 	for(int i=1;i<=board->getLineNum();i++){
 		Line* trgt_line = board->line(i);
-		vector<Point>* trgt_track = trgt_line->getTrack();
-		for(int j=0;j<(int)(trgt_track->size());j++){
-			Point p = (*trgt_track)[j];
+		Point* trgt_track = trgt_line->getTrack();
+		for (int j = 0; j < trgt_line->getLineLength(); j++) {
+			Point p = trgt_track[j];
 			int point_x = p.x;
 			int point_y = p.y;
 			if(for_check[point_y][point_x] > 0){ return false; }
@@ -579,9 +579,9 @@ void checkCandidateLine(int x,int y){
 		if(countLineNum(now_x,now_y)>0){
 			for(int i=1;i<=board->getLineNum();i++){
 				Line* trgt_line = board->line(i);
-				vector<Point>* trgt_track = trgt_line->getTrack();
-				for(int j=0;j<(int)(trgt_track->size());j++){
-					Point p = (*trgt_track)[j];
+				Point* trgt_track = trgt_line->getTrack();
+				for (int j = 0; j < trgt_line->getLineLength(); j++) {
+					Point p = trgt_track[j];
 					int point_x = p.x;
 					int point_y = p.y;
 					if(point_x==now_x && point_y==now_y){
@@ -609,9 +609,9 @@ void checkCandidateLine(int x,int y){
 		if(countLineNum(now_x,now_y)>0){
 			for(int i=1;i<=board->getLineNum();i++){
 				Line* trgt_line = board->line(i);
-				vector<Point>* trgt_track = trgt_line->getTrack();
-				for(int j=0;j<(int)(trgt_track->size());j++){
-					Point p = (*trgt_track)[j];
+				Point* trgt_track = trgt_line->getTrack();
+				for (int j = 0; j < trgt_line->getLineLength(); j++) {
+					Point p = trgt_track[j];
 					int point_x = p.x;
 					int point_y = p.y;
 					if(point_x==now_x && point_y==now_y){
@@ -639,9 +639,9 @@ void checkCandidateLine(int x,int y){
 		if(countLineNum(now_x,now_y)>0){
 			for(int i=1;i<=board->getLineNum();i++){
 				Line* trgt_line = board->line(i);
-				vector<Point>* trgt_track = trgt_line->getTrack();
-				for(int j=0;j<(int)(trgt_track->size());j++){
-					Point p = (*trgt_track)[j];
+				Point* trgt_track = trgt_line->getTrack();
+				for (int j = 0; j < trgt_line->getLineLength(); j++) {
+					Point p = trgt_track[j];
 					int point_x = p.x;
 					int point_y = p.y;
 					if(point_x==now_x && point_y==now_y){
@@ -669,9 +669,9 @@ void checkCandidateLine(int x,int y){
 		if(countLineNum(now_x,now_y)>0){
 			for(int i=1;i<=board->getLineNum();i++){
 				Line* trgt_line = board->line(i);
-				vector<Point>* trgt_track = trgt_line->getTrack();
-				for(int j=0;j<(int)(trgt_track->size());j++){
-					Point p = (*trgt_track)[j];
+				Point* trgt_track = trgt_line->getTrack();
+				for (int j = 0; j < trgt_line->getLineLength(); j++) {
+					Point p = trgt_track[j];
 					int point_x = p.x;
 					int point_y = p.y;
 					if(point_x==now_x && point_y==now_y){

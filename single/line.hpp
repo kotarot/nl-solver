@@ -5,12 +5,18 @@
 #ifndef __LINE_HPP__
 #define __LINE_HPP__
 
+// ラインの最大長
+#define MAX_LINE_LENGTH 1024
+
 // ラインクラス
 class Line{
 public:
 	static const int NOT_USE = -1;
 
-	Line(int _index):x_0(NOT_USE),y_0(NOT_USE),x_1(NOT_USE),y_1(NOT_USE),x_i(NOT_USE),y_i(NOT_USE),candidate(false),im(false){index=_index;track.clear();}
+	Line(int _index):x_0(NOT_USE),y_0(NOT_USE),x_1(NOT_USE),y_1(NOT_USE),x_i(NOT_USE),y_i(NOT_USE),candidate(false),im(false){
+		index = _index;
+		length = 0;
+	}
 	~Line();
 
 	void setSourcePort(int x,int y){x_0=x;y_0=y;}
@@ -47,11 +53,12 @@ public:
 		y_1 = tmp_y;
 	}
 	
-	int getLineLength(){return track.size();}
-	
-	vector<Point>* getTrack(){return &track;}
-	void pushPointToTrack(Point p){track.push_back(p);}
-	void clearTrack(){track.clear();}
+	int getLineLength() const { return length; }
+	Point* getTrack() { return track; }
+	void pushPointToTrack(const Point p) { track[length] = p; length++; }
+	//void setPointToTrack(const int idx, const Point p) { track[idx] = p; }
+	//Point getPointToTrack(const int idx) const { return track[idx]; }
+	void clearTrack() { length = 0; }
 
 private:
 	int index;		// ライン番号
@@ -62,7 +69,9 @@ private:
 					// 隣接してない場合: ラインを持つので true
 	bool candidate;	// 中間ポートを利用する候補か？
 	bool im;		// 中間ポートを利用するか？
-	vector<Point> track;
+	
+	int length;
+	Point track[MAX_LINE_LENGTH];
 };
 
 #endif

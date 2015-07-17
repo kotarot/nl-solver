@@ -543,18 +543,19 @@ bool routingSourceToI(int trgt_line_id){
 	}
 	
 	bool retry = true;
-	vector<Point>* trgt_track = trgt_line->getTrack();
+	Point* trgt_track = trgt_line->getTrack();
 	
 	while(retry){
 		retry = false;
-		vector<Point> tmp_track;
-		for(int i=0;i<(int)(trgt_track->size());i++){
-			tmp_track.push_back((*trgt_track)[i]);
+		int tmp_track_length = 0;
+		Point tmp_track[MAX_LINE_LENGTH];
+		for (tmp_track_length = 0; tmp_track_length < trgt_line->getLineLength(); tmp_track_length++) {
+			tmp_track[tmp_track_length] = trgt_track[tmp_track_length];
 		}
-		trgt_track->clear();
-		for(int i=0;i<(int)(tmp_track.size());i++){
-			if(i>=(int)(tmp_track.size())-2){
-				trgt_track->push_back(tmp_track[i]);
+		trgt_line->clearTrack();
+		for (int i = 0; i < tmp_track_length; i++) {
+			if (i >= tmp_track_length - 2) {
+				trgt_line->pushPointToTrack(tmp_track[i]);
 				continue;
 			}
 			if (tmp_track[i + 2].x == tmp_track[i].x && tmp_track[i + 2].y == tmp_track[i].y){
@@ -562,7 +563,7 @@ bool routingSourceToI(int trgt_line_id){
 				i++;
 				continue;
 			}
-			trgt_track->push_back(tmp_track[i]);
+			trgt_line->pushPointToTrack(tmp_track[i]);
 		}
 	}
 	
@@ -631,16 +632,16 @@ bool routingIToSink(int trgt_line_id){
 	}
 	
 	// 通れないマスを規定
-	vector<Point>* trgt_track = trgt_line->getTrack();
+	Point* trgt_track = trgt_line->getTrack();
 	map<int,map<int,bool> > can_pass;
 	for(int y=-1;y<=board->getSizeY();y++){
 		for(int x=-1;x<=board->getSizeX();x++){
 			can_pass[y][x] = true;
 		}
 	}
-	for(int i=0;i<(int)(trgt_track->size());i++){
-		int tmp_x = (*trgt_track)[i].x;
-		int tmp_y = (*trgt_track)[i].y;
+	for (int i = 0; i < trgt_line->getLineLength(); i++) {
+		int tmp_x = trgt_track[i].x;
+		int tmp_y = trgt_track[i].y;
 		can_pass[tmp_y][tmp_x] = false;
 		can_pass[tmp_y][tmp_x-1] = false;
 		can_pass[tmp_y][tmp_x+1] = false;
@@ -649,11 +650,12 @@ bool routingIToSink(int trgt_line_id){
 	}
 	
 	// ソースから中間までの経路を一時保存
-	vector<Point> before_track;
-	for(int i=0;i<(int)(trgt_track->size());i++){
-		before_track.push_back((*trgt_track)[i]);
+	int before_track_length = 0;
+	Point before_track[MAX_LINE_LENGTH];
+	for (before_track_length = 0; before_track_length < trgt_line->getLineLength(); before_track_length++) {
+		before_track[before_track_length] = (trgt_track[before_track_length]);
 	}
-	trgt_track->clear();
+	trgt_line->clearTrack();
 	
 	
 	int start_x = trgt_line->getInterX();
@@ -1053,8 +1055,8 @@ bool routingIToSink(int trgt_line_id){
 		}
 	}
 	if((int)(min_direction_array.size())==0){
-		for(int i=0;i<(int)(before_track.size());i++){
-			trgt_track->push_back(before_track[i]);
+		for (int i = 0; i < before_track_length; i++) {
+			trgt_line->pushPointToTrack(before_track[i]);
 		}
 		return false;
 	}
@@ -1168,14 +1170,15 @@ bool routingIToSink(int trgt_line_id){
 	bool retry = true;
 	while(retry){
 		retry = false;
-		vector<Point> tmp_track;
-		for(int i=0;i<(int)(trgt_track->size());i++){
-			tmp_track.push_back((*trgt_track)[i]);
+		int tmp_track_length = 0;
+		Point tmp_track[MAX_LINE_LENGTH];
+		for (tmp_track_length = 0; tmp_track_length < trgt_line->getLineLength(); tmp_track_length++) {
+			tmp_track[tmp_track_length] = trgt_track[tmp_track_length];
 		}
-		trgt_track->clear();
-		for(int i=0;i<(int)(tmp_track.size());i++){
-			if(i>=(int)(tmp_track.size())-2){
-				trgt_track->push_back(tmp_track[i]);
+		trgt_line->clearTrack();
+		for (int i = 0; i < tmp_track_length; i++) {
+			if (i >= tmp_track_length - 2) {
+				trgt_line->pushPointToTrack(tmp_track[i]);
 				continue;
 			}
 			if (tmp_track[i + 2].x == tmp_track[i].x && tmp_track[i + 2].y == tmp_track[i].y){
@@ -1183,15 +1186,15 @@ bool routingIToSink(int trgt_line_id){
 				i++;
 				continue;
 			}
-			trgt_track->push_back(tmp_track[i]);
+			trgt_line->pushPointToTrack(tmp_track[i]);
 		}
 	}
 	
 	// 中間ポートと中間からソースまでの経路を追加
-	Point trgt_point = {trgt_line->getInterX(), trgt_line->getInterY()};
-	trgt_track->push_back(trgt_point);
-	for(int i=0;i<(int)(before_track.size());i++){
-		trgt_track->push_back(before_track[i]);
+	Point intermid_point = {trgt_line->getInterX(), trgt_line->getInterY()};
+	trgt_line->pushPointToTrack(intermid_point);
+	for (int i = 0; i < before_track_length; i++) {
+		trgt_line->pushPointToTrack(before_track[i]);
 	}
 	
 	// 表示
