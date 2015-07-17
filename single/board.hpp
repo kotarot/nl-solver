@@ -5,6 +5,10 @@
 #ifndef __BOARD_HPP__
 #define __BOARD_HPP__
 
+// マスと線の数の最大値
+#define MAX_BOXES 40
+#define MAX_LINES 100
+
 // ボードクラス
 class Board{
 public:
@@ -40,8 +44,8 @@ private:
 	int size_x;		// X方向サイズ
 	int size_y;		// Y方向サイズ
 	int line_num;	// ライン数
-	Box* boxes[36][36];	// マスの集合
-	Line* lines[100];	// ラインの集合
+	Box* boxes[MAX_BOXES][MAX_BOXES];	// マスの集合
+	Line* lines[MAX_LINES];				// ラインの集合
 };
 
 #endif
