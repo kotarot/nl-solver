@@ -483,7 +483,8 @@ bool routing(int trgt_line_id){
 	while(now_x!=start_x || now_y!=start_y){
 		
 		//cout << now_x << "," << now_y << endl;
-		trgt_line->pushIntToTrack(now_x+now_y*board->getSizeX());
+		Point p = {now_x, now_y};
+		trgt_line->pushPointToTrack(p);
 		
 		Direction trgt_d;
 		switch(intra_box){
@@ -543,11 +544,11 @@ bool routing(int trgt_line_id){
 	}
 	
 	bool retry = true;
-	vector<int>* trgt_track = trgt_line->getTrack();
+	vector<Point>* trgt_track = trgt_line->getTrack();
 	
 	while(retry){
 		retry = false;
-		vector<int> tmp_track;
+		vector<Point> tmp_track;
 		for(int i=0;i<(int)(trgt_track->size());i++){
 			tmp_track.push_back((*trgt_track)[i]);
 		}
@@ -557,7 +558,7 @@ bool routing(int trgt_line_id){
 				trgt_track->push_back(tmp_track[i]);
 				continue;
 			}
-			if(tmp_track[i+2]==tmp_track[i]){
+			if (tmp_track[i + 2].x == tmp_track[i].x && tmp_track[i + 2].y == tmp_track[i].y) {
 				retry = true;
 				i++;
 				continue;
@@ -719,12 +720,12 @@ int countLineNum(int x,int y){
 void recording(int trgt_line_id){
 	
 	Line* trgt_line = board->line(trgt_line_id);
-	vector<int>* trgt_track = trgt_line->getTrack();
+	vector<Point>* trgt_track = trgt_line->getTrack();
 	
 	int old_x = trgt_line->getSinkX();
 	int old_y = trgt_line->getSinkY();
-	int new_x = (*trgt_track)[0] % board->getSizeX();
-	int new_y = (*trgt_track)[0] / board->getSizeX();
+	int new_x = (*trgt_track)[0].x;
+	int new_y = (*trgt_track)[0].y;
 	
 	if(new_x==old_x && new_y==old_y-1){ // 北
 		board->box(new_x,new_y)->incrementSouthNum();
@@ -742,8 +743,8 @@ void recording(int trgt_line_id){
 	old_x = new_x; old_y = new_y;
 	
 	for(int i=1;i<(int)(trgt_track->size());i++){
-		new_x = (*trgt_track)[i] % board->getSizeX();
-		new_y = (*trgt_track)[i] / board->getSizeX();
+		new_x = (*trgt_track)[i].x;
+		new_y = (*trgt_track)[i].y;
 		
 		if(new_x==old_x && new_y==old_y-1){ // 北
 			board->box(old_x,old_y)->incrementNorthNum();
@@ -785,12 +786,12 @@ void recording(int trgt_line_id){
 void deleting(int trgt_line_id){
 
 	Line* trgt_line = board->line(trgt_line_id);
-	vector<int>* trgt_track = trgt_line->getTrack();
+	vector<Point>* trgt_track = trgt_line->getTrack();
 	
 	int old_x = trgt_line->getSinkX();
 	int old_y = trgt_line->getSinkY();
-	int new_x = (*trgt_track)[0] % board->getSizeX();
-	int new_y = (*trgt_track)[0] / board->getSizeX();
+	int new_x = (*trgt_track)[0].x;
+	int new_y = (*trgt_track)[0].y;
 	
 	if(new_x==old_x && new_y==old_y-1){ // 北
 		board->box(new_x,new_y)->decrementSouthNum();
@@ -808,8 +809,8 @@ void deleting(int trgt_line_id){
 	old_x = new_x; old_y = new_y;
 	
 	for(int i=1;i<(int)(trgt_track->size());i++){
-		new_x = (*trgt_track)[i] % board->getSizeX();
-		new_y = (*trgt_track)[i] / board->getSizeX();
+		new_x = (*trgt_track)[i].x;
+		new_y = (*trgt_track)[i].y;
 		
 		if(new_x==old_x && new_y==old_y-1){ // 北
 			board->box(old_x,old_y)->decrementNorthNum();

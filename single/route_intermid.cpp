@@ -482,7 +482,8 @@ bool routingSourceToI(int trgt_line_id){
 	while(now_x!=start_x || now_y!=start_y){
 		
 		//cout << now_x << "," << now_y << endl;
-		trgt_line->pushIntToTrack(now_x+now_y*board->getSizeX());
+		Point p = {now_x, now_y};
+		trgt_line->pushPointToTrack(p);
 		
 		Direction trgt_d;
 		switch(intra_box){
@@ -542,11 +543,11 @@ bool routingSourceToI(int trgt_line_id){
 	}
 	
 	bool retry = true;
-	vector<int>* trgt_track = trgt_line->getTrack();
+	vector<Point>* trgt_track = trgt_line->getTrack();
 	
 	while(retry){
 		retry = false;
-		vector<int> tmp_track;
+		vector<Point> tmp_track;
 		for(int i=0;i<(int)(trgt_track->size());i++){
 			tmp_track.push_back((*trgt_track)[i]);
 		}
@@ -556,7 +557,7 @@ bool routingSourceToI(int trgt_line_id){
 				trgt_track->push_back(tmp_track[i]);
 				continue;
 			}
-			if(tmp_track[i+2]==tmp_track[i]){
+			if (tmp_track[i + 2].x == tmp_track[i].x && tmp_track[i + 2].y == tmp_track[i].y){
 				retry = true;
 				i++;
 				continue;
@@ -630,7 +631,7 @@ bool routingIToSink(int trgt_line_id){
 	}
 	
 	// 通れないマスを規定
-	vector<int>* trgt_track = trgt_line->getTrack();
+	vector<Point>* trgt_track = trgt_line->getTrack();
 	map<int,map<int,bool> > can_pass;
 	for(int y=-1;y<=board->getSizeY();y++){
 		for(int x=-1;x<=board->getSizeX();x++){
@@ -638,8 +639,8 @@ bool routingIToSink(int trgt_line_id){
 		}
 	}
 	for(int i=0;i<(int)(trgt_track->size());i++){
-		int tmp_x = (*trgt_track)[i] % board->getSizeX();
-		int tmp_y = (*trgt_track)[i] / board->getSizeX();
+		int tmp_x = (*trgt_track)[i].x;
+		int tmp_y = (*trgt_track)[i].y;
 		can_pass[tmp_y][tmp_x] = false;
 		can_pass[tmp_y][tmp_x-1] = false;
 		can_pass[tmp_y][tmp_x+1] = false;
@@ -648,7 +649,7 @@ bool routingIToSink(int trgt_line_id){
 	}
 	
 	// ソースから中間までの経路を一時保存
-	vector<int> before_track;
+	vector<Point> before_track;
 	for(int i=0;i<(int)(trgt_track->size());i++){
 		before_track.push_back((*trgt_track)[i]);
 	}
@@ -1104,7 +1105,8 @@ bool routingIToSink(int trgt_line_id){
 	while(now_x!=start_x || now_y!=start_y){
 		
 		//cout << now_x << "," << now_y << endl;
-		trgt_line->pushIntToTrack(now_x+now_y*board->getSizeX());
+		Point p = {now_x, now_y};
+		trgt_line->pushPointToTrack(p);
 		
 		Direction trgt_d;
 		switch(intra_box){
@@ -1166,7 +1168,7 @@ bool routingIToSink(int trgt_line_id){
 	bool retry = true;
 	while(retry){
 		retry = false;
-		vector<int> tmp_track;
+		vector<Point> tmp_track;
 		for(int i=0;i<(int)(trgt_track->size());i++){
 			tmp_track.push_back((*trgt_track)[i]);
 		}
@@ -1176,7 +1178,7 @@ bool routingIToSink(int trgt_line_id){
 				trgt_track->push_back(tmp_track[i]);
 				continue;
 			}
-			if(tmp_track[i+2]==tmp_track[i]){
+			if (tmp_track[i + 2].x == tmp_track[i].x && tmp_track[i + 2].y == tmp_track[i].y){
 				retry = true;
 				i++;
 				continue;
@@ -1186,7 +1188,8 @@ bool routingIToSink(int trgt_line_id){
 	}
 	
 	// 中間ポートと中間からソースまでの経路を追加
-	trgt_track->push_back(trgt_line->getInterX()+trgt_line->getInterY()*board->getSizeX());
+	Point trgt_point = {trgt_line->getInterX(), trgt_line->getInterY()};
+	trgt_track->push_back(trgt_point);
 	for(int i=0;i<(int)(before_track.size());i++){
 		trgt_track->push_back(before_track[i]);
 	}
