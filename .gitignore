@@ -12,6 +12,7 @@
 # Executables
 *.exe
 *.stackdump
+*.out
 solver
 
 # Problem generator

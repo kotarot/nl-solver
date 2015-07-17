@@ -70,7 +70,7 @@ void printLine(int i){
 	cout << endl;
 	cout << "print Line" << i << endl;
 	Line* trgt_line = board->line(i);
-	vector<int>* trgt_track = trgt_line->getTrack();
+	vector<Point>* trgt_track = trgt_line->getTrack();
 	
 	map<int,map<int,int> > for_print;
 	for(int y=0;y<board->getSizeY();y++){
@@ -85,9 +85,9 @@ void printLine(int i){
 		}
 	}
 	for(int j=0;j<(int)(trgt_track->size());j++){
-		int point = (*trgt_track)[j];
-		int point_x = point % board->getSizeX();
-		int point_y = point / board->getSizeX();
+		Point p = (*trgt_track)[j];
+		int point_x = p.x;
+		int point_y = p.y;
 		for_print[point_y][point_x] = -2;
 	}
 	for(int y=0;y<board->getSizeY();y++){
@@ -124,11 +124,11 @@ void printSolution(){
 	}
 	for(int i=1;i<=board->getLineNum();i++){
 		Line* trgt_line = board->line(i);
-		vector<int>* trgt_track = trgt_line->getTrack();
+		vector<Point>* trgt_track = trgt_line->getTrack();
 		for(int j=0;j<(int)(trgt_track->size());j++){
-			int point = (*trgt_track)[j];
-			int point_x = point % board->getSizeX();
-			int point_y = point / board->getSizeX();
+			Point p = (*trgt_track)[j];
+			int point_x = p.x;
+			int point_y = p.y;
 			for_print[point_y][point_x] = i;
 		}
 	}

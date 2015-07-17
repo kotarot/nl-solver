@@ -39,6 +39,11 @@ using namespace std;
 #define I_LOOP 2000 // 内ループ回数
 #define LIMIT  1800 // 何回以上で不通過マスと判定するか(内ループ)
 
+struct Point{
+	int x;
+	int y;
+};
+
 #include "box.hpp"
 #include "line.hpp"
 #include "board.hpp"
