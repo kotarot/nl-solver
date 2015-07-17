@@ -49,8 +49,8 @@ public:
 	
 	int getLineLength(){return track.size();}
 	
-	vector<int>* getTrack(){return &track;}
-	void pushIntToTrack(int t){track.push_back(t);}
+	vector<Point>* getTrack(){return &track;}
+	void pushPointToTrack(Point p){track.push_back(p);}
 	void clearTrack(){track.clear();}
 
 private:
@@ -62,7 +62,7 @@ private:
 					// 隣接してない場合: ラインを持つので true
 	bool candidate;	// 中間ポートを利用する候補か？
 	bool im;		// 中間ポートを利用するか？
-	vector<int> track;
+	vector<Point> track;
 };
 
 #endif
