@@ -62,7 +62,7 @@ int main(int argc, char *argv[]){
 	// 利用している間，ライン不通過回数をカウントしない
 	bool use_intermediate_port = false;
 	// 中間ポートに設定するマスとそれを利用する数字
-	int inter_x, inter_y, inter_line;
+	int inter_x, inter_y, inter_line = -1;
 	
 	
 	// 探索スタート!!
