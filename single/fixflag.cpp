@@ -544,8 +544,8 @@ void generateFixFlag(){
 					Box* find_box = board->box(x,y-1);
 					if(find_box->isTypeNumber()){
 						if(find_box->isTypeAllFixed()){
-							cout << "Conflict!!" << endl;
-							exit(1);
+							cout << "Conflict!! (error: 50)" << endl;
+							exit(50);
 						}
 						else{
 							find_box->setTypeAllFixed();
@@ -554,8 +554,8 @@ void generateFixFlag(){
 					}
 					else{
 						if(find_box->isTypeAllFixed()){
-							cout << "Conflict!!" << endl;
-							exit(1);
+							cout << "Conflict!!  (error: 51)" << endl;
+							exit(51);
 						}
 						else if(find_box->isTypeHalfFixed()){
 							find_box->setTypeAllFixed();
@@ -572,8 +572,8 @@ void generateFixFlag(){
 					Box* find_box = board->box(x+1,y);
 					if(find_box->isTypeNumber()){
 						if(find_box->isTypeAllFixed()){
-							cout << "Conflict!!" << endl;
-							exit(1);
+							cout << "Conflict!! (error: 52)" << endl;
+							exit(52);
 						}
 						else{
 							find_box->setTypeAllFixed();
@@ -582,8 +582,8 @@ void generateFixFlag(){
 					}
 					else{
 						if(find_box->isTypeAllFixed()){
-							cout << "Conflict!!" << endl;
-							exit(1);
+							cout << "Conflict!! (error: 53)" << endl;
+							exit(53);
 						}
 						else if(find_box->isTypeHalfFixed()){
 							find_box->setTypeAllFixed();
@@ -600,8 +600,8 @@ void generateFixFlag(){
 					Box* find_box = board->box(x,y+1);
 					if(find_box->isTypeNumber()){
 						if(find_box->isTypeAllFixed()){
-							cout << "Conflict!!" << endl;
-							exit(1);
+							cout << "Conflict!! (error: 54)" << endl;
+							exit(54);
 						}
 						else{
 							find_box->setTypeAllFixed();
@@ -610,8 +610,8 @@ void generateFixFlag(){
 					}
 					else{
 						if(find_box->isTypeAllFixed()){
-							cout << "Conflict!!" << endl;
-							exit(1);
+							cout << "Conflict!! (error: 55)" << endl;
+							exit(55);
 						}
 						else if(find_box->isTypeHalfFixed()){
 							find_box->setTypeAllFixed();
@@ -628,8 +628,8 @@ void generateFixFlag(){
 					Box* find_box = board->box(x-1,y);
 					if(find_box->isTypeNumber()){
 						if(find_box->isTypeAllFixed()){
-							cout << "Conflict!!" << endl;
-							exit(1);
+							cout << "Conflict!! (error: 56)" << endl;
+							exit(56);
 						}
 						else{
 							find_box->setTypeAllFixed();
@@ -638,8 +638,8 @@ void generateFixFlag(){
 					}
 					else{
 						if(find_box->isTypeAllFixed()){
-							cout << "Conflict!!" << endl;
-							exit(1);
+							cout << "Conflict!! (error: 57)" << endl;
+							exit(57);
 						}
 						else if(find_box->isTypeHalfFixed()){
 							find_box->setTypeAllFixed();
@@ -659,8 +659,8 @@ void generateFixFlag(){
 					trgt_box->fixNorthLine();
 					Box* find_box = board->box(x,y-1);
 					if(find_box->isTypeAllFixed()){
-						cout << "Conflict!!" << endl;
-						exit(1);
+						cout << "Conflict!! (error: 60)" << endl;
+						exit(60);
 					}
 					else if(find_box->isTypeHalfFixed()){
 						find_box->setTypeAllFixed();
@@ -675,8 +675,8 @@ void generateFixFlag(){
 					trgt_box->fixEastLine();
 					Box* find_box = board->box(x+1,y);
 					if(find_box->isTypeAllFixed()){
-						cout << "Conflict!!" << endl;
-						exit(1);
+						cout << "Conflict!! (error: 61)" << endl;
+						exit(61);
 					}
 					else if(find_box->isTypeHalfFixed()){
 						find_box->setTypeAllFixed();
@@ -691,8 +691,8 @@ void generateFixFlag(){
 					trgt_box->fixSouthLine();
 					Box* find_box = board->box(x,y+1);
 					if(find_box->isTypeAllFixed()){
-						cout << "Conflict!!" << endl;
-						exit(1);
+						cout << "Conflict!! (error: 62)" << endl;
+						exit(62);
 					}
 					else if(find_box->isTypeHalfFixed()){
 						find_box->setTypeAllFixed();
@@ -707,8 +707,8 @@ void generateFixFlag(){
 					trgt_box->fixWestLine();
 					Box* find_box = board->box(x-1,y);
 					if(find_box->isTypeAllFixed()){
-						cout << "Conflict!!" << endl;
-						exit(1);
+						cout << "Conflict!! (error: 63)" << endl;
+						exit(63);
 					}
 					else if(find_box->isTypeHalfFixed()){
 						find_box->setTypeAllFixed();

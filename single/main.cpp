@@ -24,7 +24,7 @@ int main(int argc, char *argv[]){
 	// ファイルの読み込み
 	if(argc != 3){
 		cerr << "Usage: ./solver.exe InputFile Fixed" << endl;
-		exit(1);
+		exit(-1);
 	}
 	initialize(argv[1]); // 問題盤の生成
 	printBoard(); // 問題盤の表示
@@ -110,7 +110,7 @@ int main(int argc, char *argv[]){
 				success = routing(id);
 				if(!success){
 					cerr << "Cannot solve!! (error: 2)" << endl; // 失敗したらプログラム終了
-					exit(1);
+					exit(2);
 				}
 			}
 			
@@ -120,7 +120,7 @@ int main(int argc, char *argv[]){
 				success = routing(id);
 				if(!success){
 					cerr << "Cannot solve!! (error: 3)" << endl; // 失敗したらプログラム終了
-					exit(1);
+					exit(3);
 				}
 				recording(id);
 				break;
@@ -262,7 +262,7 @@ void initialize(char* filename){
 	
 	if(ifs.fail()){
 		cerr << "File do not exist.\n";
-		exit(1);
+		exit(-1);
 	}
 	
 	int size_x, size_y;
