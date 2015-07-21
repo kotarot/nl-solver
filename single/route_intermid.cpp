@@ -419,23 +419,31 @@ bool routingSourceToI(int trgt_line_id){
 		adj_cost[6] = INT_MAX;
 		adj_cost[7] = INT_MAX;
 	}
-	int min_cost = INT_MAX;
 	vector<int> min_direction_array;
-	for(int a=0;a<8;a++){
-		if(adj_cost[a] > 10000) continue;
-		if(adj_cost[a] < min_cost){
-			min_direction_array.clear();
-			min_direction_array.push_back(a);
-			min_cost = adj_cost[a];
+	int min_cost = INT_MAX, threshold_cost = 10000, min_direction_array_size;
+	for (int trying = 0 ; trying < 5; trying++) {
+		for (int a = 0; a < 8; a++) {
+			if (adj_cost[a] > threshold_cost) {
+				continue;
+			}
+			if (adj_cost[a] < min_cost) {
+				min_direction_array.clear();
+				min_direction_array.push_back(a);
+				min_cost = adj_cost[a];
+			} else if (adj_cost[a] == min_cost) {
+				min_direction_array.push_back(a);
+			}
 		}
-		else if(adj_cost[a] == min_cost){
-			min_direction_array.push_back(a);
+		min_direction_array_size = (int)(min_direction_array.size());
+		if (min_direction_array_size != 0) {
+			break;
 		}
+		threshold_cost *= 10;
 	}
-	if((int)(min_direction_array.size())==0){
+	if (min_direction_array_size == 0) {
 		return false;
 	}
-	int adj_count = rand() % (int)(min_direction_array.size());
+	int adj_count = rand() % min_direction_array_size;
 	int adj_id = min_direction_array[adj_count];
 	//cout << min_cost << endl;
 	
@@ -1039,26 +1047,34 @@ bool routingIToSink(int trgt_line_id){
 		adj_cost[6] = INT_MAX;
 		adj_cost[7] = INT_MAX;
 	}
-	int min_cost = INT_MAX;
 	vector<int> min_direction_array;
-	for(int a=0;a<8;a++){
-		if(adj_cost[a] > 10000) continue;
-		if(adj_cost[a] < min_cost){
-			min_direction_array.clear();
-			min_direction_array.push_back(a);
-			min_cost = adj_cost[a];
+	int min_cost = INT_MAX, threshold_cost = 10000, min_direction_array_size;
+	for (int trying = 0; trying < 5; trying++) {
+		for (int a = 0; a < 8; a++) {
+			if (adj_cost[a] > threshold_cost) {
+				continue;
+			}
+			if (adj_cost[a] < min_cost) {
+				min_direction_array.clear();
+				min_direction_array.push_back(a);
+				min_cost = adj_cost[a];
+			} else if(adj_cost[a] == min_cost){
+				min_direction_array.push_back(a);
+			}
 		}
-		else if(adj_cost[a] == min_cost){
-			min_direction_array.push_back(a);
+		min_direction_array_size = (int)(min_direction_array.size());
+		if (min_direction_array_size != 0) {
+			break;
 		}
+		threshold_cost *= 10;
 	}
-	if((int)(min_direction_array.size())==0){
-		for(int i=0;i<(int)(before_track.size());i++){
+	if (min_direction_array_size == 0) {
+		for (int i = 0; i < (int)(before_track.size()); i++) {
 			trgt_track->push_back(before_track[i]);
 		}
 		return false;
 	}
-	int adj_count = rand() % (int)(min_direction_array.size());
+	int adj_count = rand() % min_direction_array_size;
 	int adj_id = min_direction_array[adj_count];
 	//cout << min_cost << endl;
 	
