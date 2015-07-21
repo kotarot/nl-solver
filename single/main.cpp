@@ -193,6 +193,7 @@ int main(int argc, char *argv[]){
 				cout << i;
 			}
 		}
+		if(candidate_count==0) continue; // 候補数0なら利用しない
 		cout << endl;
 		
 		c_d = rand() % candidate_count; // 選択は候補の中で何番目か？
