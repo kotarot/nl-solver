@@ -84,7 +84,7 @@ bool routingSourceToI(int trgt_line_id){
 			IntraBox* find_ibox = my_board[trgt.y+1][trgt.x];
 			// タッチ数
 			int touch_count = countLineNum(trgt.x,trgt.y) - trgt_box->getSouthNum();
-			if(touch_count < 0){ cout << "error!" << endl; exit(1); }
+			if(touch_count < 0){ cout << "error! (error: 20)" << endl; exit(20); }
 			// コスト
 			int cost_se = (find_ibox->ne) + ML + touch_count * penalty_T + turn_count * BT;
 			int cost_ne = (find_ibox->ne) + ML + touch_count * penalty_T + trgt_box->getEastNum() * penalty_C + turn_count * BT;
@@ -143,7 +143,7 @@ bool routingSourceToI(int trgt_line_id){
 			IntraBox* find_ibox = my_board[trgt.y][trgt.x-1];
 			// タッチ数
 			int touch_count = countLineNum(trgt.x,trgt.y) - trgt_box->getWestNum();
-			if(touch_count < 0){ cout << "error!" << endl; exit(1); }
+			if(touch_count < 0){ cout << "error! (error: 21)" << endl; exit(21); }
 			// コスト
 			int cost_nw = (find_ibox->ne) + ML + touch_count * penalty_T + turn_count * BT;
 			int cost_ne = (find_ibox->ne) + ML + touch_count * penalty_T + trgt_box->getNorthNum() * penalty_C + turn_count * BT;
@@ -202,7 +202,7 @@ bool routingSourceToI(int trgt_line_id){
 			IntraBox* find_ibox = my_board[trgt.y-1][trgt.x];
 			// タッチ数
 			int touch_count = countLineNum(trgt.x,trgt.y) - trgt_box->getNorthNum();
-			if(touch_count < 0){ cout << "error!" << endl; exit(1); }
+			if(touch_count < 0){ cout << "error! (error: 22)" << endl; exit(22); }
 			// コスト
 			int cost_ne = (find_ibox->se) + ML + touch_count * penalty_T + turn_count * BT;
 			int cost_se = (find_ibox->se) + ML + touch_count * penalty_T + trgt_box->getEastNum() * penalty_C + turn_count * BT;
@@ -261,7 +261,7 @@ bool routingSourceToI(int trgt_line_id){
 			IntraBox* find_ibox = my_board[trgt.y][trgt.x+1];
 			// タッチ数
 			int touch_count = countLineNum(trgt.x,trgt.y) - trgt_box->getEastNum();
-			if(touch_count < 0){ cout << "error!" << endl; exit(1); }
+			if(touch_count < 0){ cout << "error! (error: 23)" << endl; exit(23); }
 			// コスト
 			int cost_ne = (find_ibox->nw) + ML + touch_count * penalty_T + turn_count * BT;
 			int cost_nw = (find_ibox->nw) + ML + touch_count * penalty_T + trgt_box->getNorthNum() * penalty_C + turn_count * BT;
@@ -704,7 +704,7 @@ bool routingIToSink(int trgt_line_id){
 			IntraBox* find_ibox = my_board[trgt.y+1][trgt.x];
 			// タッチ数
 			int touch_count = countLineNum(trgt.x,trgt.y) - trgt_box->getSouthNum();
-			if(touch_count < 0){ cout << "error!" << endl; exit(1); }
+			if(touch_count < 0){ cout << "error! (error: 24)" << endl; exit(24); }
 			// コスト
 			int cost_se = (find_ibox->ne) + ML + touch_count * penalty_T + turn_count * BT;
 			int cost_ne = (find_ibox->ne) + ML + touch_count * penalty_T + trgt_box->getEastNum() * penalty_C + turn_count * BT;
@@ -763,7 +763,7 @@ bool routingIToSink(int trgt_line_id){
 			IntraBox* find_ibox = my_board[trgt.y][trgt.x-1];
 			// タッチ数
 			int touch_count = countLineNum(trgt.x,trgt.y) - trgt_box->getWestNum();
-			if(touch_count < 0){ cout << "error!" << endl; exit(1); }
+			if(touch_count < 0){ cout << "error! (error: 25)" << endl; exit(25); }
 			// コスト
 			int cost_nw = (find_ibox->ne) + ML + touch_count * penalty_T + turn_count * BT;
 			int cost_ne = (find_ibox->ne) + ML + touch_count * penalty_T + trgt_box->getNorthNum() * penalty_C + turn_count * BT;
@@ -822,7 +822,7 @@ bool routingIToSink(int trgt_line_id){
 			IntraBox* find_ibox = my_board[trgt.y-1][trgt.x];
 			// タッチ数
 			int touch_count = countLineNum(trgt.x,trgt.y) - trgt_box->getNorthNum();
-			if(touch_count < 0){ cout << "error!" << endl; exit(1); }
+			if(touch_count < 0){ cout << "error! (error: 26)" << endl; exit(26); }
 			// コスト
 			int cost_ne = (find_ibox->se) + ML + touch_count * penalty_T + turn_count * BT;
 			int cost_se = (find_ibox->se) + ML + touch_count * penalty_T + trgt_box->getEastNum() * penalty_C + turn_count * BT;
@@ -881,7 +881,7 @@ bool routingIToSink(int trgt_line_id){
 			IntraBox* find_ibox = my_board[trgt.y][trgt.x+1];
 			// タッチ数
 			int touch_count = countLineNum(trgt.x,trgt.y) - trgt_box->getEastNum();
-			if(touch_count < 0){ cout << "error!" << endl; exit(1); }
+			if(touch_count < 0){ cout << "error! (error: 27)" << endl; exit(27); }
 			// コスト
 			int cost_ne = (find_ibox->nw) + ML + touch_count * penalty_T + turn_count * BT;
 			int cost_nw = (find_ibox->nw) + ML + touch_count * penalty_T + trgt_box->getNorthNum() * penalty_C + turn_count * BT;
