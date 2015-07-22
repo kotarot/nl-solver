@@ -16,18 +16,17 @@ import chainer.functions as F
 
 # [3.1] 準備
 # Prepare dataset
-
-# board は 上下左右に番兵を1行
-# 各セルは data, type, dir 属性をもつ
-# * data は Ansファイル内に書いてある数字そのもの
-# * type は 0: blank, 1: 数字 (ターミナル), 2: 線  -- セル外と接続してる線数と等価
-# * dir  は 上下左右の配列 接続方向が True
-board = []
-board_x, board_y = -1, -1
-
 # Answerファイルを読み込む
 def read_ansfile(filename):
-    iboard = []
+    # board は 上下左右に番兵を1行
+    # 各セルは data, type, dir 属性をもつ
+    # * data は Ansファイル内に書いてある数字そのもの
+    # * type は 0: blank, 1: 数字 (ターミナル), 2: 線  -- セル外と接続してる線数と等価
+    # * dir  は 上下左右の配列 接続方向が True
+    board = []
+    board_x, board_y = -1, -1
+
+    _board = []
     for line in open(filename, 'r'):
         # 1行目
         if 'SIZE'in line:
@@ -37,12 +36,12 @@ def read_ansfile(filename):
         # 1行目以外
         else:
             line_x = [{'data': -1}] + [{'data': int(token)} for token in line.split(',')] + [{'data': -1}]
-            iboard.append(line_x)
-    board = [[{'data': -1} for i in range(0, board_x + 2)]] + iboard + [[{'data': -1} for i in range(0, board_x + 2)]]
+            _board.append(line_x)
+    board = [[{'data': -1} for i in range(0, board_x + 2)]] + _board + [[{'data': -1} for i in range(0, board_x + 2)]]
 
     # 属性を記録する
-    for y in range(1, board_x + 1):
-        for x in range(1, board_y + 1):
+    for y in range(1, board_y + 1):
+        for x in range(1, board_x + 1):
             if board[y][x]['data'] != -1:
                 # type and dir
                 connect_num = 0
@@ -55,9 +54,34 @@ def read_ansfile(filename):
                 board[y][x]['type'] = connect_num
                 board[y][x]['dir'] = connect_dir
 
-    #print board_x
-    #print board_y
-    #print board
+    return board_x, board_y, board
+
+# データセットを生成
+# 入力はターミナル数字が存在するセルを 1、存在しないセルを 0、ボード外を -1 とした 9次元のベクトル
+# 出力は接続方向を表す 4次元のベクトルとしてみる
+def gen_dataset():
+    x_data, data_t = [], []
+    for y in range(0, board_y):
+        for x in range(0, board_x):
+            dx, dt = [], []
+            # 入力: window
+            for wy in range(0, 3):
+                for wx in range(0, 3):
+                    if board[y + wy][x + wx]['data'] == -1:
+                        dx.append(-1)
+                    elif board[y + wy][x + wx]['type'] == 1:
+                        dx.append(1)
+                    else:
+                        dx.append(0)
+            x_data.append(dx)
+            # 出力: direction
+            for d in board[y + 1][x + 1]['dir']:
+                if d == True:
+                    dt.append(1)
+                else:
+                    dt.append(0)
+            data_t.append(dt)
+    return np.array(x_data, dtype=np.float32), np.array(data_t, dtype=np.int32)
 
 
 # [3.2] モデルの定義
@@ -87,9 +111,9 @@ optimizer = optimizers.Adam()
 optimizer.setup(model.collect_parameters())
 
 
-read_ansfile('T99_A01.txt')
-
 # Learning loop
+board_x, board_y, board = read_ansfile('T99_A01.txt')
+x_data, data_t = gen_dataset()
 #for epoch in xrange(1, 1000):
 #    print 'epoch', epoch
 
