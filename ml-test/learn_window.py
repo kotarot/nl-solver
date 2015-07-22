@@ -71,13 +71,13 @@ def read_ansfile(filename):
 
     # TODO: 経路の方向の違いによる diri の更新
 
-    print board
+    #print board
     return board_x, board_y, board
 
 # データセットを生成 (配線形状の分類)
 # 入力はターミナル数字が存在するセルを 1、存在しないセルを 0、ボード外を -1 とした 9次元のベクトル
 # 出力は配線形状を表す分類スカラー数字
-def gen_dataset_shape():
+def gen_dataset_shape(board_x, board_y, board):
     x_data, y_data = [], []
     for y in range(0, board_y):
         for x in range(0, board_x):
@@ -126,12 +126,12 @@ optimizer.setup(model.collect_parameters())
 
 # Learning loop
 board_x, board_y, board = read_ansfile('T99_A01.txt')
-x_training, y_training = gen_dataset_shape() # 配線形状の分類
-#x_training, y_training = gen_dataset_dirsrc() # 配線接続位置の分類 (ソースから)
-#x_training, y_training = gen_dataset_dirsnk() # 配線接続位置の分類 (シンクから)
+x_train, y_train = gen_dataset_shape(board_x, board_y, board) # 配線形状の分類
+#x_train, y_train = gen_dataset_dirsrc(board_x, board_y, board) # 配線接続位置の分類 (ソースから)
+#x_train, y_train = gen_dataset_dirsnk(board_x, board_y, board) # 配線接続位置の分類 (シンクから)
 
-print x_training
-print y_training
+#print x_train
+#print y_train
 
 for epoch in xrange(1, 1000):
     print 'epoch', epoch
@@ -144,7 +144,7 @@ for epoch in xrange(1, 1000):
     optimizer.zero_grads()
 
     # 順伝播させて誤差と精度を算出
-    loss, accuracy = forward(x_training, y_training)
+    loss, accuracy = forward(x_train, y_train)
 
     # 誤差逆伝播で勾配を計算
     loss.backward()
