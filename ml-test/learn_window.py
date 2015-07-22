@@ -94,7 +94,9 @@ def gen_dataset_shape(board_x, board_y, board):
             x_data.append(dx)
             # 出力: direction
             y_data.append(board[y + 1][x + 1]['shape'])
-    return np.array(x_data, dtype=np.float32), np.array(y_data, dtype=np.int32)
+
+    #return np.array(x_data, dtype=np.float32), np.array(y_data, dtype=np.int32)
+    return x_data, y_data
 
 
 # [3.2] モデルの定義
@@ -125,11 +127,24 @@ optimizer.setup(model.collect_parameters())
 
 
 # Learning loop
-board_x, board_y, board = read_ansfile('T99_A01.txt')
-x_train, y_train = gen_dataset_shape(board_x, board_y, board) # 配線形状の分類
-#x_train, y_train = gen_dataset_dirsrc(board_x, board_y, board) # 配線接続位置の分類 (ソースから)
-#x_train, y_train = gen_dataset_dirsnk(board_x, board_y, board) # 配線接続位置の分類 (シンクから)
+_x_train, _y_train = [], []
 
+# 複数ファイルを読み込む
+training_files = ['T99_A01.txt', 'T99_A02.txt', 'T99_A03.txt', 'T99_A04.txt', 'T99_A06.txt',
+                  'T99_A07.txt', 'T99_A08.txt', 'T99_A09.txt', 'T99_A13.txt']
+
+for file in training_files:
+    board_x, board_y, board = read_ansfile(file)
+
+    x_data, y_data = gen_dataset_shape(board_x, board_y, board) # 配線形状の分類
+    #x_data, y_data = gen_dataset_dirsrc(board_x, board_y, board) # 配線接続位置の分類 (ソースから)
+    #x_data, y_data = gen_dataset_dirsnk(board_x, board_y, board) # 配線接続位置の分類 (シンクから)
+
+    _x_train = _x_train + x_data
+    _y_train = _y_train + y_data
+
+x_train = np.array(_x_train, dtype=np.float32)
+y_train = np.array(_y_train, dtype=np.int32)
 #print x_train
 #print y_train
 
