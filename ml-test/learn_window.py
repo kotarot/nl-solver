@@ -128,14 +128,16 @@ optimizer.setup(model.collect_parameters())
 
 # Learning loop
 _x_train, _y_train = [], []
+_x_test,  _y_test  = [], []
 
 # 複数ファイルを読み込む
-training_files = ['T99_A01.txt', 'T99_A02.txt', 'T99_A03.txt', 'T99_A04.txt', 'T99_A06.txt',
-                  'T99_A07.txt', 'T99_A08.txt', 'T99_A09.txt', 'T99_A13.txt']
+train_files = ['T99_A01.txt', 'T99_A02.txt', 'T99_A03.txt', 'T99_A04.txt', 'T99_A06.txt',
+               'T99_A07.txt', 'T99_A08.txt', 'T99_A09.txt', 'T99_A13.txt']
+test_files  = ['T99_A15.txt']
 
-for file in training_files:
-    print 'Reading {} ...'.format(file)
-    board_x, board_y, board = read_ansfile(file)
+for train_file in train_files:
+    print 'Reading training file: {} ...'.format(train_file)
+    board_x, board_y, board = read_ansfile(train_file)
 
     x_data, y_data = gen_dataset_shape(board_x, board_y, board) # 配線形状の分類
     #x_data, y_data = gen_dataset_dirsrc(board_x, board_y, board) # 配線接続位置の分類 (ソースから)
@@ -144,10 +146,22 @@ for file in training_files:
     _x_train = _x_train + x_data
     _y_train = _y_train + y_data
 
+for test_file in test_files:
+    print 'Reading testing file: {} ...'.format(test_file)
+    board_x, board_y, board = read_ansfile(test_file)
+
+    x_data, y_data = gen_dataset_shape(board_x, board_y, board) # 配線形状の分類
+    #x_data, y_data = gen_dataset_dirsrc(board_x, board_y, board) # 配線接続位置の分類 (ソースから)
+    #x_data, y_data = gen_dataset_dirsnk(board_x, board_y, board) # 配線接続位置の分類 (シンクから)
+
+    _x_test = _x_test + x_data
+    _y_test = _y_test + y_data
+
 x_train = np.array(_x_train, dtype=np.float32)
 y_train = np.array(_y_train, dtype=np.int32)
-#print x_train
-#print y_train
+
+x_test = np.array(_x_test, dtype=np.float32)
+y_test = np.array(_y_test, dtype=np.int32)
 
 for epoch in xrange(1, 10000 + 1):
     # Training
@@ -158,13 +172,17 @@ for epoch in xrange(1, 10000 + 1):
     optimizer.zero_grads()
 
     # 順伝播させて誤差と精度を算出
-    loss, accuracy = forward(x_train, y_train)
+    loss_train, accuracy_train = forward(x_train, y_train)
 
     # 誤差逆伝播で勾配を計算
-    loss.backward()
+    loss_train.backward()
     optimizer.update()
 
-    # 訓練データの誤差と、正解精度を表示
+    # Evaluation
+    loss_test, accuracy_test = forward(x_test, y_test, train=False)
+
+    # 訓練データ/テストデータの誤差と、正解精度を表示
     if epoch % 100 == 0:
         print 'epoch', epoch
-        print 'Training: mean loss={}, accuracy={}'.format(loss.data, accuracy.data)
+        print 'Train: mean loss={}, accuracy={}'.format(loss_train.data, accuracy_train.data)
+        print 'Test:  mean loss={}, accuracy={}'.format(loss_test.data,  accuracy_test.data)
