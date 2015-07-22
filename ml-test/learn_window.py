@@ -9,14 +9,21 @@
 * Python - 【機械学習】ディープラーニング フレームワークChainerを試しながら解説してみる。 - Qiita http://qiita.com/kenmatsu4/items/7b8d24d4c5144a686412
 """
 
+import argparse
+
 import numpy as np
 from chainer import cuda, Function, FunctionSet, gradient_check, Variable, optimizers
 import chainer.functions as F
 
 
-#### CONFIG ####
-n_epoch = 10000
-n_dims  = 5 # N x N の N の数字 (奇数)
+#### CONFIGURATION ####
+parser = argparse.ArgumentParser(description='Machine learning test: WINDOW')
+parser.add_argument('--dim', '-d', default=3, type=int, help='Window dimension')
+parser.add_argument('--epoch', '-e', default=100000, type=int, help='Number of epoches')
+args = parser.parse_args()
+
+n_dims  = args.dim
+n_epoch = args.epoch
 
 
 # [3.1] 準備
