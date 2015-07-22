@@ -23,7 +23,7 @@ n_dims  = 5 # N x N の N の数字 (奇数)
 # Prepare dataset
 # Answerファイルを読み込む
 def read_ansfile(filename):
-    # board は 上下左右に番兵を1行
+    # board は 上下左右に番兵を (N / 2) 行
     # 各セルは data, type, dir 属性をもつ
     # * data は Ansファイル内に書いてある数字そのもの
     # * type は 0: blank, 1: 数字 (ターミナル), 2: 線  -- セル外と接続してる線数と等価
@@ -45,13 +45,15 @@ def read_ansfile(filename):
             board_x, board_y = int(size[0]), int(size[1])
         # 1行目以外
         else:
-            line_x = [{'data': -1}] + [{'data': int(token)} for token in line.split(',')] + [{'data': -1}]
+            line_x = [{'data': -1} for i in range(0, n_dims / 2)] + [{'data': int(token)} for token in line.split(',')] + [{'data': -1} for i in range(0, n_dims / 2)]
             _board.append(line_x)
-    board = [[{'data': -1} for i in range(0, board_x + 2)]] + _board + [[{'data': -1} for i in range(0, board_x + 2)]]
+    board = [[{'data': -1} for i in range(0, board_x + n_dims - 1)] for j in range(0, n_dims / 2)] \
+          + _board \
+          + [[{'data': -1} for i in range(0, board_x + n_dims - 1)] for j in range(0, n_dims / 2)]
 
     # 属性を記録する
-    for y in range(1, board_y + 1):
-        for x in range(1, board_x + 1):
+    for y in range(n_dims / 2, board_y + n_dims / 2):
+        for x in range(n_dims / 2, board_x + n_dims / 2):
             if board[y][x]['data'] != -1:
                 # ラインナンバの最大値を更新
                 if maxn_line < board[y][x]['data']:
@@ -80,16 +82,16 @@ def read_ansfile(filename):
     return board_x, board_y, board
 
 # データセットを生成 (配線形状の分類)
-# 入力はターミナル数字が存在するセルを 1、存在しないセルを 0、ボード外を -1 とした 9次元のベクトル
+# 入力はターミナル数字が存在するセルを 1、存在しないセルを 0、ボード外を -1 とした N^2次元のベクトル
 # 出力は配線形状を表す分類スカラー数字
 def gen_dataset_shape(board_x, board_y, board):
     x_data, y_data = [], []
-    for y in range(0, board_y):
-        for x in range(0, board_x):
+    for y in range(n_dims / 2, board_y + n_dims / 2):
+        for x in range(n_dims / 2, board_x + n_dims / 2):
             dx = []
             # 入力: window
-            for wy in range(0, 3):
-                for wx in range(0, 3):
+            for wy in range(-(n_dims / 2), n_dims / 2 + 1):
+                for wx in range(-(n_dims / 2), n_dims / 2 + 1):
                     if board[y + wy][x + wx]['data'] == -1:
                         dx.append(-1)
                     elif board[y + wy][x + wx]['type'] == 1:
@@ -98,7 +100,7 @@ def gen_dataset_shape(board_x, board_y, board):
                         dx.append(0)
             x_data.append(dx)
             # 出力: direction
-            y_data.append(board[y + 1][x + 1]['shape'])
+            y_data.append(board[y][x]['shape'])
 
     #return np.array(x_data, dtype=np.float32), np.array(y_data, dtype=np.int32)
     return x_data, y_data
@@ -107,9 +109,9 @@ def gen_dataset_shape(board_x, board_y, board):
 # [3.2] モデルの定義
 # Prepare multi-layer perceptron model
 # 多層パーセプトロン (中間層 100次元)
-# 入力: 3x3 = 9次元
+# 入力: N x N = N^2次元
 # 出力: 11次元
-model = FunctionSet(l1=F.Linear(9, 100),
+model = FunctionSet(l1=F.Linear(n_dims**2, 100),
                     l2=F.Linear(100, 100),
                     l3=F.Linear(100, 11))
 
