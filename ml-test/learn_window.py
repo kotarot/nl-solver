@@ -134,6 +134,7 @@ training_files = ['T99_A01.txt', 'T99_A02.txt', 'T99_A03.txt', 'T99_A04.txt', 'T
                   'T99_A07.txt', 'T99_A08.txt', 'T99_A09.txt', 'T99_A13.txt']
 
 for file in training_files:
+    print 'Reading {} ...'.format(file)
     board_x, board_y, board = read_ansfile(file)
 
     x_data, y_data = gen_dataset_shape(board_x, board_y, board) # 配線形状の分類
@@ -148,9 +149,7 @@ y_train = np.array(_y_train, dtype=np.int32)
 #print x_train
 #print y_train
 
-for epoch in xrange(1, 1000):
-    print 'epoch', epoch
-
+for epoch in xrange(1, 10000 + 1):
     # Training
     # バッチサイズごとに学習する方法もある
     # http://qiita.com/kenmatsu4/items/7b8d24d4c5144a686412
@@ -166,4 +165,6 @@ for epoch in xrange(1, 1000):
     optimizer.update()
 
     # 訓練データの誤差と、正解精度を表示
-    print 'Training: mean loss={}, accuracy={}'.format(loss.data, accuracy.data)
+    if epoch % 100 == 0:
+        print 'epoch', epoch
+        print 'Training: mean loss={}, accuracy={}'.format(loss.data, accuracy.data)
