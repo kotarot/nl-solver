@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-周囲 3x3 = 9 マスを切り出して (window)
+周囲 N x N = N^2 マスを切り出して (window)
 学習してみるテスト
 
 参考文献:
@@ -12,6 +12,11 @@
 import numpy as np
 from chainer import cuda, Function, FunctionSet, gradient_check, Variable, optimizers
 import chainer.functions as F
+
+
+#### CONFIG ####
+n_epoch = 10000
+n_dims  = 5 # N x N の N の数字 (奇数)
 
 
 # [3.1] 準備
@@ -163,7 +168,7 @@ y_train = np.array(_y_train, dtype=np.int32)
 x_test = np.array(_x_test, dtype=np.float32)
 y_test = np.array(_y_test, dtype=np.int32)
 
-for epoch in xrange(1, 10000 + 1):
+for epoch in xrange(1, n_epoch + 1):
     # Training
     # バッチサイズごとに学習する方法もある
     # http://qiita.com/kenmatsu4/items/7b8d24d4c5144a686412
