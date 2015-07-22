@@ -22,9 +22,14 @@ def read_ansfile(filename):
     # 各セルは data, type, dir 属性をもつ
     # * data は Ansファイル内に書いてある数字そのもの
     # * type は 0: blank, 1: 数字 (ターミナル), 2: 線  -- セル外と接続してる線数と等価
-    # * dir  は 上下左右の配列 接続方向が True
+    # * shape は 配線の形 0:none 1:上 2:下 4:左 8:右 3:│ 12:─ 9:└ 10:┌ 6:┐ 5:┘ -- 上下左右をビットと考える
+    #     --> 7が空いてるので12を7にして 0~10 にマッピング
+    # * dirb は 上下左右の配列 接続する場合 True、そうでない場合 False
+    # * diri は 上下左右の配列 接続方向が 1 または -1 -- 1 は ソースからシンクへの経路、-1 は逆の経路
+    #     ソースとシンクの定義: より左上にある方がソース
     board = []
-    board_x, board_y = -1, -1
+    board_x, board_y = -1, -1 # ボードの X と Y
+    maxn_line = -1            # 線番号 (ラインナンバ) の最大値
 
     _board = []
     for line in open(filename, 'r'):
@@ -43,27 +48,40 @@ def read_ansfile(filename):
     for y in range(1, board_y + 1):
         for x in range(1, board_x + 1):
             if board[y][x]['data'] != -1:
-                # type and dir
-                connect_num = 0
-                connect_dir = [False, False, False, False] # 上下左右
+                # ラインナンバの最大値を更新
+                if maxn_line < board[y][x]['data']:
+                    maxn_line = board[y][x]['data']
+
+                # type, shape, and dirb
+                n_connect, s_connect = 0, 0
+                d_connect = [False, False, False, False] # 上下左右
                 connects = [[x, y - 1], [x, y + 1], [x - 1, y], [x + 1, y]] # 上下左右
                 for i, c in enumerate(connects):
                     if board[y][x]['data'] == board[c[1]][c[0]]['data']:
-                        connect_num = connect_num + 1
-                        connect_dir[i] = True
-                board[y][x]['type'] = connect_num
-                board[y][x]['dir'] = connect_dir
+                        n_connect = n_connect + 1
+                        s_connect = s_connect + 2**i
+                        d_connect[i] = True
+                board[y][x]['type']  = n_connect
+                #board[y][x]['shape'] = s_connect
+                board[y][x]['dirb']  = d_connect
+                if s_connect == 12:
+                    board[y][x]['shape'] = 7
+                else:
+                    board[y][x]['shape'] = s_connect
 
+    # TODO: 経路の方向の違いによる diri の更新
+
+    print board
     return board_x, board_y, board
 
-# データセットを生成
+# データセットを生成 (配線形状の分類)
 # 入力はターミナル数字が存在するセルを 1、存在しないセルを 0、ボード外を -1 とした 9次元のベクトル
-# 出力は接続方向を表す 4次元のベクトルとしてみる
-def gen_dataset():
-    x_data, data_t = [], []
+# 出力は配線形状を表す分類スカラー数字
+def gen_dataset_shape():
+    x_data, y_data = [], []
     for y in range(0, board_y):
         for x in range(0, board_x):
-            dx, dt = [], []
+            dx = []
             # 入力: window
             for wy in range(0, 3):
                 for wx in range(0, 3):
@@ -75,23 +93,18 @@ def gen_dataset():
                         dx.append(0)
             x_data.append(dx)
             # 出力: direction
-            for d in board[y + 1][x + 1]['dir']:
-                if d == True:
-                    dt.append(1)
-                else:
-                    dt.append(0)
-            data_t.append(dt)
-    return np.array(x_data, dtype=np.float32), np.array(data_t, dtype=np.int32)
+            y_data.append(board[y + 1][x + 1]['shape'])
+    return np.array(x_data, dtype=np.float32), np.array(y_data, dtype=np.int32)
 
 
 # [3.2] モデルの定義
 # Prepare multi-layer perceptron model
 # 多層パーセプトロン (中間層 100次元)
 # 入力: 3x3 = 9次元
-# 出力: 4次元
+# 出力: 11次元
 model = FunctionSet(l1=F.Linear(9, 100),
                     l2=F.Linear(100, 100),
-                    l3=F.Linear(100, 4))
+                    l3=F.Linear(100, 11))
 
 # Neural net architecture
 # ニューラルネットの構造
@@ -113,9 +126,29 @@ optimizer.setup(model.collect_parameters())
 
 # Learning loop
 board_x, board_y, board = read_ansfile('T99_A01.txt')
-x_data, data_t = gen_dataset()
-#for epoch in xrange(1, 1000):
-#    print 'epoch', epoch
+x_training, y_training = gen_dataset_shape() # 配線形状の分類
+#x_training, y_training = gen_dataset_dirsrc() # 配線接続位置の分類 (ソースから)
+#x_training, y_training = gen_dataset_dirsnk() # 配線接続位置の分類 (シンクから)
+
+print x_training
+print y_training
+
+for epoch in xrange(1, 1000):
+    print 'epoch', epoch
 
     # Training
-    
+    # バッチサイズごとに学習する方法もある
+    # http://qiita.com/kenmatsu4/items/7b8d24d4c5144a686412
+
+    # 勾配を初期化
+    optimizer.zero_grads()
+
+    # 順伝播させて誤差と精度を算出
+    loss, accuracy = forward(x_training, y_training)
+
+    # 誤差逆伝播で勾配を計算
+    loss.backward()
+    optimizer.update()
+
+    # 訓練データの誤差と、正解精度を表示
+    print 'Training: mean loss={}, accuracy={}'.format(loss.data, accuracy.data)
