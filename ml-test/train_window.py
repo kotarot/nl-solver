@@ -185,11 +185,17 @@ for epoch in xrange(1, n_epoch + 1):
     # バッチサイズごとに学習する方法もある
     # http://qiita.com/kenmatsu4/items/7b8d24d4c5144a686412
 
+    # 順番をランダムに並び替える
+    n_train = len(y_train)
+    perm = np.random.permutation(n_train)
+    x_batch = x_train[perm[0:n_train]]
+    y_batch = y_train[perm[0:n_train]]
+
     # 勾配を初期化
     optimizer.zero_grads()
 
     # 順伝播させて誤差と精度を算出
-    loss_train, accuracy_train = forward(x_train, y_train)
+    loss_train, accuracy_train = forward(x_batch, y_batch)
 
     # 誤差逆伝播で勾配を計算
     loss_train.backward()
