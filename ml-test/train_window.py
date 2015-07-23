@@ -20,10 +20,12 @@ import chainer.functions as F
 parser = argparse.ArgumentParser(description='Machine learning test: WINDOW')
 parser.add_argument('--dim', '-d', default=3, type=int, help='Window dimension')
 parser.add_argument('--epoch', '-e', default=100000, type=int, help='Number of epoches')
+parser.add_argument('--unit', '-u', default=100, type=int, help='Number of units in hidden layer')
 args = parser.parse_args()
 
 n_dims  = args.dim
 n_epoch = args.epoch
+n_units = args.unit
 
 
 # [3.1] 準備
@@ -115,12 +117,12 @@ def gen_dataset_shape(board_x, board_y, board):
 
 # [3.2] モデルの定義
 # Prepare multi-layer perceptron model
-# 多層パーセプトロン (中間層 100次元)
+# 多層パーセプトロン (中間層 n_units 次元)
 # 入力: N x N = N^2次元
 # 出力: 11次元
-model = FunctionSet(l1=F.Linear(n_dims**2, 100),
-                    l2=F.Linear(100, 100),
-                    l3=F.Linear(100, 11))
+model = FunctionSet(l1=F.Linear(n_dims**2, n_units),
+                    l2=F.Linear(n_units, n_units),
+                    l3=F.Linear(n_units, 11))
 
 # Neural net architecture
 # ニューラルネットの構造
