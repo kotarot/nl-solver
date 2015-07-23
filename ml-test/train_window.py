@@ -146,7 +146,10 @@ _x_test,  _y_test  = [], []
 
 # 複数ファイルを読み込む
 train_files = ['T99_A01.txt', 'T99_A02.txt', 'T99_A03.txt', 'T99_A04.txt', 'T99_A06.txt',
-               'T99_A07.txt', 'T99_A08.txt', 'T99_A09.txt', 'T99_A13.txt']
+               'T99_A07.txt', 'T99_A08.txt', 'T99_A09.txt', 'T99_A13.txt',
+               'a01.txt', 'a02.txt', 'a03.txt', 'a04.txt', 'a05.txt',
+               'a06.txt', 'a07.txt', 'a08.txt', 'a09.txt', 'a10.txt',
+               'a11.txt', 'a12.txt', 'a13.txt', 'a14.txt', 'a15.txt']
 test_files  = ['T99_A15.txt']
 
 for train_file in train_files:
