@@ -15,5 +15,8 @@
 *.out
 solver
 
+# Log files
+*.log
+
 # Problem generator
 create_q/
