@@ -140,8 +140,8 @@ model = FunctionSet(l1=F.Linear(n_dims**2 - 1, n_units),
 # ニューラルネットの構造
 def forward(x_data, y_data, train=True):
     x, t = Variable(x_data), Variable(y_data)
-    h1 = F.dropout(F.relu(model.l1(x)),  train=train)
-    h2 = F.dropout(F.relu(model.l2(h1)), train=train)
+    h1 = F.dropout(F.sigmoid(model.l1(x)),  train=train)
+    h2 = F.dropout(F.sigmoid(model.l2(h1)), train=train)
     y  = model.l3(h2)
     # 多クラス分類なので誤差関数としてソフトマックス関数の
     # 交差エントロピー関数を用いて、誤差を導出
