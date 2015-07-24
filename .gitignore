@@ -15,6 +15,9 @@
 *.out
 solver
 
+# Python files
+*.pyc
+
 # Log files
 *.log
 
