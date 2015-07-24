@@ -24,11 +24,13 @@ parser = argparse.ArgumentParser(description='Machine learning test: WINDOW')
 parser.add_argument('--dim', '-d', default=3, type=int, help='Window dimension')
 parser.add_argument('--epoch', '-e', default=100000, type=int, help='Number of epoches')
 parser.add_argument('--unit', '-u', default=100, type=int, help='Number of units in hidden layer')
+parser.add_argument('--show-correction', '-sc', default=False, action='store_true', help='Set on to print incorrect lines in red (default: False)')
 args = parser.parse_args()
 
-n_dims  = args.dim
-n_epoch = args.epoch
-n_units = args.unit
+n_dims            = args.dim
+n_epoch           = args.epoch
+n_units           = args.unit
+f_show_correction = args.show_correction
 
 
 # [3.1] 準備
@@ -231,7 +233,7 @@ for epoch in xrange(1, n_epoch + 1):
                 else:
                     ex_shape = np.argmax(result.data[idx])
                     # 正しい配線形状
-                    if board[y][x]['shape'] == ex_shape:
+                    if (not f_show_correction) or board[y][x]['shape'] == ex_shape:
                         sys.stdout.write('\033[1;30;47m' + str[ex_shape] + '\033[0m')
                     # 間違ってる配線形状
                     else:
