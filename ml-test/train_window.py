@@ -161,6 +161,7 @@ _x_test,  _y_test  = [], []
 # 複数ファイルを読み込む
 train_files = glob.glob('./data-train/*.txt')
 test_files  = glob.glob('./data-test/*.txt')
+assert(len(test_files) == 1)
 
 for train_file in train_files:
     print 'Reading training file: {} ...'.format(train_file)
