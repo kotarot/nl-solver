@@ -11,6 +11,7 @@
 
 import argparse
 import sys
+import utils
 
 import numpy as np
 from chainer import cuda, Function, FunctionSet, gradient_check, Variable, optimizers
@@ -37,14 +38,13 @@ def read_ansfile(filename):
     # 各セルは data, type, dir 属性をもつ
     # * data は Ansファイル内に書いてある数字そのもの
     # * type は 0: blank, 1: 数字 (ターミナル), 2: 線  -- セル外と接続してる線数と等価
-    # * shape は 配線の形 0:none 1:上 2:下 4:左 8:右 3:│ 12:─ 9:└ 10:┌ 6:┐ 5:┘ -- 上下左右をビットと考える
-    #     --> 7が空いてるので12を7にして 0~10 にマッピング
+    # * shape は 配線の形 0:none 1:│ 2:┘ 3:└ 4:┐ 5:┌ 6:─
     # * dirb は 上下左右の配列 接続する場合 True、そうでない場合 False
     # * diri は 上下左右の配列 接続方向が 1 または -1 -- 1 は ソースからシンクへの経路、-1 は逆の経路
     #     ソースとシンクの定義: より左上にある方がソース
     board = []
     board_x, board_y = -1, -1 # ボードの X と Y
-    maxn_line = -1            # 線番号 (ラインナンバ) の最大値
+    #maxn_line = -1            # 線番号 (ラインナンバ) の最大値
 
     _board = []
     for line in open(filename, 'r'):
@@ -66,8 +66,8 @@ def read_ansfile(filename):
         for x in range(n_dims / 2, board_x + n_dims / 2):
             if board[y][x]['data'] != -1:
                 # ラインナンバの最大値を更新
-                if maxn_line < board[y][x]['data']:
-                    maxn_line = board[y][x]['data']
+                #if maxn_line < board[y][x]['data']:
+                #    maxn_line = board[y][x]['data']
 
                 # type, shape, and dirb
                 n_connect, s_connect = 0, 0
@@ -76,15 +76,24 @@ def read_ansfile(filename):
                 for i, c in enumerate(connects):
                     if board[y][x]['data'] == board[c[1]][c[0]]['data']:
                         n_connect = n_connect + 1
-                        s_connect = s_connect + 2**i
                         d_connect[i] = True
                 board[y][x]['type']  = n_connect
-                #board[y][x]['shape'] = s_connect
                 board[y][x]['dirb']  = d_connect
-                if s_connect == 12:
-                    board[y][x]['shape'] = 7
-                else:
-                    board[y][x]['shape'] = s_connect
+                if n_connect != 1:
+                    if d_connect[0] == True and d_connect[1] == True:
+                        board[y][x]['shape'] = 1
+                    elif d_connect[0] == True and d_connect[2] == True:
+                        board[y][x]['shape'] = 2
+                    elif d_connect[0] == True and d_connect[3] == True:
+                        board[y][x]['shape'] = 3
+                    elif d_connect[1] == True and d_connect[2] == True:
+                        board[y][x]['shape'] = 4
+                    elif d_connect[1] == True and d_connect[3] == True:
+                        board[y][x]['shape'] = 5
+                    elif d_connect[2] == True and d_connect[3] == True:
+                        board[y][x]['shape'] = 6
+                    else:
+                        board[y][x]['shape'] = 0
 
     # TODO: 経路の方向の違いによる diri の更新
 
@@ -92,38 +101,39 @@ def read_ansfile(filename):
     return board_x, board_y, board
 
 # データセットを生成 (配線形状の分類)
-# 入力はターミナル数字が存在するセルを 1、存在しないセルを 0、ボード外を -1 とした N^2次元のベクトル
+# 入力はターミナル数字が存在するセルを 1、存在しないセルを 0、ボード外を -1 とした (N^2 - 1) 次元のベクトル
 # 出力は配線形状を表す分類スカラー数字
 def gen_dataset_shape(board_x, board_y, board):
     x_data, y_data = [], []
     for y in range(n_dims / 2, board_y + n_dims / 2):
         for x in range(n_dims / 2, board_x + n_dims / 2):
-            dx = []
-            # 入力: window
-            for wy in range(-(n_dims / 2), n_dims / 2 + 1):
-                for wx in range(-(n_dims / 2), n_dims / 2 + 1):
-                    if board[y + wy][x + wx]['data'] == -1:
-                        dx.append(-1)
-                    elif board[y + wy][x + wx]['type'] == 1:
-                        dx.append(1)
-                    else:
-                        dx.append(0)
-            x_data.append(dx)
-            # 出力: direction
-            y_data.append(board[y][x]['shape'])
+            if board[y][x]['type'] != 1:
+                dx = []
+                # 入力: window
+                for wy in range(-(n_dims / 2), n_dims / 2 + 1):
+                    for wx in range(-(n_dims / 2), n_dims / 2 + 1):
+                        if not (wx == 0 and wy == 0):
+                            if board[y + wy][x + wx]['data'] == -1:
+                                dx.append(-1)
+                            elif board[y + wy][x + wx]['type'] == 1:
+                                dx.append(1)
+                            else:
+                                dx.append(0)
+                x_data.append(dx)
+                # 出力: direction
+                y_data.append(board[y][x]['shape'])
 
-    #return np.array(x_data, dtype=np.float32), np.array(y_data, dtype=np.int32)
     return x_data, y_data
 
 
 # [3.2] モデルの定義
 # Prepare multi-layer perceptron model
 # 多層パーセプトロン (中間層 n_units 次元)
-# 入力: N x N = N^2次元
-# 出力: 11次元
-model = FunctionSet(l1=F.Linear(n_dims**2, n_units),
+# 入力: N x N - 1 = N^2 - 1 次元
+# 出力: 7次元
+model = FunctionSet(l1=F.Linear(n_dims**2 - 1, n_units),
                     l2=F.Linear(n_units, n_units),
-                    l3=F.Linear(n_units, 11))
+                    l3=F.Linear(n_units, 7))
 
 # Neural net architecture
 # ニューラルネットの構造
@@ -214,11 +224,13 @@ for epoch in xrange(1, n_epoch + 1):
         print 'Test:  mean loss={}, accuracy={}'.format(loss_test.data,  accuracy_test.data)
 
         # テストデータの配線を表示
-        str = [' ', '+', '+', '│', '+', '┘', '┐', '─', '+', '└', '┌']
-        for i, d in enumerate(result.data):
-            # r行c列
-            #r = i / board_x
-            c = i % board_x
-            sys.stdout.write(str[np.argmax(d)])
-            if c == board_x - 1:
-                print ''
+        idx = 0
+        str = ['   ', ' │ ', '─┘ ', ' └─', '─┐ ', ' ┌─', '───']
+        for y in range(n_dims / 2, board_y + n_dims / 2):
+            for x in range(n_dims / 2, board_x + n_dims / 2):
+                if board[y][x]['type'] == 1:
+                    sys.stdout.write(' ' + utils.int2str(board[y][x]['data'], 36) + ' ')
+                else:
+                    sys.stdout.write(str[np.argmax(result.data[idx])])
+                    idx = idx + 1
+            print ''
