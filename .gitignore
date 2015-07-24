@@ -17,6 +17,7 @@ solver
 
 # Python files
 *.pyc
+*.plk
 
 # Log files
 *.log

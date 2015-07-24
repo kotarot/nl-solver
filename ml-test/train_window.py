@@ -11,6 +11,7 @@
 
 import argparse
 import glob
+import pickle
 import sys
 import utils
 
@@ -24,14 +25,15 @@ parser = argparse.ArgumentParser(description='Machine learning test: WINDOW')
 parser.add_argument('--dim', '-d', default=3, type=int, help='Window dimension')
 parser.add_argument('--epoch', '-e', default=100000, type=int, help='Number of epoches')
 parser.add_argument('--unit', '-u', default=100, type=int, help='Number of units in hidden layer')
-parser.add_argument('--show-correction', '-sc', default=False, action='store_true', help='Set on to print incorrect lines in red (default: False)')
+parser.add_argument('--show-correction', '-s', default=False, action='store_true', help='Set on to print incorrect lines in red (default: False)')
 args = parser.parse_args()
 
 n_dims            = args.dim
 n_epoch           = args.epoch
 n_units           = args.unit
 f_show_correction = args.show_correction
-
+pickle_file       = args.pickle
+print pickle_file
 
 # [3.1] 準備
 # Prepare dataset
@@ -240,3 +242,7 @@ for epoch in xrange(1, n_epoch + 1):
                         sys.stdout.write('\033[1;31;47m' + str[ex_shape] + '\033[0m')
                     idx = idx + 1
             print ''
+
+# モデルをシリアライズ化して保存
+with open('dim{}_unit{}.plk'.format(n_dims, n_units), 'w') as f:
+    pickle.dump(model, f)
