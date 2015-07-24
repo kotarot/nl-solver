@@ -229,8 +229,14 @@ for epoch in xrange(1, n_epoch + 1):
         for y in range(n_dims / 2, board_y + n_dims / 2):
             for x in range(n_dims / 2, board_x + n_dims / 2):
                 if board[y][x]['type'] == 1:
-                    sys.stdout.write(' ' + utils.int2str(board[y][x]['data'], 36) + ' ')
+                    sys.stdout.write('\033[1;30;47m ' + utils.int2str(board[y][x]['data'], 36) + ' \033[0m')
                 else:
-                    sys.stdout.write(str[np.argmax(result.data[idx])])
+                    ex_shape = np.argmax(result.data[idx])
+                    # 正しい配線形状
+                    if board[y][x]['shape'] == ex_shape:
+                        sys.stdout.write('\033[1;30;47m' + str[ex_shape] + '\033[0m')
+                    # 間違ってる配線形状
+                    else:
+                        sys.stdout.write('\033[1;31;47m' + str[ex_shape] + '\033[0m')
                     idx = idx + 1
             print ''
