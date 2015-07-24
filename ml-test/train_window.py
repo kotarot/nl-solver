@@ -32,8 +32,7 @@ n_dims            = args.dim
 n_units           = args.unit
 n_epoch           = args.epoch
 f_show_correction = args.show_correction
-pickle_file       = args.pickle
-print pickle_file
+
 
 # [3.1] 準備
 # Prepare dataset
