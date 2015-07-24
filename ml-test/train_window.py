@@ -10,6 +10,7 @@
 """
 
 import argparse
+import sys
 
 import numpy as np
 from chainer import cuda, Function, FunctionSet, gradient_check, Variable, optimizers
@@ -133,7 +134,7 @@ def forward(x_data, y_data, train=True):
     y  = model.l3(h2)
     # 多クラス分類なので誤差関数としてソフトマックス関数の
     # 交差エントロピー関数を用いて、誤差を導出
-    return F.softmax_cross_entropy(y, t), F.accuracy(y, t)
+    return F.softmax_cross_entropy(y, t), F.accuracy(y, t), y
 
 
 # [3.3] Optimizerの設定
@@ -197,17 +198,27 @@ for epoch in xrange(1, n_epoch + 1):
     optimizer.zero_grads()
 
     # 順伝播させて誤差と精度を算出
-    loss_train, accuracy_train = forward(x_batch, y_batch)
+    loss_train, accuracy_train, _ = forward(x_batch, y_batch)
 
     # 誤差逆伝播で勾配を計算
     loss_train.backward()
     optimizer.update()
 
     # Evaluation
-    loss_test, accuracy_test = forward(x_test, y_test, train=False)
+    loss_test, accuracy_test, result = forward(x_test, y_test, train=False)
 
     # 訓練データ/テストデータの誤差と、正解精度を表示
     if epoch % 100 == 0:
         print 'epoch', epoch
         print 'Train: mean loss={}, accuracy={}'.format(loss_train.data, accuracy_train.data)
         print 'Test:  mean loss={}, accuracy={}'.format(loss_test.data,  accuracy_test.data)
+
+        # テストデータの配線を表示
+        str = [' ', '+', '+', '│', '+', '┘', '┐', '─', '+', '└', '┌']
+        for i, d in enumerate(result.data):
+            # r行c列
+            #r = i / board_x
+            c = i % board_x
+            sys.stdout.write(str[np.argmax(d)])
+            if c == board_x - 1:
+                print ''
