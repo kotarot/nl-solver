@@ -23,14 +23,14 @@ import chainer.functions as F
 #### CONFIGURATION ####
 parser = argparse.ArgumentParser(description='Machine learning test: WINDOW')
 parser.add_argument('--dim', '-d', default=3, type=int, help='Window dimension')
-parser.add_argument('--epoch', '-e', default=100000, type=int, help='Number of epoches')
 parser.add_argument('--unit', '-u', default=100, type=int, help='Number of units in hidden layer')
+parser.add_argument('--epoch', '-e', default=100000, type=int, help='Number of epoches')
 parser.add_argument('--show-correction', '-s', default=False, action='store_true', help='Set on to print incorrect lines in red (default: False)')
 args = parser.parse_args()
 
 n_dims            = args.dim
-n_epoch           = args.epoch
 n_units           = args.unit
+n_epoch           = args.epoch
 f_show_correction = args.show_correction
 pickle_file       = args.pickle
 print pickle_file
@@ -244,5 +244,5 @@ for epoch in xrange(1, n_epoch + 1):
             print ''
 
 # モデルをシリアライズ化して保存
-with open('dim{}_unit{}.plk'.format(n_dims, n_units), 'w') as f:
+with open('dim{}_unit{}_epoch{}.plk'.format(n_dims, n_units, n_epoch), 'w') as f:
     pickle.dump(model, f)
