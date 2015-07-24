@@ -15,5 +15,11 @@
 *.out
 solver
 
+# Python files
+*.pyc
+
+# Log files
+*.log
+
 # Problem generator
 create_q/
