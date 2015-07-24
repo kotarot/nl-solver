@@ -3,36 +3,10 @@
 
 extern Board* board;
 
-// ２桁の整数をアルファベットに変換（３５以下）
+// 2桁の整数をアルファベットに変換
 char changeIntToChar(int n){
-	
-	switch(n){
-		case 10: return 'A'; break;
-		case 11: return 'B'; break;
-		case 12: return 'C'; break;
-		case 13: return 'D'; break;
-		case 14: return 'E'; break;
-		case 15: return 'F'; break;
-		case 16: return 'G'; break;
-		case 17: return 'H'; break;
-		case 18: return 'I'; break;
-		case 19: return 'J'; break;
-		case 20: return 'K'; break;
-		case 21: return 'L'; break;
-		case 22: return 'M'; break;
-		case 23: return 'N'; break;
-		case 24: return 'O'; break;
-		case 25: return 'P'; break;
-		case 26: return 'Q'; break;
-		case 27: return 'R'; break;
-		case 28: return 'S'; break;
-		case 29: return 'T'; break;
-		case 30: return 'U'; break;
-		case 31: return 'V'; break;
-		case 32: return 'W'; break;
-		case 33: return 'X'; break;
-		case 34: return 'Y'; break;
-		case 35: return 'Z'; break;
+	if (n <= 35) {
+		return (char)(n - 10 + 'A');
 	}
 	return '#';
 }
