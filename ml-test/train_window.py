@@ -152,5 +152,5 @@ for epoch in xrange(1, n_epoch + 1):
             print ''
 
 # モデルをシリアライズ化して保存
-with open('dim{}_unit{}_epoch{}.plk'.format(n_dims, n_units, n_epoch), 'w') as f:
+with open('dim{}_unit{}_epoch{}.pkl'.format(n_dims, n_units, n_epoch), 'w') as f:
     pickle.dump(model, f)
