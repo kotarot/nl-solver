@@ -50,25 +50,21 @@ with open(input_pickle, 'r') as f:
 
 # Neural net architecture
 # ニューラルネットの構造
-def forward(x_data, y_data, train=False):
-    x, t = Variable(x_data), Variable(y_data)
-    h1 = F.dropout(F.relu(model.l1(x)),  train=train)
-    h2 = F.dropout(F.relu(model.l2(h1)), train=train)
+def evaluate(x_data):
+    x = Variable(x_data)
+    h1 = F.dropout(F.relu(model.l1(x)),  train=False)
+    h2 = F.dropout(F.relu(model.l2(h1)), train=False)
     y  = model.l3(h2)
-    # 多クラス分類なので誤差関数としてソフトマックス関数の
-    # 交差エントロピー関数を用いて、誤差を導出
-    return F.softmax_cross_entropy(y, t), F.accuracy(y, t), y
+    return y
 
 
 # Testing phase
-board_x, board_y, board = nl.read_ansfile(input_problem, n_dims)
-x_data, y_data = nl.gen_dataset_shape(board_x, board_y, board, n_dims)
+board_x, board_y, board = nl.read_probfile(input_problem, n_dims)
+x_data, _ = nl.gen_dataset_shape(board_x, board_y, board, n_dims)
 
 x_test = np.array(x_data, dtype=np.float32)
-y_test = np.array(y_data, dtype=np.int32)
 
-loss, accuracy, result = forward(x_test, y_test)
-print 'Test:  mean loss={}, accuracy={}'.format(loss.data,  accuracy.data)
+result = evaluate(x_test)
 
 # テストデータの配線を表示
 idx = 0
@@ -79,11 +75,6 @@ for y in range(n_dims / 2, board_y + n_dims / 2):
             sys.stdout.write('\033[1;30;47m ' + nl.int2str(board[y][x]['data'], 36) + ' \033[0m')
         else:
             ex_shape = np.argmax(result.data[idx])
-            # 正しい配線形状
-            if board[y][x]['shape'] == ex_shape:
-                sys.stdout.write('\033[1;30;47m' + str[ex_shape] + '\033[0m')
-            # 間違ってる配線形状
-            else:
-                sys.stdout.write('\033[1;31;47m' + str[ex_shape] + '\033[0m')
+            sys.stdout.write('\033[1;30;47m' + str[ex_shape] + '\033[0m')
             idx = idx + 1
     print ''
