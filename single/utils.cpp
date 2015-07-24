@@ -34,8 +34,7 @@ char changeIntToChar(int n){
 		case 34: return 'Y'; break;
 		case 35: return 'Z'; break;
 	}
-	
-	assert(!"n must satisfy n <= 35");
+	return '#';
 }
 
 // 問題盤を表示
