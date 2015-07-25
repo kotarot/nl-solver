@@ -39,7 +39,7 @@ void printBoard(){
 void printLine(int i){
 
 	cout << endl;
-	cout << "print Line" << i << endl;
+	cout << "Line " << i << endl;
 	Line* trgt_line = board->line(i);
 	vector<Point>* trgt_track = trgt_line->getTrack();
 	
@@ -63,15 +63,10 @@ void printLine(int i){
 	}
 	for(int y=0;y<board->getSizeY();y++){
 		for(int x=0;x<board->getSizeX();x++){
-			if(for_print[y][x] == -2) cout << "@";
-			else if(for_print[y][x] == -1) cout << "+";
+			if(for_print[y][x] == -2) cout << " @";
+			else if(for_print[y][x] == -1) cout << " .";
 			else{
-				if(for_print[y][x] < 10){
-					cout << for_print[y][x];
-				}
-				else{
-					cout << changeIntToChar(for_print[y][x]);
-				}
+				cout << " " << changeIntToChar(for_print[y][x]);
 			}
 		}
 		cout << endl;
