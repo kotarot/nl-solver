@@ -18,21 +18,61 @@ vector<int> adj_num; // 固定線に隣接する数字を格納
 //int calc_T; // 計算するとき用
 //int calc_C; // 計算するとき用
 
+void usage() {
+	cerr << "Usage: solver [--fix-flag] [--output output-file] input-file" << endl;
+	exit(-1);
+}
+
+void version() {
+	cerr << "Version: nl-solver 2015" << endl;
+	exit(-1);
+}
 
 int main(int argc, char *argv[]){
-	
-	// ファイルの読み込み
-	if(argc != 3){
-		cerr << "Usage: ./solver.exe InputFile Fixed" << endl;
-		exit(-1);
+	// Options
+	char *in_filename  = NULL; // 問題ファイル名
+	char *out_filename = NULL; // 出力解答ファイル名
+	bool fixed = false;    // 固定フラグ
+
+	// Options 取得
+	struct option longopts[] = {
+		{"output",   required_argument, NULL, 'o'},
+		{"fix-flag", no_argument,       NULL, 'f'},
+		{"version",  no_argument,       NULL, 'v'},
+		{"help",     no_argument,       NULL, 'h'},
+		{0, 0, 0, 0}
+	};
+	int opt, optidx;
+	while ((opt = getopt_long(argc, argv, "o:fvh", longopts, &optidx)) != -1) {
+		switch (opt) {
+			case 'o':
+				out_filename = optarg;
+				break;
+			case 'f':
+				fixed = true;
+				break;
+			case 'v':
+				version();
+			case 'h':
+			case ':':
+			case '?':
+			default:
+				usage();
+		}
 	}
-	initialize(argv[1]); // 問題盤の生成
+	if (argc <= optind) {
+		usage();
+	}
+	in_filename = argv[optind];
+	assert(in_filename != NULL);
+
+	initialize(in_filename); // 問題盤の生成
 	printBoard(); // 問題盤の表示
 	
 	// 固定フラグの生成
-	int fixed = atoi(argv[2]);
-	if(fixed==1){
+	if (fixed) {
 		generateFixFlag();
+		printFixFlag();
 	}
 	
 	// 乱数の初期化
@@ -69,11 +109,15 @@ int main(int argc, char *argv[]){
 	for(int m=2;m<=O_LOOP;m++){ // 外ループ
 	
 		if(!use_intermediate_port){ // 中間ポートを利用しない場合
-			cout << "loop " << (m-1) << endl;
+			if ((m - 1) % 10 == 0) {
+				cout << "loop " << (m-1) << endl;
+			}
 			if(m>INIT){ resetCandidate(); }
 		}
 		else{ // 中間ポートを利用する場合
-			cout << "loop " << (m-1) << "+" << endl;
+			if ((m - 1) % 10 == 0) {
+				cout << "loop " << (m-1) << "+" << endl;
+			}
 		}
 		
 		// 解導出フラグ
@@ -93,43 +137,47 @@ int main(int argc, char *argv[]){
 			// ペナルティの設定
 			penalty_T = (int)(NT * (rand() % m));
 			penalty_C = (int)(NC * (rand() % m));
-			
-			// 経路の探索
-			bool success = false;
-			int count = 1;
-			if((board->line(id))->isIntermediateUsed()){ // 中間ポート利用経路探索
-				while(!success){
-					if(++count>10) break; // 10回失敗したら諦める
-					if(!(success = routingSourceToI(id))){
-						continue;
-					}
-					success = routingIToSink(id);
-				}
-			}
-			else{ // 通常経路探索
-				success = routing(id);
-				if(!success){
+
+			// 中間ポートを利用しない場合
+			if ( !((board->line(id))->isIntermediateUsed()) ) {
+				// 経路の探索
+				if ( !routing(id) ) {
 					cerr << "Cannot solve!! (error: 2)" << endl; // 失敗したらプログラム終了
 					exit(2);
 				}
-			}
-			
-			// 経路の記録
-			// 中間ポート利用に失敗した場合，通常経路探索した後に内ループ脱出
-			if(count>10){ // 通常経路探索（中間ポート利用に失敗）
-				success = routing(id);
-				if(!success){
-					cerr << "Cannot solve!! (error: 3)" << endl; // 失敗したらプログラム終了
-					exit(3);
-				}
+				// 経路の記録
 				recording(id);
-				break;
 			}
-			recording(id);
-		
+
+			// 中間ポートを利用する場合
+			else {
+				// 経路の探索 (INTTRY 回)
+				bool success = false;
+				for (int count = 0; count < INTTRY; count++) {
+					if (routingSourceToI(id)) {
+						success = routingIToSink(id);
+						break;
+					}
+				}
+				// 中間ポート利用に失敗した場合，通常経路探索した後に内ループ脱出
+				if ( !success ) {
+					if ( !routing(id) ) {
+						cerr << "Cannot solve!! (error: 3)" << endl; // 失敗したらプログラム終了
+						exit(3);
+					}
+					recording(id);
+					break;
+				}
+				// 経路の記録
+				recording(id);
+			}
+
 			// 終了判定（解導出できた場合，正解を出力）
 			if(isFinished()){
 				printSolution();
+				if (out_filename != NULL) {
+					printSolutionToFile(out_filename);
+				}
 				complete = true;
 				break;
 			}
@@ -152,12 +200,12 @@ int main(int argc, char *argv[]){
 				Box* trgt_box = board->box(x,y);
 				if(trgt_box->isCandidate()){
 					candidate_count++;
-					cout << "(" << x << "," << y << ")"; // 不通過マス
+					//cout << "(" << x << "," << y << ")"; // 不通過マス
 				}
 			}
 		}
+		//cout << endl;
 		if(candidate_count==0) continue; // 候補数0なら利用しない
-		cout << endl;
 		
 		// 候補の中から中間ポートに設定するマスをランダムに選択
 		int c_d = rand() % candidate_count; // 選択は候補の中で何番目か？
@@ -189,12 +237,12 @@ int main(int argc, char *argv[]){
 			Line* trgt_line = board->line(i);
 			if(trgt_line->isCandidate()){
 				candidate_count++;
-				if(candidate_count>1) cout << ", ";
-				cout << i;
+				//if(candidate_count>1) cout << ", ";
+				//cout << i;
 			}
 		}
+		//cout << endl;
 		if(candidate_count==0) continue; // 候補数0なら利用しない
-		cout << endl;
 		
 		c_d = rand() % candidate_count; // 選択は候補の中で何番目か？
 		n_d = 0; // 何番目なのかをカウントする用の変数
@@ -209,7 +257,7 @@ int main(int argc, char *argv[]){
 			n_d++;
 		}
 		
-		cout << "Set (" << inter_x << "," << inter_y << ") InterPort of Line " << inter_line << endl;
+		//cout << "Set (" << inter_x << "," << inter_y << ") InterPort of Line " << inter_line << endl;
 		Line* line_i = board->line(inter_line);
 		line_i->setIntermediateUse();
 		line_i->setIntermediatePort(inter_x,inter_y);
@@ -228,6 +276,8 @@ int main(int argc, char *argv[]){
 		for(int i=1;i<=board->getLineNum();i++){
 			printLine(i);
 		}
+		cerr << "Cannot solve!! (error: 4)" << endl;
+		exit(4);
 	}
 	
 	//デバッグ用
@@ -261,7 +311,7 @@ void initialize(char* filename){
 	string str;
 	
 	if(ifs.fail()){
-		cerr << "File do not exist.\n";
+		cerr << "File do not exist." << endl;
 		exit(-1);
 	}
 	

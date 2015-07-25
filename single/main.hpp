@@ -1,18 +1,21 @@
 #ifndef _MAIN_HPP_
 #define _MAIN_HPP_
 
+#include <iomanip>
 #include <iostream>
-#include <vector>
-#include <map>
-#include <queue>
-#include <stdlib.h>
-#include <time.h>
 #include <fstream>
 #include <sstream>
-#include <math.h>
-#include <iomanip>
-#include <limits.h>
+
+#include <map>
+#include <vector>
+#include <queue>
+
 #include <assert.h>
+#include <getopt.h>
+#include <limits.h>
+#include <math.h>
+#include <stdlib.h>
+#include <time.h>
 
 using namespace std;
 
@@ -38,6 +41,7 @@ using namespace std;
 #define INIT     30 // 不通過マスをチェックし始める(外ループの)回数
 #define I_LOOP 2000 // 内ループ回数
 #define LIMIT  1800 // 何回以上で不通過マスと判定するか(内ループ)
+#define INTTRY   10 // 中間ポートを利用する場合のルーティング試行回数
 
 struct Point{
 	int x;

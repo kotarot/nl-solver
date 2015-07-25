@@ -12,5 +12,7 @@ void printLine(int i);
 
 // 正解を表示（正解表示は数字２桁）
 void printSolution();
+// 正解を表示 (ファイル出力)
+void printSolutionToFile(char *filename);
 
 #endif
