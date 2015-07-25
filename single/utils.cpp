@@ -24,7 +24,7 @@ void printBoard(){
 		for(int x=0;x<board->getSizeX();x++){
 			Box* trgt_box = board->box(x,y);
 			if(trgt_box->isTypeBlank()){
-				cout << " +";
+				cout << " .";
 			}else{
 				int trgt_num = trgt_box->getNumber();
 				cout << " " << changeIntToChar(trgt_num);
@@ -115,11 +115,7 @@ void printSolution(){
 			}
 			else{
 				// その他(2桁表示)
-				if(for_print[y][x] < 10){
-					cout << "0" << for_print[y][x];
-				}
-				else
-					cout << for_print[y][x];
+				cout << setfill('0') << setw(2) << for_print[y][x];
 			}
 			if(x!=(board->getSizeX()-1)){
 				cout << ",";
@@ -127,6 +123,7 @@ void printSolution(){
 		}
 		cout << endl;
 	}
+	cout << endl;
 }
 
 // 正解を表示 (ファイル出力)
@@ -164,11 +161,7 @@ void printSolutionToFile(char *filename) {
 			}
 			else{
 				// その他(2桁表示)
-				if(for_print[y][x] < 10){
-					ofs << "0" << for_print[y][x];
-				}
-				else
-					ofs << for_print[y][x];
+				ofs << setfill('0') << setw(2) << for_print[y][x];
 			}
 			if(x!=(board->getSizeX()-1)){
 				ofs << ",";

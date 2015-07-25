@@ -724,17 +724,28 @@ void generateFixFlag(){
 	}
 	
 	}
-	
-	for(int y=0;y<board->getSizeY();y++){
-		for(int x=0;x<board->getSizeX();x++){
-			Box* trgt_box = board->box(x,y);
-			if(trgt_box->isTypeAllFixed()) cout << "2";
-			else if(trgt_box->isTypeHalfFixed()) cout << "1";
-			else cout << "0";
+}
+
+void printFixFlag() {
+
+	cout << "FIX FLAG" << endl;
+	cout << "========" << endl;
+
+	for (int y = 0; y < board->getSizeY(); y++) {
+		for (int x = 0; x < board->getSizeX(); x++) {
+			Box* trgt_box = board->box(x, y);
+			if (trgt_box->isTypeAllFixed()) {
+				cout << " ▮";
+			} else if(trgt_box->isTypeHalfFixed()) {
+				cout << " ▯";
+			} else {
+				cout << " -";
+			}
 		}
 		cout << endl;
 	}
-	
+	cout << endl;
+
 	// for(int y=0;y<board->getSizeY();y++){
 		// for(int x=0;x<board->getSizeX();x++){
 			// Box* trgt_box = board->box(x,y);

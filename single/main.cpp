@@ -72,6 +72,7 @@ int main(int argc, char *argv[]){
 	// 固定フラグの生成
 	if (fixed) {
 		generateFixFlag();
+		printFixFlag();
 	}
 	
 	// 乱数の初期化

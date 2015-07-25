@@ -6,5 +6,6 @@
 #define __FIXFLAG_HPP__
 
 void generateFixFlag();
+void printFixFlag();
 
 #endif
