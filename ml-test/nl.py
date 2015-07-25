@@ -23,6 +23,7 @@ def read_ansfile(filename, n_dims):
     board = []
     board_x, board_y = -1, -1 # ボードの X と Y
     #maxn_line = -1            # 線番号 (ラインナンバ) の最大値
+    n_dims_half = n_dims / 2
 
     _board = []
     for line in open(filename, 'r'):
@@ -34,17 +35,19 @@ def read_ansfile(filename, n_dims):
         # 1行目以外
         else:
             # 左右の番兵含む
-            line_x = [{'data': -1} for i in range(0, n_dims / 2)] + [{'data': int(token)} for token in line.split(',')] + [{'data': -1} for i in range(0, n_dims / 2)]
+            line_x = [{'data': -1} for i in range(0, n_dims_half)] \
+                   + [{'data': int(token)} for token in line.split(',')] \
+                   + [{'data': -1} for i in range(0, n_dims_half)]
             _board.append(line_x)
 
     # 上下の番兵
-    board = [[{'data': -1} for i in range(0, board_x + n_dims - 1)] for j in range(0, n_dims / 2)] \
+    board = [[{'data': -1} for i in range(0, board_x + n_dims - 1)] for j in range(0, n_dims_half)] \
           + _board \
-          + [[{'data': -1} for i in range(0, board_x + n_dims - 1)] for j in range(0, n_dims / 2)]
+          + [[{'data': -1} for i in range(0, board_x + n_dims - 1)] for j in range(0, n_dims_half)]
 
     # 属性を記録する
-    for y in range(n_dims / 2, board_y + n_dims / 2):
-        for x in range(n_dims / 2, board_x + n_dims / 2):
+    for y in range(n_dims_half, board_y + n_dims_half):
+        for x in range(n_dims_half, board_x + n_dims_half):
             if board[y][x]['data'] != -1:
                 # ラインナンバの最大値を更新
                 #if maxn_line < board[y][x]['data']:
@@ -78,7 +81,6 @@ def read_ansfile(filename, n_dims):
 
     # TODO: 経路の方向の違いによる diri の更新
 
-    #print board
     return board_x, board_y, board
 
 
@@ -116,14 +118,15 @@ def read_probfile(filename, n_dims):
 
     # 左右の番兵
     for y in range(0, board_y):
-        _board[y] = [{'data': -1} for i in range(0, n_dims / 2)] + _board[y] + [{'data': -1} for i in range(0, n_dims / 2)]
+        _board[y] = [{'data': -1} for i in range(0, n_dims_half)] \
+                  + _board[y] \
+                  + [{'data': -1} for i in range(0, n_dims_half)]
 
     # 上下の番兵
-    board = [[{'data': -1} for i in range(0, board_x + n_dims - 1)] for j in range(0, n_dims / 2)] \
+    board = [[{'data': -1} for i in range(0, board_x + n_dims - 1)] for j in range(0, n_dims_half)] \
           + _board \
-          + [[{'data': -1} for i in range(0, board_x + n_dims - 1)] for j in range(0, n_dims / 2)]
+          + [[{'data': -1} for i in range(0, board_x + n_dims - 1)] for j in range(0, n_dims_half)]
 
-    #print board
     return board_x, board_y, board
 
 
@@ -134,13 +137,15 @@ def read_probfile(filename, n_dims):
 """
 def gen_dataset_shape(board_x, board_y, board, n_dims):
     x_data, y_data = [], []
-    for y in range(n_dims / 2, board_y + n_dims / 2):
-        for x in range(n_dims / 2, board_x + n_dims / 2):
+    n_dims_half = n_dims / 2
+
+    for y in range(n_dims_half, board_y + n_dims_half):
+        for x in range(n_dims_half, board_x + n_dims_half):
             if board[y][x]['type'] != 1:
                 dx = []
                 # 入力: window
-                for wy in range(-(n_dims / 2), n_dims / 2 + 1):
-                    for wx in range(-(n_dims / 2), n_dims / 2 + 1):
+                for wy in range(-n_dims_half, n_dims_half + 1):
+                    for wx in range(-n_dims_half, n_dims_half + 1):
                         if not (wx == 0 and wy == 0):
                             if board[y + wy][x + wx]['data'] == -1:
                                 dx.append(-1)

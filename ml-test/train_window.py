@@ -30,6 +30,7 @@ parser.add_argument('--show-wrong', '-w', default=False, action='store_true', he
 args = parser.parse_args()
 
 n_dims            = args.size
+n_dims_half       = n_dims / 2
 n_units           = args.unit
 n_epoch           = args.epoch
 f_show_correction = args.show_wrong
@@ -136,8 +137,8 @@ for epoch in xrange(1, n_epoch + 1):
         # テストデータの配線を表示
         idx = 0
         str = ['   ', ' │ ', '─┘ ', ' └─', '─┐ ', ' ┌─', '───']
-        for y in range(n_dims / 2, board_y + n_dims / 2):
-            for x in range(n_dims / 2, board_x + n_dims / 2):
+        for y in range(n_dims_half, board_y + n_dims_half):
+            for x in range(n_dims_half, board_x + n_dims_half):
                 if board[y][x]['type'] == 1:
                     sys.stdout.write('\033[1;30;47m ' + nl.int2str(board[y][x]['data'], 36) + ' \033[0m')
                 else:
