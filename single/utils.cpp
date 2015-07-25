@@ -5,7 +5,9 @@ extern Board* board;
 
 // 2桁の整数をアルファベットに変換
 char changeIntToChar(int n){
-	if (n <= 35) {
+	if (0 <= n && n < 10) {
+		return (char)(n + '0');
+	} else if (n <= 35) {
 		return (char)(n - 10 + 'A');
 	}
 	return '#';
@@ -14,27 +16,23 @@ char changeIntToChar(int n){
 // 問題盤を表示
 void printBoard(){
 
-	cout << "*** BOARD ***" << endl;
-	
+	cout << endl;
+	cout << "PROBLEM" << endl;
+	cout << "=======" << endl;
+
 	for(int y=0;y<board->getSizeY();y++){
 		for(int x=0;x<board->getSizeX();x++){
 			Box* trgt_box = board->box(x,y);
 			if(trgt_box->isTypeBlank()){
-				cout << "+ ";
-			}
-			else{
+				cout << " +";
+			}else{
 				int trgt_num = trgt_box->getNumber();
-				if(trgt_num < 10){
-					cout << trgt_num << " ";
-				}
-				else{
-					// アルファベット表示
-					cout << changeIntToChar(trgt_num) << " ";
-				}
+				cout << " " << changeIntToChar(trgt_num);
 			}
 		}
 		cout << endl;
 	}
+	cout << endl;
 }
 
 // 現状のラインを表示
@@ -105,7 +103,10 @@ void printSolution(){
 		}
 	}
 	
-	cout << "*** SOLUTION ***" << endl;
+	cout << endl;
+	cout << "SOLUTION" << endl;
+	cout << "========" << endl;
+
 	for(int y=0;y<board->getSizeY();y++){
 		for(int x=0;x<board->getSizeX();x++){
 			if(for_print[y][x] < 0){
