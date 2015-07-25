@@ -23,10 +23,14 @@ import nl
 
 #### CONFIGURATION ####
 parser = argparse.ArgumentParser(description='Machine learning based nl-solver test: WINDOW (training)')
-parser.add_argument('--size', '-s', default=3, type=int, help='Window size (dimension)')
-parser.add_argument('--unit', '-u', default=100, type=int, help='Number of units in hidden layer')
-parser.add_argument('--epoch', '-e', default=100000, type=int, help='Number of epoches')
-parser.add_argument('--show-wrong', '-w', default=False, action='store_true', help='Set on to print incorrect lines in red (default: False)')
+parser.add_argument('--size', '-s', default=3, type=int,
+                    help='Window size (dimension)')
+parser.add_argument('--unit', '-u', default=100, type=int,
+                    help='Number of units in hidden layer')
+parser.add_argument('--epoch', '-e', default=100000, type=int,
+                    help='Number of epoches')
+parser.add_argument('--show-wrong', '-w', default=False, action='store_true',
+                    help='Set on to print incorrect lines in red (default: False)')
 args = parser.parse_args()
 
 n_dims            = args.size

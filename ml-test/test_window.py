@@ -22,8 +22,10 @@ import nl
 
 #### CONFIGURATION ####
 parser = argparse.ArgumentParser(description='Machine learning based nl-solver test: WINDOW (testing)')
-parser.add_argument('input', nargs=None, default=None, type=str, help='Path to input problem file')
-parser.add_argument('--pickle', '-p', default=None, type=str, help='Path to input pickle (dump) model file')
+parser.add_argument('input', nargs=None, default=None, type=str,
+                    help='Path to input problem file')
+parser.add_argument('--pickle', '-p', default=None, type=str,
+                    help='Path to input pickle (dump) model file')
 args = parser.parse_args()
 
 input_problem = args.input
