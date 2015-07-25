@@ -91,6 +91,7 @@ Problemファイルを読み込む
 def read_probfile(filename, n_dims):
     board = []
     board_x, board_y = -1, -1 # ボードの X と Y
+    n_dims_half = n_dims / 2
 
     _board = None
     for line in open(filename, 'r'):
