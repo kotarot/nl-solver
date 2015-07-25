@@ -111,7 +111,7 @@ int main(int argc, char *argv[]){
 	
 	
 	// 探索スタート!!
-	for (int m = 2; m <= outer_loops; m++) { // 外ループ
+	for (int m = 2; m <= outer_loops + 1; m++) { // 外ループ
 	
 		if(!use_intermediate_port){ // 中間ポートを利用しない場合
 			if ((m - 1) % 10 == 0) {
