@@ -19,29 +19,35 @@ vector<int> adj_num; // 固定線に隣接する数字を格納
 //int calc_C; // 計算するとき用
 
 void usage() {
-	cerr << "Usage: solver [--fix-flag] input-file" << endl;
+	cerr << "Usage: solver [--fix-flag] [--output output-file] input-file" << endl;
 	exit(-1);
 }
 
 void version() {
-	cerr << "Version: 2015" << endl;
+	cerr << "Version: nl-solver 2015" << endl;
 	exit(-1);
 }
 
 int main(int argc, char *argv[]){
 	// Options
-	char *filename = NULL; // 問題ファイル名
+	char *in_filename  = NULL; // 問題ファイル名
+	char *out_filename = NULL; // 出力解答ファイル名
 	bool fixed = false;    // 固定フラグ
 
 	// Options 取得
 	struct option longopts[] = {
-		{"fix-flag", no_argument, NULL, 'f'},
-		{"help",     no_argument, NULL, 'h'},
-		{"version",  no_argument, NULL, 'v'}
+		{"output",   required_argument, NULL, 'o'},
+		{"fix-flag", no_argument,       NULL, 'f'},
+		{"version",  no_argument,       NULL, 'v'},
+		{"help",     no_argument,       NULL, 'h'},
+		{0, 0, 0, 0}
 	};
 	int opt, optidx;
-	while ((opt = getopt_long(argc, argv, "fhv", longopts, &optidx)) != -1) {
+	while ((opt = getopt_long(argc, argv, "o:fvh", longopts, &optidx)) != -1) {
 		switch (opt) {
+			case 'o':
+				out_filename = optarg;
+				break;
 			case 'f':
 				fixed = true;
 				break;
@@ -57,9 +63,9 @@ int main(int argc, char *argv[]){
 	if (argc <= optind) {
 		usage();
 	}
-	filename = argv[optind];
+	in_filename = argv[optind];
 
-	initialize(filename); // 問題盤の生成
+	initialize(in_filename); // 問題盤の生成
 	printBoard(); // 問題盤の表示
 	
 	// 固定フラグの生成
@@ -163,6 +169,9 @@ int main(int argc, char *argv[]){
 			// 終了判定（解導出できた場合，正解を出力）
 			if(isFinished()){
 				printSolution();
+				if (out_filename != NULL) {
+					printSolutionToFile(out_filename);
+				}
 				complete = true;
 				break;
 			}
