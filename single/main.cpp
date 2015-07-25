@@ -18,20 +18,52 @@ vector<int> adj_num; // 固定線に隣接する数字を格納
 //int calc_T; // 計算するとき用
 //int calc_C; // 計算するとき用
 
+void usage() {
+	cerr << "Usage: solver [--fix-flag] input-file" << endl;
+	exit(-1);
+}
+
+void version() {
+	cerr << "Version: 2015" << endl;
+	exit(-1);
+}
 
 int main(int argc, char *argv[]){
-	
-	// ファイルの読み込み
-	if(argc != 3){
-		cerr << "Usage: ./solver.exe InputFile Fixed" << endl;
-		exit(-1);
+	// Options
+	char *filename = NULL; // 問題ファイル名
+	bool fixed = false;    // 固定フラグ
+
+	// Options 取得
+	struct option longopts[] = {
+		{"fix-flag", no_argument, NULL, 'f'},
+		{"help",     no_argument, NULL, 'h'},
+		{"version",  no_argument, NULL, 'v'}
+	};
+	int opt, optidx;
+	while ((opt = getopt_long(argc, argv, "fhv", longopts, &optidx)) != -1) {
+		switch (opt) {
+			case 'f':
+				fixed = true;
+				break;
+			case 'v':
+				version();
+			case 'h':
+			case ':':
+			case '?':
+			default:
+				usage();
+		}
 	}
-	initialize(argv[1]); // 問題盤の生成
+	if (argc <= optind) {
+		usage();
+	}
+	filename = argv[optind];
+
+	initialize(filename); // 問題盤の生成
 	printBoard(); // 問題盤の表示
 	
 	// 固定フラグの生成
-	int fixed = atoi(argv[2]);
-	if(fixed==1){
+	if (fixed) {
 		generateFixFlag();
 	}
 	
@@ -262,7 +294,7 @@ void initialize(char* filename){
 	string str;
 	
 	if(ifs.fail()){
-		cerr << "File do not exist.\n";
+		cerr << "File do not exist." << endl;
 		exit(-1);
 	}
 	
