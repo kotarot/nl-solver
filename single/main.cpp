@@ -64,6 +64,7 @@ int main(int argc, char *argv[]){
 		usage();
 	}
 	in_filename = argv[optind];
+	assert(in_filename != NULL);
 
 	initialize(in_filename); // 問題盤の生成
 	printBoard(); // 問題盤の表示
