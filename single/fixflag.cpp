@@ -735,9 +735,9 @@ void printFixFlag() {
 		for (int x = 0; x < board->getSizeX(); x++) {
 			Box* trgt_box = board->box(x, y);
 			if (trgt_box->isTypeAllFixed()) {
-				cout << " ▮";
+				cout << " #";
 			} else if(trgt_box->isTypeHalfFixed()) {
-				cout << " ▯";
+				cout << " +";
 			} else {
 				cout << " -";
 			}
