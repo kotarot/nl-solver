@@ -172,7 +172,7 @@ def int2str(i, base):
     int2str_table = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
     if not 2 <= base <= 36:
-        raise ValueError('base must be 2 <= base < 36')
+        raise ValueError('base must be 2 <= base <= 36')
 
     result = []
 
