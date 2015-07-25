@@ -1,18 +1,21 @@
 #ifndef _MAIN_HPP_
 #define _MAIN_HPP_
 
+#include <iomanip>
 #include <iostream>
-#include <vector>
-#include <map>
-#include <queue>
-#include <stdlib.h>
-#include <time.h>
 #include <fstream>
 #include <sstream>
-#include <math.h>
-#include <iomanip>
-#include <limits.h>
+
+#include <map>
+#include <vector>
+#include <queue>
+
 #include <assert.h>
+#include <getopt.h>
+#include <limits.h>
+#include <math.h>
+#include <stdlib.h>
+#include <time.h>
 
 using namespace std;
 
