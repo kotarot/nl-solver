@@ -272,6 +272,8 @@ int main(int argc, char *argv[]){
 		for(int i=1;i<=board->getLineNum();i++){
 			printLine(i);
 		}
+		cerr << "Cannot solve!! (error: 4)" << endl;
+		exit(4);
 	}
 	
 	//デバッグ用
