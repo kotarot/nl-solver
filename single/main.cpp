@@ -109,11 +109,15 @@ int main(int argc, char *argv[]){
 	for(int m=2;m<=O_LOOP;m++){ // 外ループ
 	
 		if(!use_intermediate_port){ // 中間ポートを利用しない場合
-			cout << "loop " << (m-1) << endl;
+			if ((m - 1) % 10 == 0) {
+				cout << "loop " << (m-1) << endl;
+			}
 			if(m>INIT){ resetCandidate(); }
 		}
 		else{ // 中間ポートを利用する場合
-			cout << "loop " << (m-1) << "+" << endl;
+			if ((m - 1) % 10 == 0) {
+				cout << "loop " << (m-1) << "+" << endl;
+			}
 		}
 		
 		// 解導出フラグ
@@ -196,12 +200,12 @@ int main(int argc, char *argv[]){
 				Box* trgt_box = board->box(x,y);
 				if(trgt_box->isCandidate()){
 					candidate_count++;
-					cout << "(" << x << "," << y << ")"; // 不通過マス
+					//cout << "(" << x << "," << y << ")"; // 不通過マス
 				}
 			}
 		}
+		//cout << endl;
 		if(candidate_count==0) continue; // 候補数0なら利用しない
-		cout << endl;
 		
 		// 候補の中から中間ポートに設定するマスをランダムに選択
 		int c_d = rand() % candidate_count; // 選択は候補の中で何番目か？
@@ -233,12 +237,12 @@ int main(int argc, char *argv[]){
 			Line* trgt_line = board->line(i);
 			if(trgt_line->isCandidate()){
 				candidate_count++;
-				if(candidate_count>1) cout << ", ";
-				cout << i;
+				//if(candidate_count>1) cout << ", ";
+				//cout << i;
 			}
 		}
+		//cout << endl;
 		if(candidate_count==0) continue; // 候補数0なら利用しない
-		cout << endl;
 		
 		c_d = rand() % candidate_count; // 選択は候補の中で何番目か？
 		n_d = 0; // 何番目なのかをカウントする用の変数
@@ -253,7 +257,7 @@ int main(int argc, char *argv[]){
 			n_d++;
 		}
 		
-		cout << "Set (" << inter_x << "," << inter_y << ") InterPort of Line " << inter_line << endl;
+		//cout << "Set (" << inter_x << "," << inter_y << ") InterPort of Line " << inter_line << endl;
 		Line* line_i = board->line(inter_line);
 		line_i->setIntermediateUse();
 		line_i->setIntermediatePort(inter_x,inter_y);
