@@ -135,16 +135,22 @@ def read_probfile(filename, n_dims):
 データセットを生成 (配線形状の分類)
 入力はターミナル数字が存在するセルを 1、存在しないセルを 0、ボード外を -1 とした (N^2 - 1) 次元のベクトル
 出力は配線形状を表す分類スカラー数字
+
+[dataset]
+  - window   : 自セルの周囲
+  - windowsn : 自セルの周囲 + 同じ数字の数
 """
-def gen_dataset_shape(board_x, board_y, board, n_dims):
+def gen_dataset_shape(board_x, board_y, board, n_dims, dataset):
     x_data, y_data = [], []
     n_dims_half = n_dims / 2
 
     for y in range(n_dims_half, board_y + n_dims_half):
         for x in range(n_dims_half, board_x + n_dims_half):
             if board[y][x]['type'] != 1:
-                dx = []
                 # 入力: window
+                dx = []
+                counterone = {}
+                counter = 0
                 for wy in range(-n_dims_half, n_dims_half + 1):
                     for wx in range(-n_dims_half, n_dims_half + 1):
                         if not (wx == 0 and wy == 0):
@@ -152,9 +158,21 @@ def gen_dataset_shape(board_x, board_y, board, n_dims):
                                 dx.append(-1)
                             elif board[y + wy][x + wx]['type'] == 1:
                                 dx.append(1)
+                                if board[y + wy][x + wx]['data'] not in counterone:
+                                    counterone[board[y + wy][x + wx]['data']] = 1
+                                else:
+                                    counter = counter + 1
                             else:
                                 dx.append(0)
+                if dataset == 'windowsn':
+                    if counter <= 0:
+                        dx.append(0)
+                    elif counter <= 1:
+                        dx.append(0.5)
+                    else:
+                        dx.append(1)
                 x_data.append(dx)
+
                 # 出力: direction
                 if 'shape' in board[y][x]:
                     y_data.append(board[y][x]['shape'])

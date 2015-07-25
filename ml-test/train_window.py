@@ -31,13 +31,15 @@ parser.add_argument('--epoch', '-e', default=100000, type=int,
                     help='Number of epoches')
 parser.add_argument('--show-wrong', '-w', default=False, action='store_true',
                     help='Set on to print incorrect lines in red (default: False)')
+parser.add_argument('--dataset', '-d', default='window', type=str,
+                    help='Input dataset type to ML (dafault: window)')
 args = parser.parse_args()
+print args
 
 n_dims            = args.size
 n_dims_half       = n_dims / 2
 n_units           = args.unit
 n_epoch           = args.epoch
-f_show_correction = args.show_wrong
 
 
 # [3.1] 準備
@@ -47,9 +49,17 @@ f_show_correction = args.show_wrong
 # [3.2] モデルの定義
 # Prepare multi-layer perceptron model
 # 多層パーセプトロン (中間層 n_units 次元)
-# 入力: N x N - 1 = N^2 - 1 次元
+# 入力: N x N - 1 = N^2 - 1 次元 (dataset = window の場合)
+#       N x N = N^2 次元         (dataset = windowsn の場合)
 # 出力: 7次元
-model = FunctionSet(l1=F.Linear(n_dims**2 - 1, n_units),
+if args.dataset == 'window':
+    input_dims = n_dims**2 - 1
+elif args.dataset == 'windowsn':
+    input_dims = n_dims**2
+else:
+    raise NotImplementedError()
+
+model = FunctionSet(l1=F.Linear(input_dims, n_units),
                     l2=F.Linear(n_units, n_units),
                     l3=F.Linear(n_units, 7))
 
@@ -84,7 +94,7 @@ for train_file in train_files:
     print 'Reading training file: {} ...'.format(train_file)
     board_x, board_y, board = nl.read_ansfile(train_file, n_dims)
 
-    x_data, y_data = nl.gen_dataset_shape(board_x, board_y, board, n_dims) # 配線形状の分類
+    x_data, y_data = nl.gen_dataset_shape(board_x, board_y, board, n_dims, args.dataset) # 配線形状の分類
     #x_data, y_data = nl.gen_dataset_dirsrc(board_x, board_y, board, n_dims) # 配線接続位置の分類 (ソースから)
     #x_data, y_data = nl.gen_dataset_dirsnk(board_x, board_y, board, n_dims) # 配線接続位置の分類 (シンクから)
 
@@ -95,7 +105,7 @@ for test_file in test_files:
     print 'Reading testing file: {} ...'.format(test_file)
     board_x, board_y, board = nl.read_ansfile(test_file, n_dims)
 
-    x_data, y_data = nl.gen_dataset_shape(board_x, board_y, board, n_dims) # 配線形状の分類
+    x_data, y_data = nl.gen_dataset_shape(board_x, board_y, board, n_dims, args.dataset) # 配線形状の分類
     #x_data, y_data = nl.gen_dataset_dirsrc(board_x, board_y, board, n_dims) # 配線接続位置の分類 (ソースから)
     #x_data, y_data = nl.gen_dataset_dirsnk(board_x, board_y, board, n_dims) # 配線接続位置の分類 (シンクから)
 
@@ -148,7 +158,7 @@ for epoch in xrange(1, n_epoch + 1):
                 else:
                     ex_shape = np.argmax(result.data[idx])
                     # 正しい配線形状
-                    if (not f_show_correction) or board[y][x]['shape'] == ex_shape:
+                    if (not args.show_wrong) or board[y][x]['shape'] == ex_shape:
                         sys.stdout.write('\033[1;30;47m' + str[ex_shape] + '\033[0m')
                     # 間違ってる配線形状
                     else:
@@ -157,5 +167,5 @@ for epoch in xrange(1, n_epoch + 1):
             print ''
 
 # モデルをシリアライズ化して保存
-with open('dim{}_unit{}_epoch{}.pkl'.format(n_dims, n_units, n_epoch), 'w') as f:
+with open('s{}_u{}_e{}_d{}.pkl'.format(n_dims, n_units, n_epoch, args.dataset), 'w') as f:
     pickle.dump(model, f)

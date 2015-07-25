@@ -31,12 +31,18 @@ args = parser.parse_args()
 input_problem = args.input
 input_pickle  = args.pickle
 
-# pickle ファイル名から dims を読み取る
+# (1) pickle ファイル名から dims を読み取る
+# (2) pickle ファイル名から dataset を読み取る
 n_dims = -1
+dataset = None
 for token in input_pickle.split('_'):
-    if 'dim' in token:
-        n_dims = int(token[3:])
+    if token[0:1] == 's':
+        n_dims = int(token[1:])
+    if token[0:1] == 'd':
+        filetokens = token[1:].split('.')
+        dataset = filetokens[0]
 assert(1 <= n_dims)
+assert(dataset != None)
 n_dims_half = n_dims / 2
 
 
@@ -63,7 +69,7 @@ def evaluate(x_data):
 
 # Testing phase
 board_x, board_y, board = nl.read_probfile(input_problem, n_dims)
-x_data, _ = nl.gen_dataset_shape(board_x, board_y, board, n_dims)
+x_data, _ = nl.gen_dataset_shape(board_x, board_y, board, n_dims, dataset)
 
 x_test = np.array(x_data, dtype=np.float32)
 
