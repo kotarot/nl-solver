@@ -38,6 +38,7 @@ using namespace std;
 #define INIT     30 // 不通過マスをチェックし始める(外ループの)回数
 #define I_LOOP 2000 // 内ループ回数
 #define LIMIT  1800 // 何回以上で不通過マスと判定するか(内ループ)
+#define INTTRY   10 // 中間ポートを利用する場合のルーティング試行回数
 
 struct Point{
 	int x;

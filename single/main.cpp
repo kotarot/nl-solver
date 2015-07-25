@@ -93,40 +93,41 @@ int main(int argc, char *argv[]){
 			// ペナルティの設定
 			penalty_T = (int)(NT * (rand() % m));
 			penalty_C = (int)(NC * (rand() % m));
-			
-			// 経路の探索
-			bool success = false;
-			int count = 1;
-			if((board->line(id))->isIntermediateUsed()){ // 中間ポート利用経路探索
-				while(!success){
-					if(++count>10) break; // 10回失敗したら諦める
-					if(!(success = routingSourceToI(id))){
-						continue;
-					}
-					success = routingIToSink(id);
-				}
-			}
-			else{ // 通常経路探索
-				success = routing(id);
-				if(!success){
+
+			// 中間ポートを利用しない場合
+			if ( !((board->line(id))->isIntermediateUsed()) ) {
+				// 経路の探索
+				if ( !routing(id) ) {
 					cerr << "Cannot solve!! (error: 2)" << endl; // 失敗したらプログラム終了
 					exit(2);
 				}
-			}
-			
-			// 経路の記録
-			// 中間ポート利用に失敗した場合，通常経路探索した後に内ループ脱出
-			if(count>10){ // 通常経路探索（中間ポート利用に失敗）
-				success = routing(id);
-				if(!success){
-					cerr << "Cannot solve!! (error: 3)" << endl; // 失敗したらプログラム終了
-					exit(3);
-				}
+				// 経路の記録
 				recording(id);
-				break;
 			}
-			recording(id);
-		
+
+			// 中間ポートを利用する場合
+			else {
+				// 経路の探索 (INTTRY 回)
+				bool success = false;
+				for (int count = 0; count < INTTRY; count++) {
+					if (routingSourceToI(id)) {
+						success = routingIToSink(id);
+						break;
+					}
+				}
+				// 中間ポート利用に失敗した場合，通常経路探索した後に内ループ脱出
+				if ( !success ) {
+					if ( !routing(id) ) {
+						cerr << "Cannot solve!! (error: 3)" << endl; // 失敗したらプログラム終了
+						exit(3);
+					}
+					recording(id);
+					break;
+				}
+				// 経路の記録
+				recording(id);
+			}
+
 			// 終了判定（解導出できた場合，正解を出力）
 			if(isFinished()){
 				printSolution();
