@@ -108,7 +108,7 @@ for datafile in datafiles:
     datafilename_woext = datafilename[0:-4]
     # Training data
     if datafilename != testfilename and datafilename_woext != testfilename:
-        print 'Reading training file: {}/{} ...'.format(DIR_DATA, datafilename)
+        print 'Reading train file: {}/{} ...'.format(DIR_DATA, datafilename)
         _board_x, _board_y, _board = nl.read_ansfile(datafile, n_dims)
 
         x_data, y_data = nl.gen_dataset_shape(_board_x, _board_y, _board, n_dims, args.dataset) # 配線形状の分類
@@ -119,7 +119,7 @@ for datafile in datafiles:
         y_train_raw = y_train_raw + y_data
     # Test data
     else:
-        print 'Reading testing file: {}/{} ...'.format(DIR_DATA, datafilename)
+        print 'Reading test file: {}/{} ...'.format(DIR_DATA, datafilename)
         board_x, board_y, board = nl.read_ansfile(datafile, n_dims)
 
         x_data, y_data = nl.gen_dataset_shape(board_x, board_y, board, n_dims, args.dataset) # 配線形状の分類
