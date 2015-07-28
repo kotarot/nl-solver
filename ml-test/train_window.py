@@ -65,6 +65,8 @@ if args.dataset == 'window':
     input_dims = n_dims**2 - 1
 elif args.dataset == 'windowsn':
     input_dims = n_dims**2
+elif args.dataset == 'windowex':
+    input_dims = n_dims**2 + 2
 else:
     raise NotImplementedError()
 
