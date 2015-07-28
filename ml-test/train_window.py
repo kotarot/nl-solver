@@ -43,7 +43,7 @@ n_dims_half        = n_dims / 2
 n_units            = args.unit
 n_epoch            = args.epoch
 testfilename       = args.test
-testfilename_woext = testfilename
+testfilename_woext = testfilename.replace('_', '')
 if '.txt' in testfilename:
     testfilename_woext = testfilename[0:-4]
 
@@ -88,8 +88,8 @@ optimizer.setup(model.collect_parameters())
 
 
 # Learning loop
-_x_train, _y_train = [], []
-_x_test,  _y_test  = [], []
+x_train_raw, y_train_raw = [], []
+x_test_raw,  y_test_raw  = [], []
 
 # トレーニング/テスト ファイルを読み込む
 datafiles = glob.glob('./data/*.txt')
@@ -106,8 +106,8 @@ for datafile in datafiles:
         #x_data, y_data = nl.gen_dataset_dirsrc(board_x, board_y, board, n_dims) # 配線接続位置の分類 (ソースから)
         #x_data, y_data = nl.gen_dataset_dirsnk(board_x, board_y, board, n_dims) # 配線接続位置の分類 (シンクから)
 
-        _x_train = _x_train + x_data
-        _y_train = _y_train + y_data
+        x_train_raw = x_train_raw + x_data
+        y_train_raw = y_train_raw + y_data
     # Test data
     else:
         print 'Reading testing file: ./data/{} ...'.format(datafilename)
@@ -117,20 +117,20 @@ for datafile in datafiles:
         #x_data, y_data = nl.gen_dataset_dirsrc(board_x, board_y, board, n_dims) # 配線接続位置の分類 (ソースから)
         #x_data, y_data = nl.gen_dataset_dirsnk(board_x, board_y, board, n_dims) # 配線接続位置の分類 (シンクから)
 
-        _x_test = _x_test + x_data
-        _y_test = _y_test + y_data
+        x_test_raw = x_test_raw + x_data
+        y_test_raw = y_test_raw + y_data
 print ''
 
-assert(len(_x_train) != 0)
-assert(len(_y_train) != 0)
-x_train = np.array(_x_train, dtype=np.float32)
-y_train = np.array(_y_train, dtype=np.int32)
+assert(len(x_train_raw) != 0)
+assert(len(y_train_raw) != 0)
+x_train = np.array(x_train_raw, dtype=np.float32)
+y_train = np.array(y_train_raw, dtype=np.int32)
 
 if testfilename != 'all':
-    assert(len(_x_test) != 0)
-    assert(len(_y_test) != 0)
-    x_test = np.array(_x_test, dtype=np.float32)
-    y_test = np.array(_y_test, dtype=np.int32)
+    assert(len(x_test_raw) != 0)
+    assert(len(y_test_raw) != 0)
+    x_test = np.array(x_test_raw, dtype=np.float32)
+    y_test = np.array(y_test_raw, dtype=np.int32)
 
 for epoch in xrange(1, n_epoch + 1):
     # Training
