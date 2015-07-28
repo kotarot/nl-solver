@@ -22,19 +22,30 @@ import nl
 
 #### CONFIGURATION ####
 parser = argparse.ArgumentParser(description='Machine learning based nl-solver test: WINDOW (testing)')
-parser.add_argument('input', nargs=None, default=None, type=str, help='Path to input problem file')
-parser.add_argument('--pickle', '-p', default=None, type=str, help='Path to input pickle (dump) model file')
+parser.add_argument('input', nargs=None, default=None, type=str,
+                    help='Path to input problem file')
+parser.add_argument('--pickle', '-p', default=None, type=str,
+                    help='Path to input pickle (dump) model file')
 args = parser.parse_args()
 
 input_problem = args.input
 input_pickle  = args.pickle
 
-# pickle ファイル名から dims を読み取る
+# (1) pickle ファイル名から dims を読み取る
+# (2) pickle ファイル名から dataset を読み取る
 n_dims = -1
-for token in input_pickle.split('_'):
-    if 'dim' in token:
-        n_dims = int(token[3:])
+dataset = None
+pickle_path = input_pickle.split('/')
+pickle_filename = pickle_path[-1]
+for token in pickle_filename.split('_'):
+    if token[0:1] == 's':
+        n_dims = int(token[1:])
+    if token[0:1] == 'd':
+        filetokens = token[1:].split('.')
+        dataset = filetokens[0]
 assert(1 <= n_dims)
+assert(dataset != None)
+n_dims_half = n_dims / 2
 
 
 # [3.1] 準備
@@ -60,7 +71,7 @@ def evaluate(x_data):
 
 # Testing phase
 board_x, board_y, board = nl.read_probfile(input_problem, n_dims)
-x_data, _ = nl.gen_dataset_shape(board_x, board_y, board, n_dims)
+x_data, _ = nl.gen_dataset_shape(board_x, board_y, board, n_dims, dataset)
 
 x_test = np.array(x_data, dtype=np.float32)
 
@@ -69,8 +80,8 @@ result = evaluate(x_test)
 # テストデータの配線を表示
 idx = 0
 str = ['   ', ' │ ', '─┘ ', ' └─', '─┐ ', ' ┌─', '───']
-for y in range(n_dims / 2, board_y + n_dims / 2):
-    for x in range(n_dims / 2, board_x + n_dims / 2):
+for y in range(n_dims_half, board_y + n_dims_half):
+    for x in range(n_dims_half, board_x + n_dims_half):
         if board[y][x]['type'] == 1:
             sys.stdout.write('\033[1;30;47m ' + nl.int2str(board[y][x]['data'], 36) + ' \033[0m')
         else:

@@ -23,6 +23,7 @@ def read_ansfile(filename, n_dims):
     board = []
     board_x, board_y = -1, -1 # ボードの X と Y
     #maxn_line = -1            # 線番号 (ラインナンバ) の最大値
+    n_dims_half = n_dims / 2
 
     _board = []
     for line in open(filename, 'r'):
@@ -34,17 +35,19 @@ def read_ansfile(filename, n_dims):
         # 1行目以外
         else:
             # 左右の番兵含む
-            line_x = [{'data': -1} for i in range(0, n_dims / 2)] + [{'data': int(token)} for token in line.split(',')] + [{'data': -1} for i in range(0, n_dims / 2)]
+            line_x = [{'data': -1} for i in range(0, n_dims_half)] \
+                   + [{'data': int(token)} for token in line.split(',')] \
+                   + [{'data': -1} for i in range(0, n_dims_half)]
             _board.append(line_x)
 
     # 上下の番兵
-    board = [[{'data': -1} for i in range(0, board_x + n_dims - 1)] for j in range(0, n_dims / 2)] \
+    board = [[{'data': -1} for i in range(0, board_x + n_dims - 1)] for j in range(0, n_dims_half)] \
           + _board \
-          + [[{'data': -1} for i in range(0, board_x + n_dims - 1)] for j in range(0, n_dims / 2)]
+          + [[{'data': -1} for i in range(0, board_x + n_dims - 1)] for j in range(0, n_dims_half)]
 
     # 属性を記録する
-    for y in range(n_dims / 2, board_y + n_dims / 2):
-        for x in range(n_dims / 2, board_x + n_dims / 2):
+    for y in range(n_dims_half, board_y + n_dims_half):
+        for x in range(n_dims_half, board_x + n_dims_half):
             if board[y][x]['data'] != -1:
                 # ラインナンバの最大値を更新
                 #if maxn_line < board[y][x]['data']:
@@ -78,7 +81,6 @@ def read_ansfile(filename, n_dims):
 
     # TODO: 経路の方向の違いによる diri の更新
 
-    #print board
     return board_x, board_y, board
 
 
@@ -89,6 +91,7 @@ Problemファイルを読み込む
 def read_probfile(filename, n_dims):
     board = []
     board_x, board_y = -1, -1 # ボードの X と Y
+    n_dims_half = n_dims / 2
 
     _board = None
     for line in open(filename, 'r'):
@@ -116,14 +119,15 @@ def read_probfile(filename, n_dims):
 
     # 左右の番兵
     for y in range(0, board_y):
-        _board[y] = [{'data': -1} for i in range(0, n_dims / 2)] + _board[y] + [{'data': -1} for i in range(0, n_dims / 2)]
+        _board[y] = [{'data': -1} for i in range(0, n_dims_half)] \
+                  + _board[y] \
+                  + [{'data': -1} for i in range(0, n_dims_half)]
 
     # 上下の番兵
-    board = [[{'data': -1} for i in range(0, board_x + n_dims - 1)] for j in range(0, n_dims / 2)] \
+    board = [[{'data': -1} for i in range(0, board_x + n_dims - 1)] for j in range(0, n_dims_half)] \
           + _board \
-          + [[{'data': -1} for i in range(0, board_x + n_dims - 1)] for j in range(0, n_dims / 2)]
+          + [[{'data': -1} for i in range(0, board_x + n_dims - 1)] for j in range(0, n_dims_half)]
 
-    #print board
     return board_x, board_y, board
 
 
@@ -131,24 +135,44 @@ def read_probfile(filename, n_dims):
 データセットを生成 (配線形状の分類)
 入力はターミナル数字が存在するセルを 1、存在しないセルを 0、ボード外を -1 とした (N^2 - 1) 次元のベクトル
 出力は配線形状を表す分類スカラー数字
+
+[dataset]
+  - window   : 自セルの周囲
+  - windowsn : 自セルの周囲 + 同じ数字の数
 """
-def gen_dataset_shape(board_x, board_y, board, n_dims):
+def gen_dataset_shape(board_x, board_y, board, n_dims, dataset):
     x_data, y_data = [], []
-    for y in range(n_dims / 2, board_y + n_dims / 2):
-        for x in range(n_dims / 2, board_x + n_dims / 2):
+    n_dims_half = n_dims / 2
+
+    for y in range(n_dims_half, board_y + n_dims_half):
+        for x in range(n_dims_half, board_x + n_dims_half):
             if board[y][x]['type'] != 1:
-                dx = []
                 # 入力: window
-                for wy in range(-(n_dims / 2), n_dims / 2 + 1):
-                    for wx in range(-(n_dims / 2), n_dims / 2 + 1):
+                dx = []
+                counterone = {}
+                counter = 0
+                for wy in range(-n_dims_half, n_dims_half + 1):
+                    for wx in range(-n_dims_half, n_dims_half + 1):
                         if not (wx == 0 and wy == 0):
                             if board[y + wy][x + wx]['data'] == -1:
                                 dx.append(-1)
                             elif board[y + wy][x + wx]['type'] == 1:
                                 dx.append(1)
+                                if board[y + wy][x + wx]['data'] not in counterone:
+                                    counterone[board[y + wy][x + wx]['data']] = 1
+                                else:
+                                    counter = counter + 1
                             else:
                                 dx.append(0)
+                if dataset == 'windowsn':
+                    if counter <= 0:
+                        dx.append(0)
+                    elif counter <= 1:
+                        dx.append(0.5)
+                    else:
+                        dx.append(1)
                 x_data.append(dx)
+
                 # 出力: direction
                 if 'shape' in board[y][x]:
                     y_data.append(board[y][x]['shape'])
@@ -166,7 +190,7 @@ def int2str(i, base):
     int2str_table = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
     if not 2 <= base <= 36:
-        raise ValueError('base must be 2 <= base < 36')
+        raise ValueError('base must be 2 <= base <= 36')
 
     result = []
 
