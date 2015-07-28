@@ -22,6 +22,9 @@ import nl
 
 
 #### CONFIGURATION ####
+DIR_DATA = './data'
+DIR_DUMP = './dump'
+
 parser = argparse.ArgumentParser(description='Machine learning based nl-solver test: WINDOW (training)')
 parser.add_argument('--size', '-s', default=3, type=int,
                     help='Window size (dimension)')
@@ -92,14 +95,14 @@ x_train_raw, y_train_raw = [], []
 x_test_raw,  y_test_raw  = [], []
 
 # トレーニング/テスト ファイルを読み込む
-datafiles = glob.glob('./data/*.txt')
+datafiles = glob.glob(DIR_DATA + '/*.txt')
 for datafile in datafiles:
     path_datafile = datafile.replace('\\', '/').split('/')
     datafilename = path_datafile[-1]
     datafilename_woext = datafilename[0:-4]
     # Training data
     if datafilename != testfilename and datafilename_woext != testfilename:
-        print 'Reading training file: ./data/{} ...'.format(datafilename)
+        print 'Reading training file: {}/{} ...'.format(DIR_DATA, datafilename)
         _board_x, _board_y, _board = nl.read_ansfile(datafile, n_dims)
 
         x_data, y_data = nl.gen_dataset_shape(_board_x, _board_y, _board, n_dims, args.dataset) # 配線形状の分類
@@ -110,7 +113,7 @@ for datafile in datafiles:
         y_train_raw = y_train_raw + y_data
     # Test data
     else:
-        print 'Reading testing file: ./data/{} ...'.format(datafilename)
+        print 'Reading testing file: {}/{} ...'.format(DIR_DATA, datafilename)
         board_x, board_y, board = nl.read_ansfile(datafile, n_dims)
 
         x_data, y_data = nl.gen_dataset_shape(board_x, board_y, board, n_dims, args.dataset) # 配線形状の分類
@@ -183,5 +186,5 @@ for epoch in xrange(1, n_epoch + 1):
                 print ''
 
 # モデルをシリアライズ化して保存
-with open('./dump/s{}_u{}_e{}_d{}_t{}.pkl'.format(n_dims, n_units, n_epoch, args.dataset, testfilename_woext), 'w') as f:
+with open(DIR_DUMP + '/s{}_u{}_e{}_d{}_t{}.pkl'.format(n_dims, n_units, n_epoch, args.dataset, testfilename_woext), 'w') as f:
     pickle.dump(model, f)
