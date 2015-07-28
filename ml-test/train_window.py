@@ -183,5 +183,5 @@ for epoch in xrange(1, n_epoch + 1):
                 print ''
 
 # モデルをシリアライズ化して保存
-with open('s{}_u{}_e{}_d{}_t{}.pkl'.format(n_dims, n_units, n_epoch, args.dataset, testfilename_woext), 'w') as f:
+with open('./dump/s{}_u{}_e{}_d{}_t{}.pkl'.format(n_dims, n_units, n_epoch, args.dataset, testfilename_woext), 'w') as f:
     pickle.dump(model, f)
