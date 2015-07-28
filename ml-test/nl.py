@@ -181,6 +181,24 @@ def gen_dataset_shape(board_x, board_y, board, n_dims, dataset):
 
 
 """
+データセットを生成
+配線接続位置の分類 (ソースから)
+  -- 未実装
+"""
+def gen_dataset_dirsrc(board_x, board_y, board, n_dims):
+    raise NotImplementedError()
+
+
+"""
+データセットを生成
+配線接続位置の分類 (シンクから)
+  -- 未実装
+"""
+def gen_dataset_dirsnk(board_x, board_y, board, n_dims):
+    raise NotImplementedError()
+
+
+"""
 数値型を文字列に変換する
 i      数値
 base   基数 (2から36の間の値）
