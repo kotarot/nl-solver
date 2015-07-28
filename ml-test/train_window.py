@@ -32,8 +32,8 @@ parser.add_argument('--unit', '-u', default=100, type=int,
                     help='Number of units in hidden layer')
 parser.add_argument('--epoch', '-e', default=100000, type=int,
                     help='Number of epoches')
-parser.add_argument('--test', '-t', default='all', type=str,
-                    help='Filename of test (which will not be trained) or all (default: all)')
+parser.add_argument('--test', '-t', default='none', type=str,
+                    help='Filename of test (which will not be trained) or none (default: none)')
 parser.add_argument('--show-wrong', '-w', default=False, action='store_true',
                     help='Set on to print incorrect lines in red (default: False)')
 parser.add_argument('--dataset', '-d', default='window', type=str,
@@ -46,9 +46,9 @@ n_dims_half        = n_dims / 2
 n_units            = args.unit
 n_epoch            = args.epoch
 testfilename       = args.test
-testfilename_woext = testfilename.replace('_', '')
+testfilename_short = testfilename.replace('_', '')
 if '.txt' in testfilename:
-    testfilename_woext = testfilename[0:-4]
+    testfilename_short = testfilename[0:-4]
 
 
 # [3.1] 準備
@@ -108,7 +108,7 @@ for datafile in datafiles:
     datafilename_woext = datafilename[0:-4]
     # Training data
     if datafilename != testfilename and datafilename_woext != testfilename:
-        print 'Reading training file: {}/{} ...'.format(DIR_DATA, datafilename)
+        print 'Reading train file: {}/{} ...'.format(DIR_DATA, datafilename)
         _board_x, _board_y, _board = nl.read_ansfile(datafile, n_dims)
 
         x_data, y_data = nl.gen_dataset_shape(_board_x, _board_y, _board, n_dims, args.dataset) # 配線形状の分類
@@ -119,7 +119,7 @@ for datafile in datafiles:
         y_train_raw = y_train_raw + y_data
     # Test data
     else:
-        print 'Reading testing file: {}/{} ...'.format(DIR_DATA, datafilename)
+        print 'Reading test file: {}/{} ...'.format(DIR_DATA, datafilename)
         board_x, board_y, board = nl.read_ansfile(datafile, n_dims)
 
         x_data, y_data = nl.gen_dataset_shape(board_x, board_y, board, n_dims, args.dataset) # 配線形状の分類
@@ -135,7 +135,7 @@ assert(len(y_train_raw) != 0)
 x_train = np.array(x_train_raw, dtype=np.float32)
 y_train = np.array(y_train_raw, dtype=np.int32)
 
-if testfilename != 'all':
+if testfilename != 'none':
     assert(len(x_test_raw) != 0)
     assert(len(y_test_raw) != 0)
     x_test = np.array(x_test_raw, dtype=np.float32)
@@ -163,14 +163,14 @@ for epoch in xrange(1, n_epoch + 1):
     optimizer.update()
 
     # Evaluation
-    if testfilename != 'all':
+    if testfilename != 'none':
         loss_test, accuracy_test, result = forward(x_test, y_test, train=False)
 
     # 訓練データ/テストデータの誤差と、正解精度を表示
     if epoch % 100 == 0:
         print 'epoch', epoch
         print 'Train: mean loss={}, accuracy={}'.format(loss_train.data, accuracy_train.data)
-        if testfilename != 'all':
+        if testfilename != 'none':
             print 'Test:  mean loss={}, accuracy={}'.format(loss_test.data,  accuracy_test.data)
 
             # テストデータの配線を表示
@@ -192,5 +192,5 @@ for epoch in xrange(1, n_epoch + 1):
                 print ''
 
 # モデルをシリアライズ化して保存
-with open(DIR_DUMP + '/s{}_u{}_e{}_d{}_t{}.pkl'.format(n_dims, n_units, n_epoch, args.dataset, testfilename_woext), 'w') as f:
+with open(DIR_DUMP + '/s{}_u{}_e{}_d{}_t{}.pkl'.format(n_dims, n_units, n_epoch, args.dataset, testfilename_short), 'w') as f:
     pickle.dump(model, f)
