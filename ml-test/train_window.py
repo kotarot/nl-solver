@@ -60,11 +60,17 @@ if '.txt' in testfilename:
 # 多層パーセプトロン (中間層 n_units 次元)
 # 入力: N x N - 1 = N^2 - 1 次元 (dataset = window の場合)
 #       N x N = N^2 次元         (dataset = windowsn の場合)
+#       N x N = N^2 + 2 次元     (dataset = windowxa の場合)
+#       N x N = N^2 + 1 次元     (dataset = windowxb の場合)
 # 出力: 7次元
 if args.dataset == 'window':
     input_dims = n_dims**2 - 1
 elif args.dataset == 'windowsn':
     input_dims = n_dims**2
+elif args.dataset == 'windowxa':
+    input_dims = n_dims**2 + 2
+elif args.dataset == 'windowxb':
+    input_dims = n_dims**2 + 1
 else:
     raise NotImplementedError()
 

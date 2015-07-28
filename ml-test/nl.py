@@ -57,10 +57,11 @@ def read_ansfile(filename, n_dims):
                 n_connect, s_connect = 0, 0
                 d_connect = [False, False, False, False] # 上下左右
                 connects = [[x, y - 1], [x, y + 1], [x - 1, y], [x + 1, y]] # 上下左右
-                for i, c in enumerate(connects):
-                    if board[y][x]['data'] == board[c[1]][c[0]]['data']:
-                        n_connect = n_connect + 1
-                        d_connect[i] = True
+                if 0 < board[y][x]['data']:
+                    for i, c in enumerate(connects):
+                        if board[y][x]['data'] == board[c[1]][c[0]]['data']:
+                            n_connect = n_connect + 1
+                            d_connect[i] = True
                 board[y][x]['type']  = n_connect
                 board[y][x]['dirb']  = d_connect
                 if n_connect != 1:
@@ -132,6 +133,18 @@ def read_probfile(filename, n_dims):
 
 
 """
+個数を正規化する
+"""
+def norm_number(n):
+    if n <= 0:
+        return 0
+    elif n <= 1:
+        return 0.5
+    else:
+        return 1
+
+
+"""
 データセットを生成 (配線形状の分類)
 入力はターミナル数字が存在するセルを 1、存在しないセルを 0、ボード外を -1 とした (N^2 - 1) 次元のベクトル
 出力は配線形状を表す分類スカラー数字
@@ -139,38 +152,56 @@ def read_probfile(filename, n_dims):
 [dataset]
   - window   : 自セルの周囲
   - windowsn : 自セルの周囲 + 同じ数字の数
+  - windowxa : 自セルの周囲 + 同じ数字の数 + 上下/左右にまたがる同じ数字の数
+  - windowxb : 自セルの周囲 + 上下/左右にまたがる同じ数字の数
 """
 def gen_dataset_shape(board_x, board_y, board, n_dims, dataset):
     x_data, y_data = [], []
     n_dims_half = n_dims / 2
 
+    assert(dataset == 'window' or dataset == 'windowsn' or dataset == 'windowxa' or dataset == 'windowxb')
     for y in range(n_dims_half, board_y + n_dims_half):
         for x in range(n_dims_half, board_x + n_dims_half):
             if board[y][x]['type'] != 1:
                 # 入力: window
                 dx = []
-                counterone = {}
-                counter = 0
+                ones = [] # 1回現れた数字のリスト
+                twos = [] # 2回現れた数字のリスト
+                # 自セルの周囲
                 for wy in range(-n_dims_half, n_dims_half + 1):
                     for wx in range(-n_dims_half, n_dims_half + 1):
                         if not (wx == 0 and wy == 0):
+                            cellx = 0
                             if board[y + wy][x + wx]['data'] == -1:
-                                dx.append(-1)
+                                cellx = -1
                             elif board[y + wy][x + wx]['type'] == 1:
-                                dx.append(1)
-                                if board[y + wy][x + wx]['data'] not in counterone:
-                                    counterone[board[y + wy][x + wx]['data']] = 1
+                                cellx = 1
+                                if board[y + wy][x + wx]['data'] not in ones:
+                                    ones.append(board[y + wy][x + wx]['data'])
                                 else:
-                                    counter = counter + 1
+                                    twos.append(board[y + wy][x + wx]['data'])
                             else:
-                                dx.append(0)
-                if dataset == 'windowsn':
-                    if counter <= 0:
-                        dx.append(0)
-                    elif counter <= 1:
-                        dx.append(0.5)
-                    else:
-                        dx.append(1)
+                                cellx = 0
+                            dx.append(cellx)
+                # 同じ数字の数
+                if dataset == 'windowsn' or dataset == 'windowxa':
+                    dx.append(norm_number(len(twos)))
+                # 同じ数字の数 (上下/左右にまたがる)
+                if dataset == 'windowxa' or dataset == 'windowxb':
+                    cross_ver, cross_hor = 0, 0
+                    for n in twos:
+                        points = []
+                        for wy in range(-n_dims_half, n_dims_half + 1):
+                            for wx in range(-n_dims_half, n_dims_half + 1):
+                                if board[y + wy][x + wx]['data'] == n and board[y + wy][x + wx]['type'] == 1:
+                                    points.append({'wx': wx, 'wy': wy})
+                        assert(len(points) == 2)
+                        if points[0]['wy'] * points[1]['wy'] <= 0: # 上下またがる
+                            cross_ver = cross_ver + 1
+                        if points[0]['wx'] * points[1]['wx'] <= 0: # 左右またがる
+                            cross_hor = cross_hor + 1
+                    dx.append(norm_number(cross_ver))
+                    dx.append(norm_number(cross_hor))
                 x_data.append(dx)
 
                 # 出力: direction
