@@ -35,7 +35,9 @@ input_pickle  = args.pickle
 # (2) pickle ファイル名から dataset を読み取る
 n_dims = -1
 dataset = None
-for token in input_pickle.split('_'):
+pickle_path = input_pickle.split('/')
+pickle_filename = pickle_path[-1]
+for token in pickle_filename.split('_'):
     if token[0:1] == 's':
         n_dims = int(token[1:])
     if token[0:1] == 'd':
