@@ -29,6 +29,8 @@ parser.add_argument('--unit', '-u', default=100, type=int,
                     help='Number of units in hidden layer')
 parser.add_argument('--epoch', '-e', default=100000, type=int,
                     help='Number of epoches')
+parser.add_argument('--test', '-t', default='all', type=str,
+                    help='Filename of test (which will not be trained) or all (default: all)')
 parser.add_argument('--show-wrong', '-w', default=False, action='store_true',
                     help='Set on to print incorrect lines in red (default: False)')
 parser.add_argument('--dataset', '-d', default='window', type=str,
@@ -36,10 +38,14 @@ parser.add_argument('--dataset', '-d', default='window', type=str,
 args = parser.parse_args()
 print args
 
-n_dims            = args.size
-n_dims_half       = n_dims / 2
-n_units           = args.unit
-n_epoch           = args.epoch
+n_dims             = args.size
+n_dims_half        = n_dims / 2
+n_units            = args.unit
+n_epoch            = args.epoch
+testfilename       = args.test
+testfilename_woext = testfilename
+if '.txt' in testfilename:
+    testfilename_woext = testfilename[0:-4]
 
 
 # [3.1] 準備
@@ -85,38 +91,46 @@ optimizer.setup(model.collect_parameters())
 _x_train, _y_train = [], []
 _x_test,  _y_test  = [], []
 
-# 複数ファイルを読み込む
-train_files = glob.glob('./data-train/*.txt')
-test_files  = glob.glob('./data-test/*.txt')
-assert(len(test_files) == 1)
+# トレーニング/テスト ファイルを読み込む
+datafiles = glob.glob('./data/*.txt')
+for datafile in datafiles:
+    path_datafile = datafile.replace('\\', '/').split('/')
+    datafilename = path_datafile[-1]
+    datafilename_woext = datafilename[0:-4]
+    # Training data
+    if datafilename != testfilename and datafilename_woext != testfilename:
+        print 'Reading training file: ./data/{} ...'.format(datafilename)
+        _board_x, _board_y, _board = nl.read_ansfile(datafile, n_dims)
 
-for train_file in train_files:
-    print 'Reading training file: {} ...'.format(train_file)
-    board_x, board_y, board = nl.read_ansfile(train_file, n_dims)
+        x_data, y_data = nl.gen_dataset_shape(_board_x, _board_y, _board, n_dims, args.dataset) # 配線形状の分類
+        #x_data, y_data = nl.gen_dataset_dirsrc(board_x, board_y, board, n_dims) # 配線接続位置の分類 (ソースから)
+        #x_data, y_data = nl.gen_dataset_dirsnk(board_x, board_y, board, n_dims) # 配線接続位置の分類 (シンクから)
 
-    x_data, y_data = nl.gen_dataset_shape(board_x, board_y, board, n_dims, args.dataset) # 配線形状の分類
-    #x_data, y_data = nl.gen_dataset_dirsrc(board_x, board_y, board, n_dims) # 配線接続位置の分類 (ソースから)
-    #x_data, y_data = nl.gen_dataset_dirsnk(board_x, board_y, board, n_dims) # 配線接続位置の分類 (シンクから)
+        _x_train = _x_train + x_data
+        _y_train = _y_train + y_data
+    # Test data
+    else:
+        print 'Reading testing file: ./data/{} ...'.format(datafilename)
+        board_x, board_y, board = nl.read_ansfile(datafile, n_dims)
 
-    _x_train = _x_train + x_data
-    _y_train = _y_train + y_data
+        x_data, y_data = nl.gen_dataset_shape(board_x, board_y, board, n_dims, args.dataset) # 配線形状の分類
+        #x_data, y_data = nl.gen_dataset_dirsrc(board_x, board_y, board, n_dims) # 配線接続位置の分類 (ソースから)
+        #x_data, y_data = nl.gen_dataset_dirsnk(board_x, board_y, board, n_dims) # 配線接続位置の分類 (シンクから)
 
-for test_file in test_files:
-    print 'Reading testing file: {} ...'.format(test_file)
-    board_x, board_y, board = nl.read_ansfile(test_file, n_dims)
+        _x_test = _x_test + x_data
+        _y_test = _y_test + y_data
+print ''
 
-    x_data, y_data = nl.gen_dataset_shape(board_x, board_y, board, n_dims, args.dataset) # 配線形状の分類
-    #x_data, y_data = nl.gen_dataset_dirsrc(board_x, board_y, board, n_dims) # 配線接続位置の分類 (ソースから)
-    #x_data, y_data = nl.gen_dataset_dirsnk(board_x, board_y, board, n_dims) # 配線接続位置の分類 (シンクから)
-
-    _x_test = _x_test + x_data
-    _y_test = _y_test + y_data
-
+assert(len(_x_train) != 0)
+assert(len(_y_train) != 0)
 x_train = np.array(_x_train, dtype=np.float32)
 y_train = np.array(_y_train, dtype=np.int32)
 
-x_test = np.array(_x_test, dtype=np.float32)
-y_test = np.array(_y_test, dtype=np.int32)
+if testfilename != 'all':
+    assert(len(_x_test) != 0)
+    assert(len(_y_test) != 0)
+    x_test = np.array(_x_test, dtype=np.float32)
+    y_test = np.array(_y_test, dtype=np.int32)
 
 for epoch in xrange(1, n_epoch + 1):
     # Training
@@ -140,32 +154,34 @@ for epoch in xrange(1, n_epoch + 1):
     optimizer.update()
 
     # Evaluation
-    loss_test, accuracy_test, result = forward(x_test, y_test, train=False)
+    if testfilename != 'all':
+        loss_test, accuracy_test, result = forward(x_test, y_test, train=False)
 
     # 訓練データ/テストデータの誤差と、正解精度を表示
     if epoch % 100 == 0:
         print 'epoch', epoch
         print 'Train: mean loss={}, accuracy={}'.format(loss_train.data, accuracy_train.data)
-        print 'Test:  mean loss={}, accuracy={}'.format(loss_test.data,  accuracy_test.data)
+        if testfilename != 'all':
+            print 'Test:  mean loss={}, accuracy={}'.format(loss_test.data,  accuracy_test.data)
 
-        # テストデータの配線を表示
-        idx = 0
-        str = ['   ', ' │ ', '─┘ ', ' └─', '─┐ ', ' ┌─', '───']
-        for y in range(n_dims_half, board_y + n_dims_half):
-            for x in range(n_dims_half, board_x + n_dims_half):
-                if board[y][x]['type'] == 1:
-                    sys.stdout.write('\033[1;30;47m ' + nl.int2str(board[y][x]['data'], 36) + ' \033[0m')
-                else:
-                    ex_shape = np.argmax(result.data[idx])
-                    # 正しい配線形状
-                    if (not args.show_wrong) or board[y][x]['shape'] == ex_shape:
-                        sys.stdout.write('\033[1;30;47m' + str[ex_shape] + '\033[0m')
-                    # 間違ってる配線形状
+            # テストデータの配線を表示
+            idx = 0
+            str = ['   ', ' │ ', '─┘ ', ' └─', '─┐ ', ' ┌─', '───']
+            for y in range(n_dims_half, board_y + n_dims_half):
+                for x in range(n_dims_half, board_x + n_dims_half):
+                    if board[y][x]['type'] == 1:
+                        sys.stdout.write('\033[1;30;47m ' + nl.int2str(board[y][x]['data'], 36) + ' \033[0m')
                     else:
-                        sys.stdout.write('\033[1;31;47m' + str[ex_shape] + '\033[0m')
-                    idx = idx + 1
-            print ''
+                        ex_shape = np.argmax(result.data[idx])
+                        # 正しい配線形状
+                        if (not args.show_wrong) or board[y][x]['shape'] == ex_shape:
+                            sys.stdout.write('\033[1;30;47m' + str[ex_shape] + '\033[0m')
+                        # 間違ってる配線形状
+                        else:
+                            sys.stdout.write('\033[1;31;47m' + str[ex_shape] + '\033[0m')
+                        idx = idx + 1
+                print ''
 
 # モデルをシリアライズ化して保存
-with open('s{}_u{}_e{}_d{}.pkl'.format(n_dims, n_units, n_epoch, args.dataset), 'w') as f:
+with open('s{}_u{}_e{}_d{}_t{}.pkl'.format(n_dims, n_units, n_epoch, args.dataset, testfilename_woext), 'w') as f:
     pickle.dump(model, f)
