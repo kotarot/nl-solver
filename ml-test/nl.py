@@ -152,13 +152,13 @@ def norm_number(n):
 [dataset]
   - window   : 自セルの周囲
   - windowsn : 自セルの周囲 + 同じ数字の数
-  - windowex : 自セルの周囲 + 同じ数字の数 + 上下/左右にまたがる同じ数字の数
+  - windowxa : 自セルの周囲 + 同じ数字の数 + 上下/左右にまたがる同じ数字の数
 """
 def gen_dataset_shape(board_x, board_y, board, n_dims, dataset):
     x_data, y_data = [], []
     n_dims_half = n_dims / 2
 
-    assert(dataset == 'window' or dataset == 'windowsn' or dataset == 'windowex')
+    assert(dataset == 'window' or dataset == 'windowsn' or dataset == 'windowxa')
     for y in range(n_dims_half, board_y + n_dims_half):
         for x in range(n_dims_half, board_x + n_dims_half):
             if board[y][x]['type'] != 1:
@@ -183,10 +183,10 @@ def gen_dataset_shape(board_x, board_y, board, n_dims, dataset):
                                 cellx = 0
                             dx.append(cellx)
                 # 同じ数字の数
-                if dataset == 'windowsn' or dataset == 'windowex':
+                if dataset == 'windowsn' or dataset == 'windowxa':
                     dx.append(norm_number(len(twos)))
                 # 同じ数字の数 (上下/左右にまたがる)
-                if dataset == 'windowex':
+                if dataset == 'windowxa':
                     cross_ver, cross_hor = 0, 0
                     for n in twos:
                         points = []
