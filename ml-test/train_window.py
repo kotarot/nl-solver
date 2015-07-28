@@ -32,8 +32,8 @@ parser.add_argument('--unit', '-u', default=100, type=int,
                     help='Number of units in hidden layer')
 parser.add_argument('--epoch', '-e', default=100000, type=int,
                     help='Number of epoches')
-parser.add_argument('--test', '-t', default='all', type=str,
-                    help='Filename of test (which will not be trained) or all (default: all)')
+parser.add_argument('--test', '-t', default='none', type=str,
+                    help='Filename of test (which will not be trained) or none (default: none)')
 parser.add_argument('--show-wrong', '-w', default=False, action='store_true',
                     help='Set on to print incorrect lines in red (default: False)')
 parser.add_argument('--dataset', '-d', default='window', type=str,
@@ -135,7 +135,7 @@ assert(len(y_train_raw) != 0)
 x_train = np.array(x_train_raw, dtype=np.float32)
 y_train = np.array(y_train_raw, dtype=np.int32)
 
-if testfilename != 'all':
+if testfilename != 'none':
     assert(len(x_test_raw) != 0)
     assert(len(y_test_raw) != 0)
     x_test = np.array(x_test_raw, dtype=np.float32)
@@ -163,14 +163,14 @@ for epoch in xrange(1, n_epoch + 1):
     optimizer.update()
 
     # Evaluation
-    if testfilename != 'all':
+    if testfilename != 'none':
         loss_test, accuracy_test, result = forward(x_test, y_test, train=False)
 
     # 訓練データ/テストデータの誤差と、正解精度を表示
     if epoch % 100 == 0:
         print 'epoch', epoch
         print 'Train: mean loss={}, accuracy={}'.format(loss_train.data, accuracy_train.data)
-        if testfilename != 'all':
+        if testfilename != 'none':
             print 'Test:  mean loss={}, accuracy={}'.format(loss_test.data,  accuracy_test.data)
 
             # テストデータの配線を表示
