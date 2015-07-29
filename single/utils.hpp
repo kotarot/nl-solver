@@ -10,6 +10,9 @@ void printBoard();
 // 現状のラインを表示
 void printLine(int i);
 
+// ラインナンバーから色をマッピング
+string getcolorescape(int n);
+
 // 正解を表示（正解表示は数字２桁）
 void printSolution();
 // 正解を表示 (ファイル出力)

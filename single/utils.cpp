@@ -73,6 +73,17 @@ void printLine(int i){
 	}
 }
 
+// ラインナンバーから色をマッピング
+// 41m ~ 47m まで 7色
+string getcolorescape(int n) {
+	int color = ((n - 1) % 7) + 41;
+	stringstream ss;
+	ss << color;
+	string p = "\033[";
+	string s = "m";
+	return p + ss.str() + s;
+}
+
 // 正解を表示（正解表示は数字２桁）
 void printSolution(){
 	map<int,map<int,int> > for_print;
@@ -106,15 +117,15 @@ void printSolution(){
 		for(int x=0;x<board->getSizeX();x++){
 			if(for_print[y][x] < 0){
 				// 線が引かれていないマス："00"表示
-				cout << "00";
-			}
-			else{
+				cout << " \033[37m00\033[0m";
+			}else{
 				// その他(2桁表示)
-				cout << setfill('0') << setw(2) << for_print[y][x];
+				int n = for_print[y][x];
+				cout << " " << getcolorescape(n) << setfill('0') << setw(2) << n << "\033[0m";
 			}
-			if(x!=(board->getSizeX()-1)){
-				cout << ",";
-			}
+			//if(x!=(board->getSizeX()-1)){
+			//	cout << ",";
+			//}
 		}
 		cout << endl;
 	}
