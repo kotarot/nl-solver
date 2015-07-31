@@ -91,7 +91,7 @@ def show_wrong_stat(board_pr):
                 else:
                     cells_false = cells_false + 1
     print 'Total cells: {}'.format(cells_total)
-    print '  success:   {} (include {} number cells)'.format(cells_true, cells_num)
+    print '  success:   {} (include {} number-cells)'.format(cells_true, cells_num)
     print '  failure:   {}'.format(cells_false)
     print '  rate:      {}'.format(float(cells_false) / cells_total)
 
@@ -130,3 +130,63 @@ for y in range(n_dims_half, board_y + n_dims_half):
 # 答えデータを入力した場合、レッドラインの割合を表示
 if args.answer:
     show_wrong_stat(board_pr)
+
+# 線が途切れてるセルを特定する
+for y in range(n_dims_half, board_y + n_dims_half):
+    for x in range(n_dims_half, board_x + n_dims_half):
+        # 上下左右で途切れている線
+        gap_arround = {'u': False, 'd': False, 'l': False, 'r': False}
+        if board_pr[y][x]['type'] == 2:
+            # 中心セルの形状
+            shape_center = board_pr[y][x]['shape']
+            # 周囲セル (上下左右) のタイプと形状
+            type_arround = {
+                'u': board_pr[y - 1][x]['type'], 'd': board_pr[y + 1][x]['type'],
+                'l': board_pr[y][x - 1]['type'], 'r': board_pr[y][x + 1]['type']
+            }
+            shape_arround = {
+                'u': board_pr[y - 1][x]['shape'], 'd': board_pr[y + 1][x]['shape'],
+                'l': board_pr[y][x - 1]['shape'], 'r': board_pr[y][x + 1]['shape']
+            }
+
+            # 上方向
+            if shape_center == 1 or shape_center == 2 or shape_center == 3:
+                if type_arround['u'] == 2 and shape_arround['u'] != 1 and shape_arround['u'] != 4 and shape_arround['u'] != 5:
+                    gap_arround['u'] = True
+            # 下方向
+            if shape_center == 1 or shape_center == 4 or shape_center == 5:
+                if type_arround['d'] == 2 and shape_arround['d'] != 1 and shape_arround['d'] != 2 and shape_arround['d'] != 3:
+                    gap_arround['d'] = True
+            # 左方向
+            if shape_center == 2 or shape_center == 4 or shape_center == 6:
+                if type_arround['l'] == 2 and shape_arround['l'] != 3 and shape_arround['l'] != 5 and shape_arround['l'] != 6:
+                    gap_arround['l'] = True
+            # 右方向
+            if shape_center == 3 or shape_center == 5 or shape_center == 6:
+                if type_arround['r'] == 2 and shape_arround['r'] != 2 and shape_arround['r'] != 4 and shape_arround['r'] != 6:
+                    gap_arround['r'] = True
+
+        # 途切れているセル
+        if gap_arround['u'] or gap_arround['d'] or gap_arround['l'] or gap_arround['r']:
+            board[y][x]['hasgap'] = True
+        else:
+            board[y][x]['hasgap'] = False
+
+# 確認
+#for y in range(n_dims_half, board_y + n_dims_half):
+#    for x in range(n_dims_half, board_x + n_dims_half):
+#        if board[y][x]['hasgap']:
+#            print '({}, {}) has a gap.'.format(x - n_dims_half, y - n_dims_half)
+idx = 0
+for y in range(n_dims_half, board_y + n_dims_half):
+    for x in range(n_dims_half, board_x + n_dims_half):
+        if board[y][x]['type'] == 1:
+            sys.stdout.write('\033[1;30;47m ' + nl.int2str(board[y][x]['data'], 36) + ' \033[0m')
+        else:
+            ex_shape = board_pr[y][x]['shape']
+            if board[y][x]['hasgap'] == False:
+                sys.stdout.write('\033[1;30;47m' + shstr[ex_shape] + '\033[0m')
+            else:
+                sys.stdout.write('\033[1;35;47m' + shstr[ex_shape] + '\033[0m')
+            idx = idx + 1
+    print ''
