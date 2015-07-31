@@ -140,14 +140,10 @@ for y in range(n_dims_half, board_y + n_dims_half):
             # 中心セルの形状
             shape_center = board_pr[y][x]['shape']
             # 周囲セル (上下左右) のタイプと形状
-            type_arround = {
-                'u': board_pr[y - 1][x]['type'], 'd': board_pr[y + 1][x]['type'],
-                'l': board_pr[y][x - 1]['type'], 'r': board_pr[y][x + 1]['type']
-            }
-            shape_arround = {
-                'u': board_pr[y - 1][x]['shape'], 'd': board_pr[y + 1][x]['shape'],
-                'l': board_pr[y][x - 1]['shape'], 'r': board_pr[y][x + 1]['shape']
-            }
+            type_arround = {'u': board_pr[y - 1][x]['type'], 'd': board_pr[y + 1][x]['type'],
+                            'l': board_pr[y][x - 1]['type'], 'r': board_pr[y][x + 1]['type']}
+            shape_arround = {'u': board_pr[y - 1][x]['shape'], 'd': board_pr[y + 1][x]['shape'],
+                             'l': board_pr[y][x - 1]['shape'], 'r': board_pr[y][x + 1]['shape']}
 
             # 上方向
             if shape_center == 1 or shape_center == 2 or shape_center == 3:
@@ -190,3 +186,20 @@ for y in range(n_dims_half, board_y + n_dims_half):
                 sys.stdout.write('\033[1;35;47m' + shstr[ex_shape] + '\033[0m')
             idx = idx + 1
     print ''
+
+# レッドラインカバー率を計算
+cells_total = board_x * board_y
+cells_true, cells_false, cells_num = 0, 0, 0
+for y in range(n_dims_half, board_y + n_dims_half):
+    for x in range(n_dims_half, board_x + n_dims_half):
+        if board[y][x]['type'] == 1:
+            cells_true = cells_true + 1
+            cells_num = cells_num + 1
+        else:
+            # 正しい配線形状
+            if board[y][x]['shape'] == board_pr[y][x]['shape']:
+                cells_true = cells_true + 1
+            # 間違ってる配線形状
+            else:
+                cells_false = cells_false + 1
+print 'Covering rate: {}'.format(cells_total)
