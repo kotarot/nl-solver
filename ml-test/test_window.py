@@ -26,6 +26,8 @@ parser.add_argument('input', nargs=None, default=None, type=str,
                     help='Path to input problem/answer file')
 parser.add_argument('--pickle', '-p', default=None, type=str,
                     help='Path to input pickle (dump) model file')
+parser.add_argument('--level', '-l', default=2, type=int,
+                    help='Limit level of coverage expansion (default: 2)')
 parser.add_argument('--answer', '-a', default=False, action='store_true',
                     help='Set on to switch to answer-input mode (default: False)')
 args = parser.parse_args()
@@ -438,7 +440,7 @@ if args.answer:
     # レベル n - 1 で途切れセルとして浮きセルに記録されたセルを
     # 上下左右に1マスずつ拡張させる
     # TODO: 既に同じ数字セル同士を結ぶ配線は固定化しても良いかも？
-    for level in range(1, 3):
+    for level in range(1, args.level + 1):
 
         print ''
         print '[Level {}]'.format(level)
