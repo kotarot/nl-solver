@@ -170,10 +170,6 @@ for y in range(n_dims_half, board_y + n_dims_half):
             board_pr[y][x]['hasgap'] = False
 
 # 確認
-#for y in range(n_dims_half, board_y + n_dims_half):
-#    for x in range(n_dims_half, board_x + n_dims_half):
-#        if board[y][x]['hasgap']:
-#            print '({}, {}) has a gap.'.format(x - n_dims_half, y - n_dims_half)
 idx = 0
 for y in range(n_dims_half, board_y + n_dims_half):
     for x in range(n_dims_half, board_x + n_dims_half):
@@ -198,7 +194,6 @@ for y in range(n_dims_half, board_y + n_dims_half):
     print ''
 
 # レッドラインカバー率を計算
-#cells_total = board_x * board_y
 cells_red, cells_falseneg = 0, 0
 for y in range(n_dims_half, board_y + n_dims_half):
     for x in range(n_dims_half, board_x + n_dims_half):
