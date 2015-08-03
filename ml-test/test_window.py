@@ -203,7 +203,7 @@ def find_terminals(_board, x, y):
         raise Exception('Never reachable here')
 
 def _find_terminals(_board, x, y, _from):
-    if _board[y][x]['type'] == 0:
+    if _board[y][x]['type'] <= 0:
         return None
     elif _board[y][x]['type'] == 1:
         return _board[y][x]['data']
