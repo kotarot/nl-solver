@@ -117,7 +117,6 @@ for y in range(n_dims_half, board_y + n_dims_half):
             sys.stdout.write('\033[1;30;47m ' + nl.int2str(board[y][x]['data'], 36) + ' \033[0m')
         else:
             ex_shape = np.argmax(result.data[idx])
-            assert(ex_shape != 0)
             board_pr[y][x]['shape'] = ex_shape
             # 正しい配線形状
             if (not args.answer) or board[y][x]['shape'] == ex_shape:
