@@ -428,7 +428,28 @@ if args.answer:
                         for cell in path:
                             board_pr[cell['y']][cell['x']]['float'] = 'pattern-4'
 
-    # 確認
+    # 配線の表示とレッドラインカバー率を計算
     show_board(board_pr, True)
-    # レッドラインカバー率を計算
     show_coveragerate(board_pr)
+
+    # [レベル n]
+    # レベル n - 1 で途切れセルとして浮きセルに記録されたセルを
+    # 上下左右に1マスずつ拡張させる
+    for level in range(1, 3):
+
+        print ''
+        print '[Level {}]'.format(level)
+
+        _board_pr = copy.deepcopy(board_pr)
+        for y in range(n_dims_half, board_y + n_dims_half):
+            for x in range(n_dims_half, board_x + n_dims_half):
+                if board_pr[y][x]['float'] == 'gap':
+                    _board_pr[y - 1][x]['float'] = 'gap'
+                    _board_pr[y + 1][x]['float'] = 'gap'
+                    _board_pr[y][x - 1]['float'] = 'gap'
+                    _board_pr[y][x + 1]['float'] = 'gap'
+        board_pr = copy.deepcopy(_board_pr)
+
+        # 配線の表示とレッドラインカバー率を計算
+        show_board(board_pr, True)
+        show_coveragerate(board_pr)
