@@ -117,6 +117,7 @@ for y in range(n_dims_half, board_y + n_dims_half):
             sys.stdout.write('\033[1;30;47m ' + nl.int2str(board[y][x]['data'], 36) + ' \033[0m')
         else:
             ex_shape = np.argmax(result.data[idx])
+            assert(ex_shape != 0)
             board_pr[y][x]['shape'] = ex_shape
             # 正しい配線形状
             if (not args.answer) or board[y][x]['shape'] == ex_shape:
@@ -136,7 +137,7 @@ for y in range(n_dims_half, board_y + n_dims_half):
     for x in range(n_dims_half, board_x + n_dims_half):
         # 上下左右で途切れている線
         gap_arround = {'u': False, 'd': False, 'l': False, 'r': False}
-        if board_pr[y][x]['type'] == 2:
+        if board_pr[y][x]['type'] != 1:
             # 中心セルの形状
             shape_center = board_pr[y][x]['shape']
             # 周囲セル (上下左右) のタイプと形状
@@ -147,26 +148,26 @@ for y in range(n_dims_half, board_y + n_dims_half):
 
             # 上方向
             if shape_center == 1 or shape_center == 2 or shape_center == 3:
-                if type_arround['u'] == 2 and shape_arround['u'] != 1 and shape_arround['u'] != 4 and shape_arround['u'] != 5:
+                if type_arround['u'] != 1 and shape_arround['u'] != 1 and shape_arround['u'] != 4 and shape_arround['u'] != 5:
                     gap_arround['u'] = True
             # 下方向
             if shape_center == 1 or shape_center == 4 or shape_center == 5:
-                if type_arround['d'] == 2 and shape_arround['d'] != 1 and shape_arround['d'] != 2 and shape_arround['d'] != 3:
+                if type_arround['d'] != 1 and shape_arround['d'] != 1 and shape_arround['d'] != 2 and shape_arround['d'] != 3:
                     gap_arround['d'] = True
             # 左方向
             if shape_center == 2 or shape_center == 4 or shape_center == 6:
-                if type_arround['l'] == 2 and shape_arround['l'] != 3 and shape_arround['l'] != 5 and shape_arround['l'] != 6:
+                if type_arround['l'] != 1 and shape_arround['l'] != 3 and shape_arround['l'] != 5 and shape_arround['l'] != 6:
                     gap_arround['l'] = True
             # 右方向
             if shape_center == 3 or shape_center == 5 or shape_center == 6:
-                if type_arround['r'] == 2 and shape_arround['r'] != 2 and shape_arround['r'] != 4 and shape_arround['r'] != 6:
+                if type_arround['r'] != 1 and shape_arround['r'] != 2 and shape_arround['r'] != 4 and shape_arround['r'] != 6:
                     gap_arround['r'] = True
 
         # 途切れているセル
         if gap_arround['u'] or gap_arround['d'] or gap_arround['l'] or gap_arround['r']:
-            board[y][x]['hasgap'] = True
+            board_pr[y][x]['hasgap'] = True
         else:
-            board[y][x]['hasgap'] = False
+            board_pr[y][x]['hasgap'] = False
 
 # 確認
 #for y in range(n_dims_half, board_y + n_dims_half):
@@ -179,27 +180,33 @@ for y in range(n_dims_half, board_y + n_dims_half):
         if board[y][x]['type'] == 1:
             sys.stdout.write('\033[1;30;47m ' + nl.int2str(board[y][x]['data'], 36) + ' \033[0m')
         else:
-            ex_shape = board_pr[y][x]['shape']
-            if board[y][x]['hasgap'] == False:
-                sys.stdout.write('\033[1;30;47m' + shstr[ex_shape] + '\033[0m')
+            # 正しい配線形状 / 間違ってる配線形状
+            if board[y][x]['shape'] == board_pr[y][x]['shape']:
+                fr_color = '30'
             else:
-                sys.stdout.write('\033[1;35;47m' + shstr[ex_shape] + '\033[0m')
+                fr_color = '31'
+
+            # 途切れてないセル / 途切れてるセル
+            if board_pr[y][x]['hasgap'] == False:
+                bg_color = '47'
+            else:
+                bg_color = '43'
+
+            sys.stdout.write('\033[1;{};{}m{}\033[0m'.format(fr_color, bg_color, shstr[board_pr[y][x]['shape']]))
+
             idx = idx + 1
     print ''
 
 # レッドラインカバー率を計算
-cells_total = board_x * board_y
-cells_true, cells_false, cells_num = 0, 0, 0
+#cells_total = board_x * board_y
+cells_red, cells_falseneg = 0, 0
 for y in range(n_dims_half, board_y + n_dims_half):
     for x in range(n_dims_half, board_x + n_dims_half):
-        if board[y][x]['type'] == 1:
-            cells_true = cells_true + 1
-            cells_num = cells_num + 1
-        else:
-            # 正しい配線形状
-            if board[y][x]['shape'] == board_pr[y][x]['shape']:
-                cells_true = cells_true + 1
-            # 間違ってる配線形状
-            else:
-                cells_false = cells_false + 1
-print 'Covering rate: {}'.format(cells_total)
+        if board[y][x]['type'] != 1:
+            # 間違っている配線 (レッドライン)
+            if board[y][x]['shape'] != board_pr[y][x]['shape']:
+                cells_red = cells_red + 1
+            # 間違っている配線 (レッドライン) かつ引き剥がすセルに指定されていない
+            if board[y][x]['shape'] != board_pr[y][x]['shape'] and board_pr[y][x]['hasgap']:
+                cells_falseneg = cells_falseneg + 1
+print 'Coverage rate: {}% ({} / {})'.format(cells_falseneg * 100.0 / cells_red, cells_falseneg, cells_red)
