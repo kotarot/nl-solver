@@ -88,7 +88,7 @@ def show_board(_board, show_float=False):
                 # 途切れてないセル / 途切れてるセル
                 bg_color = '47'
                 if show_float:
-                    if _board[y][x]['float']:
+                    if _board[y][x]['float'] != None:
                         bg_color = '43'
 
                 sys.stdout.write('\033[1;{};{}m{}\033[0m'.format(fr_color, bg_color, shstr[_board[y][x]['shape']]))
@@ -149,12 +149,12 @@ def show_wrong_stat(board_pr):
     cells_true, cells_false, cells_num = 0, 0, 0
     for y in range(n_dims_half, board_y + n_dims_half):
         for x in range(n_dims_half, board_x + n_dims_half):
-            if board[y][x]['type'] == 1:
+            if board_pr[y][x]['type'] == 1:
                 cells_true = cells_true + 1
                 cells_num = cells_num + 1
             else:
                 # 正しい配線形状
-                if board[y][x]['shape'] == board_pr[y][x]['shape']:
+                if not board_pr[y][x]['wrong']:
                     cells_true = cells_true + 1
                 # 間違ってる配線形状
                 else:
@@ -170,14 +170,165 @@ def show_coveragerate(board_pr):
     cells_red, cells_falseneg = 0, 0
     for y in range(n_dims_half, board_y + n_dims_half):
         for x in range(n_dims_half, board_x + n_dims_half):
-            if board[y][x]['type'] != 1:
+            if board_pr[y][x]['type'] != 1:
                 # 間違っている配線 (レッドライン)
-                if board[y][x]['shape'] != board_pr[y][x]['shape']:
+                if board_pr[y][x]['wrong']:
                     cells_red = cells_red + 1
                 # 間違っている配線 (レッドライン) かつ引き剥がすセルに指定されていない
-                if board[y][x]['shape'] != board_pr[y][x]['shape'] and board_pr[y][x]['hasgap']:
+                if board_pr[y][x]['wrong'] and board_pr[y][x]['float'] is not None:
                     cells_falseneg = cells_falseneg + 1
     print 'Coverage rate: {}% ({} / {})'.format(cells_falseneg * 100.0 / cells_red, cells_falseneg, cells_red)
+
+
+# ボードと配線の座標を入力したとき、
+# その座標を含む配線の両端の数字セルの数字をタプルで返す
+def find_terminals(_board, x, y):
+    assert(_board[y][x]['type'] != 1)
+
+    if _board[y][x]['shape'] == 1:
+        return (_find_terminals(_board, x, y - 1, 'south'), _find_terminals(_board, x, y + 1, 'north'))
+    elif _board[y][x]['shape'] == 2:
+        return (_find_terminals(_board, x, y - 1, 'south'), _find_terminals(_board, x - 1, y, 'east'))
+    elif _board[y][x]['shape'] == 3:
+        return (_find_terminals(_board, x, y - 1, 'south'), _find_terminals(_board, x + 1, y, 'west'))
+    elif _board[y][x]['shape'] == 4:
+        return (_find_terminals(_board, x, y + 1, 'north'), _find_terminals(_board, x - 1, y, 'east'))
+    elif _board[y][x]['shape'] == 5:
+        return (_find_terminals(_board, x, y + 1, 'north'), _find_terminals(_board, x + 1, y, 'west'))
+    elif _board[y][x]['shape'] == 6:
+        return (_find_terminals(_board, x - 1, y, 'east'), _find_terminals(_board, x + 1, y, 'west'))
+    else:
+        raise Exception('Never reachable here')
+
+def _find_terminals(_board, x, y, _from):
+    if _board[y][x]['type'] == 0:
+        return None
+    elif _board[y][x]['type'] == 1:
+        return _board[y][x]['data']
+    else:
+        if _board[y][x]['shape'] == 0:
+            return None
+        elif _board[y][x]['shape'] == 1:
+            if _from == 'south':
+                return _find_terminals(_board, x, y - 1, 'south')
+            elif _from == 'north':
+                return _find_terminals(_board, x, y + 1, 'north')
+            else:
+                return None
+        elif _board[y][x]['shape'] == 2:
+            if _from == 'west':
+                return _find_terminals(_board, x, y - 1, 'south')
+            elif _from == 'north':
+                return _find_terminals(_board, x - 1, y, 'east')
+            else:
+                return None
+        elif _board[y][x]['shape'] == 3:
+            if _from == 'east':
+                return _find_terminals(_board, x, y - 1, 'south')
+            elif _from == 'north':
+                return _find_terminals(_board, x + 1, y, 'west')
+            else:
+                return None
+        elif _board[y][x]['shape'] == 4:
+            if _from == 'west':
+                return _find_terminals(_board, x, y + 1, 'north')
+            elif _from == 'south':
+                return _find_terminals(_board, x - 1, y, 'east')
+            else:
+                return None
+        elif _board[y][x]['shape'] == 5:
+            if _from == 'east':
+                return _find_terminals(_board, x, y + 1, 'north')
+            elif _from == 'south':
+                return _find_terminals(_board, x + 1, y, 'west')
+            else:
+                return None
+        elif _board[y][x]['shape'] == 6:
+            if _from == 'east':
+                return _find_terminals(_board, x - 1, y, 'east')
+            elif _from == 'west':
+                return _find_terminals(_board, x + 1, y, 'west')
+            else:
+                return None
+        else:
+            raise Exception('Never reachable here')
+
+
+# ボードと配線の座標を入力したとき、
+# その座標を含む配線の座標のリスト (path) を返す
+def find_path(_board, x, y):
+    assert(_board[y][x]['type'] != 1)
+
+    start = [{'x': x, 'y': y}]
+    if _board[y][x]['shape'] == 1:
+        return _find_path(_board, x, y - 1, 'south') + start + _find_path(_board, x, y + 1, 'north')
+    elif _board[y][x]['shape'] == 2:
+        return _find_path(_board, x, y - 1, 'south') + start + _find_path(_board, x - 1, y, 'east')
+    elif _board[y][x]['shape'] == 3:
+        return _find_path(_board, x, y - 1, 'south') + start + _find_path(_board, x + 1, y, 'west')
+    elif _board[y][x]['shape'] == 4:
+        return _find_path(_board, x, y + 1, 'north') + start + _find_path(_board, x - 1, y, 'east')
+    elif _board[y][x]['shape'] == 5:
+        return _find_path(_board, x, y + 1, 'north') + start + _find_path(_board, x + 1, y, 'west')
+    elif _board[y][x]['shape'] == 6:
+        return _find_path(_board, x - 1, y, 'east') + start + _find_path(_board, x + 1, y, 'west')
+    else:
+        raise Exception('Never reachable here')
+
+def _find_path(_board, x, y, _from):
+    cur = [{'x': x, 'y': y}]
+
+    if _board[y][x]['type'] == 0:
+        return []
+    elif _board[y][x]['type'] == 1:
+        return []
+    else:
+        if _board[y][x]['shape'] == 0:
+            return []
+        elif _board[y][x]['shape'] == 1:
+            if _from == 'south':
+                return _find_path(_board, x, y - 1, 'south') + cur
+            elif _from == 'north':
+                return _find_path(_board, x, y + 1, 'north') + cur
+            else:
+                return []
+        elif _board[y][x]['shape'] == 2:
+            if _from == 'west':
+                return _find_path(_board, x, y - 1, 'south') + cur
+            elif _from == 'north':
+                return _find_path(_board, x - 1, y, 'east') + cur
+            else:
+                return []
+        elif _board[y][x]['shape'] == 3:
+            if _from == 'east':
+                return _find_path(_board, x, y - 1, 'south') + cur
+            elif _from == 'north':
+                return _find_path(_board, x + 1, y, 'west') + cur
+            else:
+                return []
+        elif _board[y][x]['shape'] == 4:
+            if _from == 'west':
+                return _find_path(_board, x, y + 1, 'north') + cur
+            elif _from == 'south':
+                return _find_path(_board, x - 1, y, 'east') + cur
+            else:
+                return []
+        elif _board[y][x]['shape'] == 5:
+            if _from == 'east':
+                return _find_path(_board, x, y + 1, 'north') + cur
+            elif _from == 'south':
+                return _find_path(_board, x + 1, y, 'west') + cur
+            else:
+                return []
+        elif _board[y][x]['shape'] == 6:
+            if _from == 'east':
+                return _find_path(_board, x - 1, y, 'east') + cur
+            elif _from == 'west':
+                return _find_path(_board, x + 1, y, 'west') + cur
+            else:
+                return []
+        else:
+            raise Exception('Never reachable here')
 
 
 # Testing phase
@@ -212,17 +363,72 @@ show_board(board_pr)
 if args.answer:
     show_wrong_stat(board_pr)
 
-    # 線が途切れてるセルを特定する
-    board_pr = find_gapcells(board_pr)
+    # 浮きセルをリセット
+    # 浮きセルはタッチアンドクロス手法で固定しないセルのこと
+    # None または 文字列 が格納される
+    for y in range(n_dims_half, board_y + n_dims_half):
+        for x in range(n_dims_half, board_x + n_dims_half):
+            board_pr[y][x]['float'] = None
 
-    # 線が途切れているセルを浮きセルに設定する
+    # [レベル 0]
+    # 以下を浮きセルとする
+    #   (1) 途切れているセル
+    #   (2) 空欄セル
+    #   (3) 異なる数字セル同士を結んでしまっている配線全体
+    #   (4) 同じ数字セルから複数の配線が出ている場合、その配線全体
+    #   ((5) 孤立した配線)
+
+    print ''
+    print '[Level 0]'
+
+    # (1) 線が途切れてるセルを特定して浮きセルに設定する
+    board_pr = find_gapcells(board_pr)
     for y in range(n_dims_half, board_y + n_dims_half):
         for x in range(n_dims_half, board_x + n_dims_half):
             if board_pr[y][x]['type'] != 1:
-                board_pr[y][x]['float'] = board_pr[y][x]['hasgap']
+                if board_pr[y][x]['hasgap']:
+                    board_pr[y][x]['float'] = 'gap'
+
+    # (2) 空欄
+    for y in range(n_dims_half, board_y + n_dims_half):
+        for x in range(n_dims_half, board_x + n_dims_half):
+            if board_pr[y][x]['type'] == 0 or board_pr[y][x]['shape'] == 0:
+                board_pr[y][x]['float'] = 'blank'
+
+    # (3) 異なる数字セルを結んでしまっている
+    for y in range(n_dims_half, board_y + n_dims_half):
+        for x in range(n_dims_half, board_x + n_dims_half):
+            if board_pr[y][x]['type'] != 1 and board_pr[y][x]['float'] is None:
+                terminals = find_terminals(board_pr, x, y)
+                if terminals[0] != None and terminals[1] != None and terminals[0] != terminals[1]:
+                    path = find_path(board_pr, x, y)
+                    for cell in path:
+                        board_pr[cell['y']][cell['x']]['float'] = 'pattern-3'
+
+    # (4) 同じ数字から複数
+    for y in range(n_dims_half, board_y + n_dims_half):
+        for x in range(n_dims_half, board_x + n_dims_half):
+            if board_pr[y][x]['type'] == 1:
+                cand = []
+                # 上 (北)
+                if board_pr[y - 1][x]['type'] == 2 and board_pr[y - 1][x]['shape'] in [1, 4, 5]:
+                    cand = cand + [{'x': x, 'y': y - 1}]
+                # 下 (南)
+                if board_pr[y + 1][x]['type'] == 2 and board_pr[y + 1][x]['shape'] in [1, 2, 3]:
+                    cand = cand + [{'x': x, 'y': y + 1}]
+                # 左 (西)
+                if board_pr[y][x - 1]['type'] == 2 and board_pr[y][x - 1]['shape'] in [3, 5, 6]:
+                    cand = cand + [{'x': x - 1, 'y': y}]
+                # 右 (東)
+                if board_pr[y][x + 1]['type'] == 2 and board_pr[y][x + 1]['shape'] in [2, 4, 6]:
+                    cand = cand + [{'x': x + 1, 'y': y}]
+                if 1 < len(cand):
+                    for c in cand:
+                        path = find_path(board_pr, c['x'], c['y'])
+                        for cell in path:
+                            board_pr[cell['y']][cell['x']]['float'] = 'pattern-4'
 
     # 確認
     show_board(board_pr, True)
-
     # レッドラインカバー率を計算
     show_coveragerate(board_pr)
