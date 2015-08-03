@@ -387,13 +387,13 @@ if args.answer:
         for x in range(n_dims_half, board_x + n_dims_half):
             if board_pr[y][x]['type'] != 1:
                 if board_pr[y][x]['hasgap']:
-                    board_pr[y][x]['float'] = 'gap'
+                    board_pr[y][x]['float'] = '1-gap'
 
     # (2) 空欄
     for y in range(n_dims_half, board_y + n_dims_half):
         for x in range(n_dims_half, board_x + n_dims_half):
             if board_pr[y][x]['type'] == 0 or board_pr[y][x]['shape'] == 0:
-                board_pr[y][x]['float'] = 'blank'
+                board_pr[y][x]['float'] = '2-blank'
 
     # (3) 異なる数字セルを結んでしまっている
     for y in range(n_dims_half, board_y + n_dims_half):
@@ -403,7 +403,7 @@ if args.answer:
                 if terminals[0] != None and terminals[1] != None and terminals[0] != terminals[1]:
                     path = find_path(board_pr, x, y)
                     for cell in path:
-                        board_pr[cell['y']][cell['x']]['float'] = 'pattern-3'
+                        board_pr[cell['y']][cell['x']]['float'] = '3-diff'
 
     # (4) 同じ数字から複数
     for y in range(n_dims_half, board_y + n_dims_half):
@@ -426,7 +426,7 @@ if args.answer:
                     for c in cand:
                         path = find_path(board_pr, c['x'], c['y'])
                         for cell in path:
-                            board_pr[cell['y']][cell['x']]['float'] = 'pattern-4'
+                            board_pr[cell['y']][cell['x']]['float'] = '4-mult'
 
     # 配線の表示とレッドラインカバー率を計算
     show_board(board_pr, True)
@@ -443,11 +443,11 @@ if args.answer:
         _board_pr = copy.deepcopy(board_pr)
         for y in range(n_dims_half, board_y + n_dims_half):
             for x in range(n_dims_half, board_x + n_dims_half):
-                if board_pr[y][x]['float'] == 'gap':
-                    _board_pr[y - 1][x]['float'] = 'gap'
-                    _board_pr[y + 1][x]['float'] = 'gap'
-                    _board_pr[y][x - 1]['float'] = 'gap'
-                    _board_pr[y][x + 1]['float'] = 'gap'
+                if board_pr[y][x]['float'] == '1-gap':
+                    _board_pr[y - 1][x]['float'] = '1-gap'
+                    _board_pr[y + 1][x]['float'] = '1-gap'
+                    _board_pr[y][x - 1]['float'] = '1-gap'
+                    _board_pr[y][x + 1]['float'] = '1-gap'
         board_pr = copy.deepcopy(_board_pr)
 
         # 配線の表示とレッドラインカバー率を計算
