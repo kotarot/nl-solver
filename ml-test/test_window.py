@@ -375,7 +375,7 @@ if args.answer:
     #   (1) 途切れているセル
     #   (2) 空欄セル
     #   (3) 異なる数字セル同士を結んでしまっている配線全体
-    #   (4) 同じ数字セルから複数の配線が出ている場合、その配線全体
+    #   (4) 同じ数字セルから複数の配線が出ている場合その配線全体、ただし正しい数字同士を結ぶ配線は除く
     #   ((5) 孤立した配線)
 
     print ''
@@ -424,9 +424,11 @@ if args.answer:
                     cand = cand + [{'x': x + 1, 'y': y}]
                 if 1 < len(cand):
                     for c in cand:
-                        path = find_path(board_pr, c['x'], c['y'])
-                        for cell in path:
-                            board_pr[cell['y']][cell['x']]['float'] = '4-mult'
+                        terminals = find_terminals(board_pr, c['x'], c['y'])
+                        if terminals[0] != None and terminals[1] != None and terminals[0] != terminals[1]:
+                            path = find_path(board_pr, c['x'], c['y'])
+                            for cell in path:
+                                board_pr[cell['y']][cell['x']]['float'] = '4-mult'
 
     # 配線の表示とレッドラインカバー率を計算
     show_board(board_pr, True)
