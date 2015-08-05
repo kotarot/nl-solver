@@ -2,6 +2,7 @@
 #include "./route.hpp"
 #include "./route_intermid.hpp"
 #include "./fixflag.hpp"
+#include "./utils.hpp"
 
 /*******************************************************/
 /** グローバル変数定義 **/
@@ -81,7 +82,7 @@ int main(int argc, char *argv[]){
 	}
 	
 	// 乱数の初期化
-	srand((unsigned int)time(NULL));
+	mt_init_genrand((unsigned long)time(NULL));
 	// ペナルティの初期化
 	penalty_T = 0;
 	penalty_C = 0;
@@ -130,7 +131,7 @@ int main(int argc, char *argv[]){
 		
 		for(int n=1;n<=I_LOOP;n++){ // 内ループ
 			if(m>INIT && !use_intermediate_port){ checkLineNonPassed(); }
-			int id = rand() % board->getLineNum() + 1;
+			int id = (int)mt_genrand_int32(1, board->getLineNum());
 			//cout << "(" << m << "," << n << ")Re-route Line" << id << endl;
 			
 			// 数字が隣接してる場合スキップ
@@ -140,8 +141,8 @@ int main(int argc, char *argv[]){
 			deleting(id);
 			
 			// ペナルティの設定
-			penalty_T = (int)(NT * (rand() % m));
-			penalty_C = (int)(NC * (rand() % m));
+			penalty_T = (int)(NT * (mt_genrand_int32(0, m - 1)));
+			penalty_C = (int)(NC * (mt_genrand_int32(0, m - 1)));
 
 			// 中間ポートを利用しない場合
 			if ( !((board->line(id))->isIntermediateUsed()) ) {
@@ -213,7 +214,7 @@ int main(int argc, char *argv[]){
 		if(candidate_count==0) continue; // 候補数0なら利用しない
 		
 		// 候補の中から中間ポートに設定するマスをランダムに選択
-		int c_d = rand() % candidate_count; // 選択は候補の中で何番目か？
+		int c_d = (int)mt_genrand_int32(0, candidate_count - 1); // 選択は候補の中で何番目か？
 		int n_d = 0; // 何番目なのかをカウントする用の変数
 		
 		bool flag = false; // 二重ループのためフラグが必要
@@ -249,7 +250,7 @@ int main(int argc, char *argv[]){
 		//cout << endl;
 		if(candidate_count==0) continue; // 候補数0なら利用しない
 		
-		c_d = rand() % candidate_count; // 選択は候補の中で何番目か？
+		c_d = (int)mt_genrand_int32(0, candidate_count - 1); // 選択は候補の中で何番目か？
 		n_d = 0; // 何番目なのかをカウントする用の変数
 		
 		for(int i=1;i<=board->getLineNum();i++){

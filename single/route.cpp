@@ -4,6 +4,7 @@
 
 #include "./main.hpp"
 #include "./route.hpp"
+#include "./utils.hpp"
 
 
 extern Board* board;
@@ -444,7 +445,7 @@ bool routing(int trgt_line_id){
 	if (min_direction_array_size == 0) {
 		return false;
 	}
-	int adj_count = rand() % min_direction_array_size;
+	int adj_count = (int)mt_genrand_int32(0, min_direction_array_size - 1);
 	int adj_id = min_direction_array[adj_count];
 	//cout << min_cost << endl;
 	
@@ -520,7 +521,7 @@ bool routing(int trgt_line_id){
 		if(trgt_d.w) next_direction_array.push_back(WEST);
 		//cout << (int)(next_direction_array.size()) << endl;
 		
-		int next_count = rand() % (int)(next_direction_array.size());
+		int next_count = (int)mt_genrand_int32(0, (int)(next_direction_array.size()) - 1);
 		int next_id = next_direction_array[next_count];
 		
 		switch(next_id){
