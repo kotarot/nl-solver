@@ -18,4 +18,8 @@ void printSolution();
 // 正解を表示 (ファイル出力)
 void printSolutionToFile(char *filename);
 
+// メルセンヌ・ツイスタ
+void mt_init_genrand(unsigned long s);
+unsigned long mt_genrand_int32(int a, int b);
+
 #endif

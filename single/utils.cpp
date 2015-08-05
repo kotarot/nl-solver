@@ -176,3 +176,18 @@ void printSolutionToFile(char *filename) {
 		ofs << endl;
 	}
 }
+
+// ================================ //
+// メルセンヌ・ツイスタ
+// ================================ //
+#include "mt19937ar.c"
+
+void mt_init_genrand(unsigned long s) {
+	init_genrand(s);
+}
+
+// AからBの範囲の整数の乱数が欲しいとき
+// 参考 http://www.sat.t.u-tokyo.ac.jp/~omi/random_variables_generation.html
+unsigned long mt_genrand_int32(int a, int b) {
+	return genrand_int32() % (b - a + 1) + a;
+}
