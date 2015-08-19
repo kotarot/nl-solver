@@ -31,6 +31,7 @@ parser.add_argument('--level', '-l', default=2, type=int,
 parser.add_argument('--answer', '-a', default=False, action='store_true',
                     help='Set on to switch to answer-input mode (default: False)')
 args = parser.parse_args()
+print args
 
 input_problem = args.input
 input_pickle  = args.pickle
