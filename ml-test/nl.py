@@ -35,15 +35,15 @@ def read_ansfile(filename, n_dims):
         # 1行目以外
         else:
             # 左右の番兵含む
-            line_x = [{'data': -1} for i in range(0, n_dims_half)] \
-                   + [{'data': int(token)} for token in line.split(',')] \
-                   + [{'data': -1} for i in range(0, n_dims_half)]
+            line_x = [{'data': -1, 'type': -1, 'shape': -1} for i in range(0, n_dims_half)] \
+                   + [{'data': int(token), 'shape': 0} for token in line.split(',')] \
+                   + [{'data': -1, 'type': -1, 'shape': -1} for i in range(0, n_dims_half)]
             _board.append(line_x)
 
     # 上下の番兵
-    board = [[{'data': -1} for i in range(0, board_x + n_dims - 1)] for j in range(0, n_dims_half)] \
+    board = [[{'data': -1, 'type': -1, 'shape': -1} for i in range(0, board_x + n_dims - 1)] for j in range(0, n_dims_half)] \
           + _board \
-          + [[{'data': -1} for i in range(0, board_x + n_dims - 1)] for j in range(0, n_dims_half)]
+          + [[{'data': -1, 'type': -1, 'shape': -1} for i in range(0, board_x + n_dims - 1)] for j in range(0, n_dims_half)]
 
     # 属性を記録する
     for y in range(n_dims_half, board_y + n_dims_half):
@@ -102,7 +102,7 @@ def read_probfile(filename, n_dims):
             size = tokens[1].split('X')
             board_x, board_y = int(size[0]), int(size[1])
             # ボードサイズで初期化
-            _board = [[{'data': 0, 'type': -1} for x in range(0, board_x)] for y in range(0, board_y)]
+            _board = [[{'data': 0, 'type': -1, 'shape': -1} for x in range(0, board_x)] for y in range(0, board_y)]
         # 2行目
         elif 'LINE_NUM' in line:
             continue
@@ -115,19 +115,19 @@ def read_probfile(filename, n_dims):
             point_tokens = tokens[1].split('-')
             src = point_tokens[0].split(',')
             snk = point_tokens[1].split(',')
-            _board[int(src[1])][int(src[0])] = {'data': n_line, 'type': 1}
-            _board[int(snk[1])][int(snk[0])] = {'data': n_line, 'type': 1}
+            _board[int(src[1])][int(src[0])] = {'data': n_line, 'type': 1, 'shape': 0}
+            _board[int(snk[1])][int(snk[0])] = {'data': n_line, 'type': 1, 'shape': 0}
 
     # 左右の番兵
     for y in range(0, board_y):
-        _board[y] = [{'data': -1} for i in range(0, n_dims_half)] \
+        _board[y] = [{'data': -1, 'type': -1, 'shape': -1} for i in range(0, n_dims_half)] \
                   + _board[y] \
-                  + [{'data': -1} for i in range(0, n_dims_half)]
+                  + [{'data': -1, 'type': -1, 'shape': -1} for i in range(0, n_dims_half)]
 
     # 上下の番兵
-    board = [[{'data': -1} for i in range(0, board_x + n_dims - 1)] for j in range(0, n_dims_half)] \
+    board = [[{'data': -1, 'type': -1, 'shape': -1} for i in range(0, board_x + n_dims - 1)] for j in range(0, n_dims_half)] \
           + _board \
-          + [[{'data': -1} for i in range(0, board_x + n_dims - 1)] for j in range(0, n_dims_half)]
+          + [[{'data': -1, 'type': -1, 'shape': -1} for i in range(0, board_x + n_dims - 1)] for j in range(0, n_dims_half)]
 
     return board_x, board_y, board
 
