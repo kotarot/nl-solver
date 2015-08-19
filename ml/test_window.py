@@ -30,11 +30,14 @@ parser.add_argument('--level', '-l', default=2, type=int,
                     help='Limit level of coverage expansion (default: 2)')
 parser.add_argument('--answer', '-a', default=False, action='store_true',
                     help='Set on to switch to answer-input mode (default: False)')
+parser.add_argument('--output', '-o', default=None, type=str,
+                    help='Path to output fix-file')
 args = parser.parse_args()
 print args
 
 input_problem = args.input
 input_pickle  = args.pickle
+output_fix    = args.output
 
 # (1) pickle ファイル名から dims を読み取る
 # (2) pickle ファイル名から dataset を読み取る
@@ -362,100 +365,122 @@ for y in range(n_dims_half, board_y + n_dims_half):
 # テストデータの配線を表示
 show_board(board_pr)
 
-# 答えデータを入力した場合......
+# 答えデータを入力した場合   ...... 答えを参照してチェック
+#             入力しない場合 ...... 指定したレベルの fix-file を出力
 if args.answer:
     show_wrong_stat(board_pr)
 
-    # 浮きセルをリセット
-    # 浮きセルはタッチアンドクロス手法で固定しないセルのこと
-    # None または 文字列 が格納される
-    for y in range(n_dims_half, board_y + n_dims_half):
-        for x in range(n_dims_half, board_x + n_dims_half):
-            board_pr[y][x]['float'] = None
+# 浮きセルをリセット
+# 浮きセルはタッチアンドクロス手法で固定しないセルのこと
+# None または 文字列 が格納される
+for y in range(n_dims_half, board_y + n_dims_half):
+    for x in range(n_dims_half, board_x + n_dims_half):
+        board_pr[y][x]['float'] = None
 
-    # [レベル 0]
-    # 以下を浮きセルとする
-    #   (1) 途切れているセル
-    #   (2) 空欄セル
-    #   (3) 異なる数字セル同士を結んでしまっている配線全体
-    #   (4) 同じ数字セルから複数の配線が出ている場合その配線全体、ただし正しい数字同士を結ぶ配線は除く
-    #   ((5) 孤立した配線)
+# [レベル 0]
+# 以下を浮きセルとする
+#   (1) 途切れているセル
+#   (2) 空欄セル
+#   (3) 異なる数字セル同士を結んでしまっている配線全体
+#   (4) 同じ数字セルから複数の配線が出ている場合その配線全体、ただし正しい数字同士を結ぶ配線は除く
+#   ((5) 孤立した配線)
+
+print ''
+print '[Level 0]'
+
+# (1) 線が途切れてるセルを特定して浮きセルに設定する
+board_pr = find_gapcells(board_pr)
+for y in range(n_dims_half, board_y + n_dims_half):
+    for x in range(n_dims_half, board_x + n_dims_half):
+        if board_pr[y][x]['type'] != 1:
+            if board_pr[y][x]['hasgap']:
+                board_pr[y][x]['float'] = '1-gap'
+
+# (2) 空欄
+for y in range(n_dims_half, board_y + n_dims_half):
+    for x in range(n_dims_half, board_x + n_dims_half):
+        if board_pr[y][x]['type'] == 0 or board_pr[y][x]['shape'] == 0:
+            board_pr[y][x]['float'] = '2-blank'
+
+# (3) 異なる数字セルを結んでしまっている
+for y in range(n_dims_half, board_y + n_dims_half):
+    for x in range(n_dims_half, board_x + n_dims_half):
+        if board_pr[y][x]['type'] != 1 and board_pr[y][x]['float'] is None:
+            terminals = find_terminals(board_pr, x, y)
+            if terminals[0] != None and terminals[1] != None and terminals[0] != terminals[1]:
+                path = find_path(board_pr, x, y)
+                for cell in path:
+                    board_pr[cell['y']][cell['x']]['float'] = '3-diff'
+
+# (4) 同じ数字から複数
+for y in range(n_dims_half, board_y + n_dims_half):
+    for x in range(n_dims_half, board_x + n_dims_half):
+        if board_pr[y][x]['type'] == 1:
+            cand = []
+            # 上 (北)
+            if board_pr[y - 1][x]['type'] == 2 and board_pr[y - 1][x]['shape'] in [1, 4, 5]:
+                cand = cand + [{'x': x, 'y': y - 1}]
+            # 下 (南)
+            if board_pr[y + 1][x]['type'] == 2 and board_pr[y + 1][x]['shape'] in [1, 2, 3]:
+                cand = cand + [{'x': x, 'y': y + 1}]
+            # 左 (西)
+            if board_pr[y][x - 1]['type'] == 2 and board_pr[y][x - 1]['shape'] in [3, 5, 6]:
+                cand = cand + [{'x': x - 1, 'y': y}]
+            # 右 (東)
+            if board_pr[y][x + 1]['type'] == 2 and board_pr[y][x + 1]['shape'] in [2, 4, 6]:
+                cand = cand + [{'x': x + 1, 'y': y}]
+            if 1 < len(cand):
+                for c in cand:
+                    terminals = find_terminals(board_pr, c['x'], c['y'])
+                    if terminals[0] != None and terminals[1] != None and terminals[0] != terminals[1]:
+                        path = find_path(board_pr, c['x'], c['y'])
+                        for cell in path:
+                            board_pr[cell['y']][cell['x']]['float'] = '4-mult'
+
+# 配線の表示とレッドラインカバー率を計算
+show_board(board_pr, True)
+if args.answer:
+    show_coveragerate(board_pr)
+
+# [レベル n]
+# レベル n - 1 で途切れセルとして浮きセルに記録されたセルを
+# 上下左右に1マスずつ拡張させる
+# TODO: 既に同じ数字セル同士を結ぶ配線は固定化しても良いかも？
+for level in range(1, args.level + 1):
 
     print ''
-    print '[Level 0]'
+    print '[Level {}]'.format(level)
 
-    # (1) 線が途切れてるセルを特定して浮きセルに設定する
-    board_pr = find_gapcells(board_pr)
+    _board_pr = copy.deepcopy(board_pr)
     for y in range(n_dims_half, board_y + n_dims_half):
         for x in range(n_dims_half, board_x + n_dims_half):
-            if board_pr[y][x]['type'] != 1:
-                if board_pr[y][x]['hasgap']:
-                    board_pr[y][x]['float'] = '1-gap'
-
-    # (2) 空欄
-    for y in range(n_dims_half, board_y + n_dims_half):
-        for x in range(n_dims_half, board_x + n_dims_half):
-            if board_pr[y][x]['type'] == 0 or board_pr[y][x]['shape'] == 0:
-                board_pr[y][x]['float'] = '2-blank'
-
-    # (3) 異なる数字セルを結んでしまっている
-    for y in range(n_dims_half, board_y + n_dims_half):
-        for x in range(n_dims_half, board_x + n_dims_half):
-            if board_pr[y][x]['type'] != 1 and board_pr[y][x]['float'] is None:
-                terminals = find_terminals(board_pr, x, y)
-                if terminals[0] != None and terminals[1] != None and terminals[0] != terminals[1]:
-                    path = find_path(board_pr, x, y)
-                    for cell in path:
-                        board_pr[cell['y']][cell['x']]['float'] = '3-diff'
-
-    # (4) 同じ数字から複数
-    for y in range(n_dims_half, board_y + n_dims_half):
-        for x in range(n_dims_half, board_x + n_dims_half):
-            if board_pr[y][x]['type'] == 1:
-                cand = []
-                # 上 (北)
-                if board_pr[y - 1][x]['type'] == 2 and board_pr[y - 1][x]['shape'] in [1, 4, 5]:
-                    cand = cand + [{'x': x, 'y': y - 1}]
-                # 下 (南)
-                if board_pr[y + 1][x]['type'] == 2 and board_pr[y + 1][x]['shape'] in [1, 2, 3]:
-                    cand = cand + [{'x': x, 'y': y + 1}]
-                # 左 (西)
-                if board_pr[y][x - 1]['type'] == 2 and board_pr[y][x - 1]['shape'] in [3, 5, 6]:
-                    cand = cand + [{'x': x - 1, 'y': y}]
-                # 右 (東)
-                if board_pr[y][x + 1]['type'] == 2 and board_pr[y][x + 1]['shape'] in [2, 4, 6]:
-                    cand = cand + [{'x': x + 1, 'y': y}]
-                if 1 < len(cand):
-                    for c in cand:
-                        terminals = find_terminals(board_pr, c['x'], c['y'])
-                        if terminals[0] != None and terminals[1] != None and terminals[0] != terminals[1]:
-                            path = find_path(board_pr, c['x'], c['y'])
-                            for cell in path:
-                                board_pr[cell['y']][cell['x']]['float'] = '4-mult'
+            if board_pr[y][x]['float'] == '1-gap':
+                _board_pr[y - 1][x]['float'] = '1-gap'
+                _board_pr[y + 1][x]['float'] = '1-gap'
+                _board_pr[y][x - 1]['float'] = '1-gap'
+                _board_pr[y][x + 1]['float'] = '1-gap'
+    board_pr = copy.deepcopy(_board_pr)
 
     # 配線の表示とレッドラインカバー率を計算
     show_board(board_pr, True)
-    show_coveragerate(board_pr)
+    if args.answer:
+        show_coveragerate(board_pr)
 
-    # [レベル n]
-    # レベル n - 1 で途切れセルとして浮きセルに記録されたセルを
-    # 上下左右に1マスずつ拡張させる
-    # TODO: 既に同じ数字セル同士を結ぶ配線は固定化しても良いかも？
-    for level in range(1, args.level + 1):
+# Fix ファイルに書き込む
+if not args.answer:
+
+    if output_fix is None:
+        output_fix = 'fix.txt'
+
+    with open(output_fix, 'w') as f:
+        for y in range(n_dims_half, board_y + n_dims_half):
+            line = ''
+            for x in range(n_dims_half, board_x + n_dims_half):
+                if board_pr[y][x]['float'] is None:
+                    line = line + '1'
+                else:
+                    line = line + '0'
+            f.write(line + '\n')
 
         print ''
-        print '[Level {}]'.format(level)
-
-        _board_pr = copy.deepcopy(board_pr)
-        for y in range(n_dims_half, board_y + n_dims_half):
-            for x in range(n_dims_half, board_x + n_dims_half):
-                if board_pr[y][x]['float'] == '1-gap':
-                    _board_pr[y - 1][x]['float'] = '1-gap'
-                    _board_pr[y + 1][x]['float'] = '1-gap'
-                    _board_pr[y][x - 1]['float'] = '1-gap'
-                    _board_pr[y][x + 1]['float'] = '1-gap'
-        board_pr = copy.deepcopy(_board_pr)
-
-        # 配線の表示とレッドラインカバー率を計算
-        show_board(board_pr, True)
-        show_coveragerate(board_pr)
+        print 'Finish writing to fix-file `{}`.'.format(output_fix)
