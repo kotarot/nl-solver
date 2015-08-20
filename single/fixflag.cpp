@@ -19,20 +19,20 @@ extern Board* board;
 //
 // 半固定:
 //   空白マスの1ポートが決定している
-void generateFixFlag(){
-#if 0
+void generateFixFlag() {
+
 	// 隣接数字を全固定にする
-	for(int y=0;y<board->getSizeY();y++){
-		for(int x=0;x<board->getSizeX();x++){
-			Box* trgt_box = board->box(x,y);
-			if(trgt_box->isTypeNumber() && !trgt_box->isTypeAllFixed()){
+	for (int y = 0; y < board->getSizeY(); y++) {
+		for (int x = 0; x < board->getSizeX(); x++) {
+			Box *trgt_box = board->box(x, y);
+			if (trgt_box->isTypeNumber() && !trgt_box->isTypeAllFixed()) {
 				int trgt_num = trgt_box->getNumber();
 
 				// 左端でなければ左隣を調べる
-				if(x!=0){
-					Box* find_box = board->box(x-1,y);
+				if (x != 0) {
+					Box *find_box = board->box(x - 1,y);
 					// 同じ数字なら接続確定
-					if(find_box->isTypeNumber() && find_box->getNumber() == trgt_num){
+					if (find_box->isTypeNumber() && find_box->getNumber() == trgt_num) {
 						trgt_box->setTypeAllFixed();
 						trgt_box->fixWestLine();
 						find_box->setTypeAllFixed();
@@ -45,10 +45,10 @@ void generateFixFlag(){
 				// """ do nothing """
 
 				// 上端でなければ上隣を調べる
-				if(y!=0){
-					Box* find_box = board->box(x,y-1);
+				if (y != 0) {
+					Box *find_box = board->box(x, y - 1);
 					// 同じ数字なら接続確定
-					if(find_box->isTypeNumber() && find_box->getNumber() == trgt_num){
+					if (find_box->isTypeNumber() && find_box->getNumber() == trgt_num) {
 						trgt_box->setTypeAllFixed();
 						trgt_box->fixNorthLine();
 						find_box->setTypeAllFixed();
@@ -63,7 +63,7 @@ void generateFixFlag(){
 			}
 		}
 	}
-#endif
+
 	bool complete_flag = false;
 	while(!complete_flag){
 	complete_flag = true; // フラグオン
@@ -785,16 +785,16 @@ void printFixFlag() {
 				//assert(count == 2);
 			} else if (trgt_box->isTypeHalfFixed()) {
 				if (trgt_box->isNorthLineFixed()) {
-					cout << "  n";
+					cout << " -n";
 				}
 				if (trgt_box->isEastLineFixed()) {
-					cout << "  e";
+					cout << " -e";
 				}
 				if (trgt_box->isSouthLineFixed()) {
-					cout << "  s";
+					cout << " -s";
 				}
 				if (trgt_box->isWestLineFixed()) {
-					cout << "  w";
+					cout << " -w";
 				}
 			} else if (trgt_box->isTypeNumber()) {
 				cout << "  #";
