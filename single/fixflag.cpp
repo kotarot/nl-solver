@@ -754,14 +754,25 @@ void generateFixFlag() {
 void setFixFlagFromFile(char *filename) {
 	ifstream ifs(filename);
 	string str;
+	vector<string> fixlines;
 
 	if (ifs.fail()) {
 		cerr << "Fix-File does not exist." << endl;
 		exit(-1);
 	}
 
-	while (getline(ifs, str)) {
+	for (int i = 0; getline(ifs, str); i++) {
 		cout << str << endl;
+		fixlines[i] = str;
+	}
+
+	for (int y = 0; y < board->getSizeY(); y++) {
+		for (int x = 0; x < board->getSizeX(); x++) {
+			Box *trgt_box = board->box(x, y);
+			if (fixlines[y][x] == "1") {
+				trgt_box->setTypeAllFixed();
+			}
+		}
 	}
 }
 
