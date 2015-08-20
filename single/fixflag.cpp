@@ -699,36 +699,37 @@ void generateFixFlag() {
 
 	} while (!completed);
 
-#if 0
-	// 固定線の個数をチェックする
+	// 固定線の個数をチェックする (空白セルのみ)
 	for (int y = 0; y < board->getSizeY(); y++) {
 		for (int x = 0; x < board->getSizeX(); x++) {
 			Box *trgt_box = board->box(x, y);
-			if (trgt_box->isTypeAllFixed()) {
-				int fixcount = 0;
-				if (trgt_box->isNorthLineFixed()) fixcount++;
-				if (trgt_box->isEastLineFixed())  fixcount++;
-				if (trgt_box->isSouthLineFixed()) fixcount++;
-				if (trgt_box->isWestLineFixed())  fixcount++;
-				assert(fixcount == 2);
-			} else if (trgt_box->isTypeHalfFixed()) {
-				int fixcount = 0;
-				if (trgt_box->isNorthLineFixed()) fixcount++;
-				if (trgt_box->isEastLineFixed())  fixcount++;
-				if (trgt_box->isSouthLineFixed()) fixcount++;
-				if (trgt_box->isWestLineFixed())  fixcount++;
-				assert(fixcount == 1);
-			} else {
-				int fixcount = 0;
-				if (trgt_box->isNorthLineFixed()) fixcount++;
-				if (trgt_box->isEastLineFixed())  fixcount++;
-				if (trgt_box->isSouthLineFixed()) fixcount++;
-				if (trgt_box->isWestLineFixed())  fixcount++;
-				assert(fixcount == 0);
+			if (trgt_box->isTypeBlank()) {
+				if (trgt_box->isTypeAllFixed()) {
+					int fixcount = 0;
+					if (trgt_box->isNorthLineFixed()) fixcount++;
+					if (trgt_box->isEastLineFixed())  fixcount++;
+					if (trgt_box->isSouthLineFixed()) fixcount++;
+					if (trgt_box->isWestLineFixed())  fixcount++;
+					assert(fixcount == 2);
+				} else if (trgt_box->isTypeHalfFixed()) {
+					int fixcount = 0;
+					if (trgt_box->isNorthLineFixed()) fixcount++;
+					if (trgt_box->isEastLineFixed())  fixcount++;
+					if (trgt_box->isSouthLineFixed()) fixcount++;
+					if (trgt_box->isWestLineFixed())  fixcount++;
+					assert(fixcount == 1);
+				} else {
+					int fixcount = 0;
+					if (trgt_box->isNorthLineFixed()) fixcount++;
+					if (trgt_box->isEastLineFixed())  fixcount++;
+					if (trgt_box->isSouthLineFixed()) fixcount++;
+					if (trgt_box->isWestLineFixed())  fixcount++;
+					assert(fixcount == 0);
+				}
 			}
 		}
 	}
-#endif
+
 }
 
 void printFixFlag() {
@@ -739,7 +740,9 @@ void printFixFlag() {
 	for (int y = 0; y < board->getSizeY(); y++) {
 		for (int x = 0; x < board->getSizeX(); x++) {
 			Box* trgt_box = board->box(x, y);
-			if (trgt_box->isTypeAllFixed()) {
+			if (trgt_box->isTypeNumber()) {
+				cout << "  #";
+			} else if (trgt_box->isTypeAllFixed()) {
 				//cout << " F";
 				int count = 0;
 				cout << " ";
@@ -769,8 +772,6 @@ void printFixFlag() {
 				if (trgt_box->isWestLineFixed()) {
 					cout << " -w";
 				}
-			} else if (trgt_box->isTypeNumber()) {
-				cout << "  #";
 			} else {
 				cout << "  .";
 			}
