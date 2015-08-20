@@ -20,7 +20,7 @@ extern Board* board;
 // 半固定:
 //   空白マスの1ポートが決定している
 void generateFixFlag(){
-
+#if 0
 	// 隣接数字を全固定にする
 	for(int y=0;y<board->getSizeY();y++){
 		for(int x=0;x<board->getSizeX();x++){
@@ -63,7 +63,7 @@ void generateFixFlag(){
 			}
 		}
 	}
-
+#endif
 	bool complete_flag = false;
 	while(!complete_flag){
 	complete_flag = true; // フラグオン
@@ -726,6 +726,36 @@ void generateFixFlag(){
 	}
 	
 	}
+#if 0
+	// 固定線の個数をチェックする
+	for (int y = 0; y < board->getSizeY(); y++) {
+		for (int x = 0; x < board->getSizeX(); x++) {
+			Box *trgt_box = board->box(x, y);
+			if (trgt_box->isTypeAllFixed()) {
+				int fixcount = 0;
+				if (trgt_box->isNorthLineFixed()) fixcount++;
+				if (trgt_box->isEastLineFixed())  fixcount++;
+				if (trgt_box->isSouthLineFixed()) fixcount++;
+				if (trgt_box->isWestLineFixed())  fixcount++;
+				assert(fixcount == 2);
+			} else if (trgt_box->isTypeHalfFixed()) {
+				int fixcount = 0;
+				if (trgt_box->isNorthLineFixed()) fixcount++;
+				if (trgt_box->isEastLineFixed())  fixcount++;
+				if (trgt_box->isSouthLineFixed()) fixcount++;
+				if (trgt_box->isWestLineFixed())  fixcount++;
+				assert(fixcount == 1);
+			} else {
+				int fixcount = 0;
+				if (trgt_box->isNorthLineFixed()) fixcount++;
+				if (trgt_box->isEastLineFixed())  fixcount++;
+				if (trgt_box->isSouthLineFixed()) fixcount++;
+				if (trgt_box->isWestLineFixed())  fixcount++;
+				assert(fixcount == 0);
+			}
+		}
+	}
+#endif
 }
 
 void printFixFlag() {
@@ -737,24 +767,39 @@ void printFixFlag() {
 		for (int x = 0; x < board->getSizeX(); x++) {
 			Box* trgt_box = board->box(x, y);
 			if (trgt_box->isTypeAllFixed()) {
-				cout << " F";
-			} else if (trgt_box->isTypeHalfFixed()) {
+				//cout << " F";
+				int count = 0;
+				cout << " ";
 				if (trgt_box->isNorthLineFixed()) {
-					cout << " n";
+					cout << "n"; count++;
 				}
 				if (trgt_box->isEastLineFixed()) {
-					cout << " e";
+					cout << "e"; count++;
 				}
 				if (trgt_box->isSouthLineFixed()) {
-					cout << " s";
+					cout << "s"; count++;
 				}
 				if (trgt_box->isWestLineFixed()) {
-					cout << " w";
+					cout << "w"; count++;
+				}
+				//assert(count == 2);
+			} else if (trgt_box->isTypeHalfFixed()) {
+				if (trgt_box->isNorthLineFixed()) {
+					cout << "  n";
+				}
+				if (trgt_box->isEastLineFixed()) {
+					cout << "  e";
+				}
+				if (trgt_box->isSouthLineFixed()) {
+					cout << "  s";
+				}
+				if (trgt_box->isWestLineFixed()) {
+					cout << "  w";
 				}
 			} else if (trgt_box->isTypeNumber()) {
-				cout << " #";
+				cout << "  #";
 			} else {
-				cout << " .";
+				cout << "  .";
 			}
 		}
 		cout << endl;
