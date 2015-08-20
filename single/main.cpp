@@ -115,13 +115,13 @@ int main(int argc, char *argv[]){
 	for (int m = 2; m <= outer_loops + 1; m++) { // 外ループ
 	
 		if(!use_intermediate_port){ // 中間ポートを利用しない場合
-			if ((m - 1) % 10 == 0) {
+			if ((m - 1) % 100 == 0) {
 				cout << "loop " << (m-1) << endl;
 			}
 			if(m>INIT){ resetCandidate(); }
 		}
 		else{ // 中間ポートを利用する場合
-			if ((m - 1) % 10 == 0) {
+			if ((m - 1) % 100 == 0) {
 				cout << "loop " << (m-1) << "+" << endl;
 			}
 		}
