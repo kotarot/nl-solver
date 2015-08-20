@@ -331,7 +331,7 @@ void initialize(char* filename){
 	string str;
 	
 	if(ifs.fail()){
-		cerr << "File do not exist." << endl;
+		cerr << "Problem file does not exist." << endl;
 		exit(-1);
 	}
 	
