@@ -32,10 +32,10 @@ using namespace std;
 #define SW 4
 
 // Touch & Cross
-#define ML 1
-#define NT 1
-#define NC 2
-#define BT 1
+#define NT 1  // ループ毎にペナルティの更新するときの定数 (タッチ)
+#define NC 2  // ループ毎にペナルティの更新するときの定数 (クロス)
+#define ML 1  // コストの計算
+#define BT 1  // コストの計算
 
 #define O_LOOP  500 // 外ループ回数
 #define INIT     30 // 不通過マスをチェックし始める(外ループの)回数

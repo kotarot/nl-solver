@@ -551,22 +551,26 @@ bool routingSourceToI(int trgt_line_id){
 		}
 	}
 	
-	bool retry = true;
+	// ターゲットラインのトラックを整理する
 	vector<Point>* trgt_track = trgt_line->getTrack();
-	
-	while(retry){
+	bool retry = true;
+	while (retry) {
 		retry = false;
+
+		// トラックを一時退避 (コピー) する
 		vector<Point> tmp_track;
-		for(int i=0;i<(int)(trgt_track->size());i++){
+		for (int i = 0; i < (int)(trgt_track->size()); i++) {
 			tmp_track.push_back((*trgt_track)[i]);
 		}
+
+		// 冗長部分を排除してトラックを整理
 		trgt_track->clear();
-		for(int i=0;i<(int)(tmp_track.size());i++){
-			if(i>=(int)(tmp_track.size())-2){
+		for (int i = 0; i < (int)(tmp_track.size()); i++) {
+			if ((int)(tmp_track.size()) - 2 <= i) {
 				trgt_track->push_back(tmp_track[i]);
 				continue;
 			}
-			if (tmp_track[i + 2].x == tmp_track[i].x && tmp_track[i + 2].y == tmp_track[i].y){
+			if (tmp_track[i].x == tmp_track[i + 2].x && tmp_track[i].y == tmp_track[i + 2].y) {
 				retry = true;
 				i++;
 				continue;
@@ -1181,21 +1185,26 @@ bool routingIToSink(int trgt_line_id){
 			break;
 		}
 	}
-	
+
+	// ターゲットラインのトラックを整理する
 	bool retry = true;
-	while(retry){
+	while (retry) {
 		retry = false;
+
+		// トラックを一時退避 (コピー) する
 		vector<Point> tmp_track;
-		for(int i=0;i<(int)(trgt_track->size());i++){
+		for (int i = 0; i < (int)(trgt_track->size()); i++) {
 			tmp_track.push_back((*trgt_track)[i]);
 		}
+
+		// 冗長部分を排除してトラックを整理
 		trgt_track->clear();
-		for(int i=0;i<(int)(tmp_track.size());i++){
-			if(i>=(int)(tmp_track.size())-2){
+		for (int i = 0; i < (int)(tmp_track.size()); i++) {
+			if ((int)(tmp_track.size()) - 2 <= i) {
 				trgt_track->push_back(tmp_track[i]);
 				continue;
 			}
-			if (tmp_track[i + 2].x == tmp_track[i].x && tmp_track[i + 2].y == tmp_track[i].y){
+			if (tmp_track[i].x == tmp_track[i + 2].x && tmp_track[i].y == tmp_track[i + 2].y) {
 				retry = true;
 				i++;
 				continue;

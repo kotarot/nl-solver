@@ -129,14 +129,18 @@ int main(int argc, char *argv[]){
 		// 解導出フラグ
 		bool complete = false;
 		
-		for(int n=1;n<=I_LOOP;n++){ // 内ループ
-			if(m>INIT && !use_intermediate_port){ checkLineNonPassed(); }
-			int id = (int)mt_genrand_int32(1, board->getLineNum());
+		for (int n = 1; n <= I_LOOP; n++) { // 内ループ
+			if (INIT < m && !use_intermediate_port){
+				checkLineNonPassed();
+			}
+
+			// 問題のおいて数字が隣接していないラインを選択する
+			int id;
+			do {
+				id = (int)mt_genrand_int32(1, board->getLineNum());
+			} while (board->line(id)->getHasLine() == false);
 			//cout << "(" << m << "," << n << ")Re-route Line" << id << endl;
-			
-			// 数字が隣接してる場合スキップ
-			if (board->line(id)->getHasLine() == false) continue;
-			
+
 			// 経路の削除
 			deleting(id);
 			
