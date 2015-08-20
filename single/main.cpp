@@ -20,7 +20,7 @@ vector<int> adj_num; // 固定線に隣接する数字を格納
 //int calc_C; // 計算するとき用
 
 void usage() {
-	cerr << "Usage: solver [--fix-flag] [--loop <loop-number>] [--output <output-file>] input-file" << endl;
+	cerr << "Usage: solver [--fix-flag] [--loop <loop-number>] [--fixfile <fix-file>] [--output <output-file>] input-file" << endl;
 	exit(-1);
 }
 
@@ -33,12 +33,14 @@ int main(int argc, char *argv[]){
 	// Options
 	char *in_filename  = NULL; // 問題ファイル名
 	char *out_filename = NULL; // 出力解答ファイル名
+	char *fix_filename = NULL; // 固定セル情報ファイル名
 	int outer_loops = O_LOOP;  // 外ループ回数
 	bool fixed = false;        // 固定フラグ
 
 	// Options 取得
 	struct option longopts[] = {
 		{"loop",     required_argument, NULL, 'l'},
+		{"fixfile",  required_argument, NULL, 'x'},
 		{"output",   required_argument, NULL, 'o'},
 		{"fix-flag", no_argument,       NULL, 'f'},
 		{"version",  no_argument,       NULL, 'v'},
@@ -50,6 +52,9 @@ int main(int argc, char *argv[]){
 		switch (opt) {
 			case 'l':
 				outer_loops = atoi(optarg);
+				break;
+			case 'x':
+				fix_filename = optarg;
 				break;
 			case 'o':
 				out_filename = optarg;
