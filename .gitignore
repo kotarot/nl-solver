@@ -16,6 +16,7 @@
 *.stackdump
 *.out
 solver
+viewer
 
 # Python files
 *.pyc
