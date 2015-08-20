@@ -509,6 +509,7 @@ void generateFixFlag() {
 				if(d.s) count++;
 				if(d.w) count++;
 
+				// 空白セル かつ 固定線が2個の場合
 				if(trgt_box->isTypeBlank() && count==2){
 					completed = false;
 					trgt_box->setTypeAllFixed();
@@ -611,6 +612,8 @@ void generateFixFlag() {
 						}
 					}
 				}
+
+				// 数字セル かつ 固定線が1個の場合
 				else if(trgt_box->isTypeNumber() && count==1){
 					completed = false;
 					trgt_box->setTypeAllFixed();
