@@ -21,48 +21,8 @@ extern Board* board;
 //   空白マスの1ポートが決定している
 void generateFixFlag() {
 
-	// 隣接数字を全固定にする
-	for (int y = 0; y < board->getSizeY(); y++) {
-		for (int x = 0; x < board->getSizeX(); x++) {
-			Box *trgt_box = board->box(x, y);
-			if (trgt_box->isTypeNumber() && !trgt_box->isTypeAllFixed()) {
-				int trgt_num = trgt_box->getNumber();
-
-				// 左端でなければ左隣を調べる
-				if (x != 0) {
-					Box *find_box = board->box(x - 1,y);
-					// 同じ数字なら接続確定
-					if (find_box->isTypeNumber() && find_box->getNumber() == trgt_num) {
-						trgt_box->setTypeAllFixed();
-						trgt_box->fixWestLine();
-						find_box->setTypeAllFixed();
-						find_box->fixEastLine();
-					}
-				}
-
-				// 右端でなければ右隣を調べる必要はない
-				// (左隣を調べる処理に含まれるため)
-				// """ do nothing """
-
-				// 上端でなければ上隣を調べる
-				if (y != 0) {
-					Box *find_box = board->box(x, y - 1);
-					// 同じ数字なら接続確定
-					if (find_box->isTypeNumber() && find_box->getNumber() == trgt_num) {
-						trgt_box->setTypeAllFixed();
-						trgt_box->fixNorthLine();
-						find_box->setTypeAllFixed();
-						find_box->fixSouthLine();
-					}
-				}
-
-				// 下端でなければ下隣を調べる必要はない
-				// (上隣を調べる処理に含まれるため)
-				// """ do nothing """
-
-			}
-		}
-	}
+	// 隣接数字を固定する
+	fixAdjacentNum();
 
 	bool completed;
 	do {
@@ -750,6 +710,199 @@ void generateFixFlag() {
 
 }
 
+// 隣接数字を固定する
+void fixAdjacentNum() {
+	// 隣接数字を全固定にする
+	for (int y = 0; y < board->getSizeY(); y++) {
+		for (int x = 0; x < board->getSizeX(); x++) {
+			Box *trgt_box = board->box(x, y);
+			if (trgt_box->isTypeNumber() && !trgt_box->isTypeAllFixed()) {
+				int trgt_num = trgt_box->getNumber();
+
+				// 左端でなければ左隣を調べる
+				if (x != 0) {
+					Box *find_box = board->box(x - 1,y);
+					// 同じ数字なら接続確定
+					if (find_box->isTypeNumber() && find_box->getNumber() == trgt_num) {
+						trgt_box->setTypeAllFixed();
+						trgt_box->fixWestLine();
+						find_box->setTypeAllFixed();
+						find_box->fixEastLine();
+					}
+				}
+
+				// 右端でなければ右隣を調べる必要はない
+				// (左隣を調べる処理に含まれるため)
+				// """ do nothing """
+
+				// 上端でなければ上隣を調べる
+				if (y != 0) {
+					Box *find_box = board->box(x, y - 1);
+					// 同じ数字なら接続確定
+					if (find_box->isTypeNumber() && find_box->getNumber() == trgt_num) {
+						trgt_box->setTypeAllFixed();
+						trgt_box->fixNorthLine();
+						find_box->setTypeAllFixed();
+						find_box->fixSouthLine();
+					}
+				}
+
+				// 下端でなければ下隣を調べる必要はない
+				// (上隣を調べる処理に含まれるため)
+				// """ do nothing """
+
+			}
+		}
+	}
+}
+
+// Fix-Flag をファイルで与える
+void setFixFlagFromFile(char *filename) {
+	ifstream ifs(filename);
+	string str;
+	vector<string> fixlines;
+
+	if (ifs.fail()) {
+		cerr << "Fix-File does not exist." << endl;
+		exit(-1);
+	}
+
+	for (int i = 0; getline(ifs, str); i++) {
+		//cout << str << endl;
+		fixlines.push_back(str);
+	}
+
+	for (int y = 0; y < board->getSizeY(); y++) {
+		for (int x = 0; x < board->getSizeX(); x++) {
+			Box *trgt_box = board->box(x, y);
+			// 形状: ['   ', ' │ ', '─┘ ', ' └─', '─┐ ', ' ┌─', '───']
+			if (fixlines[y][x] == '1') {
+				trgt_box->setTypeAllFixed();
+				trgt_box->fixNorthLine();
+				trgt_box->fixSouthLine();
+			} else if (fixlines[y][x] == '2') {
+				trgt_box->setTypeAllFixed();
+				trgt_box->fixNorthLine();
+				trgt_box->fixWestLine();
+			} else if (fixlines[y][x] == '3') {
+				trgt_box->setTypeAllFixed();
+				trgt_box->fixNorthLine();
+				trgt_box->fixEastLine();
+			} else if (fixlines[y][x] == '4') {
+				trgt_box->setTypeAllFixed();
+				trgt_box->fixSouthLine();
+				trgt_box->fixWestLine();
+			} else if (fixlines[y][x] == '5') {
+				trgt_box->setTypeAllFixed();
+				trgt_box->fixSouthLine();
+				trgt_box->fixEastLine();
+			} else if (fixlines[y][x] == '6') {
+				trgt_box->setTypeAllFixed();
+				trgt_box->fixEastLine();
+				trgt_box->fixWestLine();
+			}
+		}
+	}
+
+	// 隣接数字を固定する
+	fixAdjacentNum();
+
+	// 数字セルで固定できるものは全固定にする
+	for (int y = 0; y < board->getSizeY(); y++) {
+		for (int x = 0; x < board->getSizeX(); x++) {
+			Box *trgt_box = board->box(x, y);
+			if (trgt_box->isTypeNumber() && !(trgt_box->isTypeAllFixed())) {
+				int count = 0;
+				// 西マス対象
+				if (x != 0) {
+					Box *find_box = board->box(x - 1, y);
+					if ((find_box->isTypeAllFixed() || find_box->isTypeHalfFixed()) && find_box->isEastLineFixed()) {
+						trgt_box->fixWestLine();
+						count++;
+					}
+				}
+				// 東マス対象
+				if (x != (board->getSizeX() - 1)) {
+					Box *find_box = board->box(x + 1, y);
+					if ((find_box->isTypeAllFixed() || find_box->isTypeHalfFixed()) && find_box->isWestLineFixed()) {
+						trgt_box->fixEastLine();
+						count++;
+					}
+				}
+				// 北マス対象
+				if (y != 0) {
+					Box *find_box = board->box(x, y - 1);
+					if ((find_box->isTypeAllFixed() || find_box->isTypeHalfFixed()) && find_box->isSouthLineFixed()) {
+						trgt_box->fixNorthLine();
+						count++;
+					}
+				}
+				// 南マス対象
+				if (y != (board->getSizeY() - 1)) {
+					Box *find_box = board->box(x, y + 1);
+					if ((find_box->isTypeAllFixed() || find_box->isTypeHalfFixed()) && find_box->isNorthLineFixed()) {
+						trgt_box->fixSouthLine();
+						count++;
+					}
+				}
+				if (count == 1) {
+					trgt_box->setTypeAllFixed();
+				}
+				assert(0 <= count && count <= 1);
+			}
+		}
+	}
+
+	// 空白セルで固定できるものは全固定/半固定にする
+	for (int y = 0; y < board->getSizeY(); y++) {
+		for (int x = 0; x < board->getSizeX(); x++) {
+			Box *trgt_box = board->box(x, y);
+			if (trgt_box->isTypeBlank() && !(trgt_box->isTypeAllFixed()) && !(trgt_box->isTypeHalfFixed())) {
+				int count = 0;
+				// 西マス対象
+				if (x != 0) {
+					Box *find_box = board->box(x - 1, y);
+					if ((find_box->isTypeAllFixed() || find_box->isTypeHalfFixed()) && find_box->isEastLineFixed()) {
+						trgt_box->fixWestLine();
+						count++;
+					}
+				}
+				// 東マス対象
+				if (x != (board->getSizeX() - 1)) {
+					Box *find_box = board->box(x + 1, y);
+					if ((find_box->isTypeAllFixed() || find_box->isTypeHalfFixed()) && find_box->isWestLineFixed()) {
+						trgt_box->fixEastLine();
+						count++;
+					}
+				}
+				// 北マス対象
+				if (y != 0) {
+					Box *find_box = board->box(x, y - 1);
+					if ((find_box->isTypeAllFixed() || find_box->isTypeHalfFixed()) && find_box->isSouthLineFixed()) {
+						trgt_box->fixNorthLine();
+						count++;
+					}
+				}
+				// 南マス対象
+				if (y != (board->getSizeY() - 1)) {
+					Box *find_box = board->box(x, y + 1);
+					if ((find_box->isTypeAllFixed() || find_box->isTypeHalfFixed()) && find_box->isNorthLineFixed()) {
+						trgt_box->fixSouthLine();
+						count++;
+					}
+				}
+				if (count == 1) {
+					trgt_box->setTypeHalfFixed();
+				} else if (count == 2) {
+					trgt_box->setTypeAllFixed();
+				}
+				assert(0 <= count && count <= 2);
+			}
+		}
+	}
+}
+
+// Fix-Flag を表示する
 void printFixFlag() {
 
 	cout << "FIX FLAG" << endl;

@@ -24,10 +24,10 @@ void printBoard(){
 		for(int x=0;x<board->getSizeX();x++){
 			Box* trgt_box = board->box(x,y);
 			if(trgt_box->isTypeBlank()){
-				cout << " .";
+				cout << " . ";
 			}else{
 				int trgt_num = trgt_box->getNumber();
-				cout << " " << changeIntToChar(trgt_num);
+				cout << " " << changeIntToChar(trgt_num) << " ";
 			}
 		}
 		cout << endl;
