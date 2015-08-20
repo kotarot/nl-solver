@@ -80,8 +80,13 @@ int main(int argc, char *argv[]){
 	initialize(in_filename); // 問題盤の生成
 	printBoard(); // 問題盤の表示
 	
+	// 固定セルの生成 (機械学習の結果に基づく)
+	if (fix_filename != NULL) {
+		setFixFlagFromFile(fix_filename);
+		printFixFlag();
+	}
 	// 固定フラグの生成
-	if (fixed) {
+	else if (fixed) {
 		generateFixFlag();
 		printFixFlag();
 	}
