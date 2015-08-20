@@ -467,7 +467,7 @@ void generateFixFlag(){
 					}
 				}
 				
-				// 半固定マスなのにどの報告にも固定線を持たない
+				// 半固定マスなのにどの方向にも固定線を持たない
 				else {
 					assert(!"No fixed line to any direction");
 				}
