@@ -22,7 +22,7 @@ import nl
 
 
 #### CONFIGURATION ####
-DIR_DATA = './data'
+DIR_DATA = './answer'
 DIR_DUMP = './dump'
 
 parser = argparse.ArgumentParser(description='Machine learning based nl-solver test: WINDOW (training)')
