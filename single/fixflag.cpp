@@ -88,7 +88,7 @@ void generateFixFlag() {
 				if(find_box->isTypeAllFixed() && !find_box->isEastLineFixed()){
 					d.w = false;
 				}
-				else if(trgt_box->isTypeNumber() && find_box->isTypeNumber()){
+				else if(trgt_box->isTypeNumber() && find_box->isTypeNumber() && trgt_box->getNumber() != find_box->getNumber()){
 					d.w = false;
 				}
 			}
@@ -104,7 +104,7 @@ void generateFixFlag() {
 				if(find_box->isTypeAllFixed() && !find_box->isWestLineFixed()){
 					d.e = false;
 				}
-				else if(trgt_box->isTypeNumber() && find_box->isTypeNumber()){
+				else if(trgt_box->isTypeNumber() && find_box->isTypeNumber() && trgt_box->getNumber() != find_box->getNumber()){
 					d.e = false;
 				}
 			}
@@ -120,7 +120,7 @@ void generateFixFlag() {
 				if(find_box->isTypeAllFixed() && !find_box->isSouthLineFixed()){
 					d.n = false;
 				}
-				else if(trgt_box->isTypeNumber() && find_box->isTypeNumber()){
+				else if(trgt_box->isTypeNumber() && find_box->isTypeNumber() && trgt_box->getNumber() != find_box->getNumber()){
 					d.n = false;
 				}
 			}
@@ -136,7 +136,7 @@ void generateFixFlag() {
 				if(find_box->isTypeAllFixed() && !find_box->isNorthLineFixed()){
 					d.s = false;
 				}
-				else if(trgt_box->isTypeNumber() && find_box->isTypeNumber()){
+				else if(trgt_box->isTypeNumber() && find_box->isTypeNumber() && trgt_box->getNumber() != find_box->getNumber()){
 					d.s = false;
 				}
 			}
