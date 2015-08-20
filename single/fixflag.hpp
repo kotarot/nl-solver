@@ -8,6 +8,9 @@
 // Fix-Flag を自動で生成する
 void generateFixFlag();
 
+// 隣接数字を固定する
+void fixAdjacentNum();
+
 // Fix-Flag をファイルで与える
 void setFixFlagFromFile(char *filename);
 
