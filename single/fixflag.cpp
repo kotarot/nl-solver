@@ -521,6 +521,7 @@ void generateFixFlag() {
 								cout << "Conflict!! (error: 50)" << endl;
 								exit(50);
 							}else{
+								assert(find_box->isSouthLineFixed() == false);
 								find_box->setTypeAllFixed();
 								find_box->fixSouthLine();
 							}
@@ -529,9 +530,11 @@ void generateFixFlag() {
 								cout << "Conflict!!  (error: 51)" << endl;
 								exit(51);
 							}else if(find_box->isTypeHalfFixed()){
+								assert(find_box->isSouthLineFixed() == false);
 								find_box->setTypeAllFixed();
 								find_box->fixSouthLine();
 							}else{
+								assert(find_box->isSouthLineFixed() == false);
 								find_box->setTypeHalfFixed();
 								find_box->fixSouthLine();
 							}
@@ -545,6 +548,7 @@ void generateFixFlag() {
 								cout << "Conflict!! (error: 52)" << endl;
 								exit(52);
 							}else{
+								assert(find_box->isWestLineFixed() == false);
 								find_box->setTypeAllFixed();
 								find_box->fixWestLine();
 							}
@@ -554,9 +558,11 @@ void generateFixFlag() {
 								cout << "Conflict!! (error: 53)" << endl;
 								exit(53);
 							}else if(find_box->isTypeHalfFixed()){
+								assert(find_box->isWestLineFixed() == false);
 								find_box->setTypeAllFixed();
 								find_box->fixWestLine();
 							}else{
+								assert(find_box->isWestLineFixed() == false);
 								find_box->setTypeHalfFixed();
 								find_box->fixWestLine();
 							}
@@ -570,6 +576,7 @@ void generateFixFlag() {
 								cout << "Conflict!! (error: 54)" << endl;
 								exit(54);
 							}else{
+								assert(find_box->isNorthLineFixed() == false);
 								find_box->setTypeAllFixed();
 								find_box->fixNorthLine();
 							}
@@ -579,9 +586,11 @@ void generateFixFlag() {
 								cout << "Conflict!! (error: 55)" << endl;
 								exit(55);
 							}else if(find_box->isTypeHalfFixed()){
+								assert(find_box->isNorthLineFixed() == false);
 								find_box->setTypeAllFixed();
 								find_box->fixNorthLine();
 							}else{
+								assert(find_box->isNorthLineFixed() == false);
 								find_box->setTypeHalfFixed();
 								find_box->fixNorthLine();
 							}
@@ -595,6 +604,7 @@ void generateFixFlag() {
 								cout << "Conflict!! (error: 56)" << endl;
 								exit(56);
 							}else{
+								assert(find_box->isEastLineFixed() == false);
 								find_box->setTypeAllFixed();
 								find_box->fixEastLine();
 							}
@@ -603,9 +613,11 @@ void generateFixFlag() {
 								cout << "Conflict!! (error: 57)" << endl;
 								exit(57);
 							}else if(find_box->isTypeHalfFixed()){
+								assert(find_box->isEastLineFixed() == false);
 								find_box->setTypeAllFixed();
 								find_box->fixEastLine();
 							}else{
+								assert(find_box->isEastLineFixed() == false);
 								find_box->setTypeHalfFixed();
 								find_box->fixEastLine();
 							}
@@ -624,9 +636,11 @@ void generateFixFlag() {
 							cout << "Conflict!! (error: 60)" << endl;
 							exit(60);
 						}else if(find_box->isTypeHalfFixed()){
+							assert(find_box->isSouthLineFixed() == false);
 							find_box->setTypeAllFixed();
 							find_box->fixSouthLine();
 						}else{
+							assert(find_box->isSouthLineFixed() == false);
 							find_box->setTypeHalfFixed();
 							find_box->fixSouthLine();
 						}
@@ -638,9 +652,11 @@ void generateFixFlag() {
 							cout << "Conflict!! (error: 61)" << endl;
 							exit(61);
 						}else if(find_box->isTypeHalfFixed()){
+							assert(find_box->isWestLineFixed() == false);
 							find_box->setTypeAllFixed();
 							find_box->fixWestLine();
 						}else{
+							assert(find_box->isWestLineFixed() == false);
 							find_box->setTypeHalfFixed();
 							find_box->fixWestLine();
 						}
@@ -652,9 +668,11 @@ void generateFixFlag() {
 							cout << "Conflict!! (error: 62)" << endl;
 							exit(62);
 						}else if(find_box->isTypeHalfFixed()){
+							assert(find_box->isNorthLineFixed() == false);
 							find_box->setTypeAllFixed();
 							find_box->fixNorthLine();
 						}else{
+							assert(find_box->isNorthLineFixed() == false);
 							find_box->setTypeHalfFixed();
 							find_box->fixNorthLine();
 						}
@@ -666,9 +684,11 @@ void generateFixFlag() {
 							cout << "Conflict!! (error: 63)" << endl;
 							exit(63);
 						}else if(find_box->isTypeHalfFixed()){
+							assert(find_box->isEastLineFixed() == false);
 							find_box->setTypeAllFixed();
 							find_box->fixEastLine();
 						}else{
+							assert(find_box->isEastLineFixed() == false);
 							find_box->setTypeHalfFixed();
 							find_box->fixEastLine();
 						}
