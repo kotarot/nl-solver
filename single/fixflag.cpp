@@ -726,6 +726,24 @@ void generateFixFlag() {
 					if (trgt_box->isWestLineFixed())  fixcount++;
 					assert(fixcount == 0);
 				}
+			} else if (trgt_box->isTypeNumber()) {
+				if (trgt_box->isTypeAllFixed()) {
+					int fixcount = 0;
+					if (trgt_box->isNorthLineFixed()) fixcount++;
+					if (trgt_box->isEastLineFixed())  fixcount++;
+					if (trgt_box->isSouthLineFixed()) fixcount++;
+					if (trgt_box->isWestLineFixed())  fixcount++;
+					assert(fixcount == 1);
+				} else if (trgt_box->isTypeHalfFixed()) {
+					assert(!"Number cell cannot have half fixed.");
+				} else {
+					int fixcount = 0;
+					if (trgt_box->isNorthLineFixed()) fixcount++;
+					if (trgt_box->isEastLineFixed())  fixcount++;
+					if (trgt_box->isSouthLineFixed()) fixcount++;
+					if (trgt_box->isWestLineFixed())  fixcount++;
+					assert(fixcount == 0);
+				}
 			}
 		}
 	}
