@@ -477,7 +477,7 @@ if not args.answer:
             line = ''
             for x in range(n_dims_half, board_x + n_dims_half):
                 if board_pr[y][x]['float'] is None:
-                    line = line + '1'
+                    line = line + str(board_pr[y][x]['shape'])
                 else:
                     line = line + '0'
             f.write(line + '\n')
