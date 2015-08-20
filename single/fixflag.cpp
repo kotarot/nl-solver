@@ -750,6 +750,22 @@ void generateFixFlag() {
 
 }
 
+// Fix-Flag をファイルで与える
+void setFixFlagFromFile(char *filename) {
+	ifstream ifs(filename);
+	string str;
+
+	if (ifs.fail()) {
+		cerr << "Fix-File does not exist." << endl;
+		exit(-1);
+	}
+
+	while (getline(ifs, str)) {
+		cout << str << endl;
+	}
+}
+
+// Fix-Flag を表示する
 void printFixFlag() {
 
 	cout << "FIX FLAG" << endl;
