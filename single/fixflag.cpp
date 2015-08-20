@@ -735,11 +735,24 @@ void printFixFlag() {
 		for (int x = 0; x < board->getSizeX(); x++) {
 			Box* trgt_box = board->box(x, y);
 			if (trgt_box->isTypeAllFixed()) {
+				cout << " F";
+			} else if (trgt_box->isTypeHalfFixed()) {
+				if (trgt_box->isNorthLineFixed()) {
+					cout << " n";
+				}
+				if (trgt_box->isEastLineFixed()) {
+					cout << " e";
+				}
+				if (trgt_box->isSouthLineFixed()) {
+					cout << " s";
+				}
+				if (trgt_box->isWestLineFixed()) {
+					cout << " w";
+				}
+			} else if (trgt_box->isTypeNumber()) {
 				cout << " #";
-			} else if(trgt_box->isTypeHalfFixed()) {
-				cout << " +";
 			} else {
-				cout << " -";
+				cout << " .";
 			}
 		}
 		cout << endl;
