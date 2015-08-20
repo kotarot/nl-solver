@@ -5,7 +5,7 @@
 char changeIntToChar(int n);
 
 // 問題盤を表示
-void printBoard();
+void printBoard(char *filename);
 
 // 現状のラインを表示
 void printLine(int i);

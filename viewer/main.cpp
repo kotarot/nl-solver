@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
 	// 問題ファイル入力モード
 	if (!answer) {
 		initialize(filename); // 問題盤の生成
-		printBoard(); // 問題盤の表示
+		printBoard(filename); // 問題盤の表示
 	}
 	// 解答ファイル入力モード
 	else {
