@@ -107,7 +107,7 @@ def read_probfile(filename, n_dims):
         elif 'LINE_NUM' in line:
             continue
         # 3行目以降
-        else:
+        elif 'Line' in line:
             line = line.replace('(', '').replace(')', '')
             tokens = line.split(' ')
             line_tokens = tokens[0].split('#')
