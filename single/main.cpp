@@ -20,7 +20,7 @@ vector<int> adj_num; // 固定線に隣接する数字を格納
 //int calc_C; // 計算するとき用
 
 void usage() {
-	cerr << "Usage: solver [--fix-flag] [--loop <loop-number>] [--fixfile <fix-file>] [--output <output-file>] input-file" << endl;
+	cerr << "Usage: solver [--fix-flag] [--fixfile <fix-file>] [--loop <loop-number>] [--output <output-file>] input-file" << endl;
 	exit(-1);
 }
 
