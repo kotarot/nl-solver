@@ -77,6 +77,9 @@ int main(int argc, char *argv[]){
 	in_filename = argv[optind];
 	assert(in_filename != NULL);
 
+	clock_t start_time, finish_time;
+	start_time = clock();
+
 	initialize(in_filename); // 問題盤の生成
 	printBoard(); // 問題盤の表示
 	
@@ -194,10 +197,23 @@ int main(int argc, char *argv[]){
 
 			// 終了判定（解導出できた場合，正解を出力）
 			if(isFinished()){
+				finish_time = clock();
+
 				printSolution();
 				if (out_filename != NULL) {
 					printSolutionToFile(out_filename);
+					cout << "--> Saved to " << out_filename << endl << endl;
 				}
+
+				cout << "SUMMARY" << endl;
+				cout << "-------" << endl;
+				cout << " - filename:   " << in_filename << endl;
+				cout << " - size:       " << board->getSizeX() << " x " << board->getSizeY() << endl;
+				cout << " - iterations: " << (m - 1) << endl;
+				cout << " - CPU time:   "
+				     << ((double)(finish_time - start_time) / (double)CLOCKS_PER_SEC)
+				     << " sec" << endl;
+
 				complete = true;
 				break;
 			}
