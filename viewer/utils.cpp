@@ -17,7 +17,11 @@ char changeIntToChar(int n){
 void printBoard(char *filename){
 
 	cout << endl;
-	cout << "PROBLEM (" << filename << ")" << endl;
+	cout << "Filename: " << filename << endl;
+	cout << "Size: " << board->getSizeX() << " x " << board->getSizeY() << endl;
+
+	cout << endl;
+	cout << "PROBLEM" << endl;
 	cout << "=======" << endl;
 
 	for(int y=0;y<board->getSizeY();y++){
