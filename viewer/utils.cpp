@@ -15,14 +15,12 @@ char changeIntToChar(int n){
 
 // 問題盤を表示
 void printBoard(char *filename){
-
-	cout << endl;
-	cout << "Filename: " << filename << endl;
-	cout << "Size: " << board->getSizeX() << " x " << board->getSizeY() << endl;
-
 	cout << endl;
 	cout << "PROBLEM" << endl;
 	cout << "=======" << endl;
+
+	cout << "  - filename: " << filename << endl;
+	cout << "  - size: " << board->getSizeX() << " x " << board->getSizeY() << endl;
 
 	for(int y=0;y<board->getSizeY();y++){
 		for(int x=0;x<board->getSizeX();x++){
