@@ -12,6 +12,7 @@
 
 #include <assert.h>
 #include <getopt.h>
+#include <stdlib.h>
 
 using namespace std;
 
