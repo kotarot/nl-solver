@@ -149,18 +149,27 @@ for epoch in xrange(1, n_epoch + 1):
     # 順番をランダムに並び替える
     n_train = len(y_train)
     perm = np.random.permutation(n_train)
-    x_batch = x_train[perm[0:n_train]]
-    y_batch = y_train[perm[0:n_train]]
 
-    # 勾配を初期化
-    optimizer.zero_grads()
+    # バッチサイズごとに学習する
+    sum_loss = 0
+    sum_accuracy = 0
+    batchsize = 100
+    for i in range(0, n_train, batchsize):
+        x_batch = x_train[perm[i:i+batchsize]]
+        y_batch = y_train[perm[i:i+batchsize]]
 
-    # 順伝播させて誤差と精度を算出
-    loss_train, accuracy_train, _ = forward(x_batch, y_batch)
+        # 勾配を初期化
+        optimizer.zero_grads()
 
-    # 誤差逆伝播で勾配を計算
-    loss_train.backward()
-    optimizer.update()
+        # 順伝播させて誤差と精度を算出
+        loss_train, accuracy_train, _ = forward(x_batch, y_batch)
+
+        # 誤差逆伝播で勾配を計算
+        loss_train.backward()
+        optimizer.update()
+
+        sum_loss     = sum_loss + loss_train.data * batchsize
+        sum_accuracy = sum_accuracy + accuracy_train.data * batchsize
 
     # Evaluation
     if testfilename != 'none':
@@ -169,7 +178,7 @@ for epoch in xrange(1, n_epoch + 1):
     # 訓練データ/テストデータの誤差と、正解精度を表示
     if epoch % 100 == 0:
         print 'epoch', epoch
-        print 'Train: mean loss={}, accuracy={}'.format(loss_train.data, accuracy_train.data)
+        print 'Train: mean loss={}, accuracy={}'.format(sum_loss / n_train, sum_accuracy / n_train)
         if testfilename != 'none':
             print 'Test:  mean loss={}, accuracy={}'.format(loss_test.data,  accuracy_test.data)
 
