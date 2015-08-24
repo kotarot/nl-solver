@@ -111,5 +111,5 @@ if __name__ == '__main__':
         jobs.append(p)
         p.start()
 
-    # このスクリプトは最大3分実行する
-    time.sleep(180)
+    # このスクリプトは最大60分実行する
+    time.sleep(600)
