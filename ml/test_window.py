@@ -344,7 +344,8 @@ def _find_path(_board, x, y, _from, depth):
             else:
                 return []
         else:
-            raise Exception('Never reachable here')
+            #raise Exception('Never reachable here')
+            return []
 
 
 # Testing phase
