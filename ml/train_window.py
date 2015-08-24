@@ -168,6 +168,9 @@ for epoch in xrange(1, n_epoch + 1):
         loss_train.backward()
         optimizer.update()
 
+        sum_loss     = sum_loss + loss_train.data * batchsize
+        sum_accuracy = sum_accuracy + accuracy_train.data * batchsize
+
     # Evaluation
     if testfilename != 'none':
         loss_test, accuracy_test, result = forward(x_test, y_test, train=False)
@@ -175,7 +178,7 @@ for epoch in xrange(1, n_epoch + 1):
     # 訓練データ/テストデータの誤差と、正解精度を表示
     if epoch % 100 == 0:
         print 'epoch', epoch
-        print 'Train: mean loss={}, accuracy={}'.format(loss_train.data, accuracy_train.data)
+        print 'Train: mean loss={}, accuracy={}'.format(sum_loss / n_train, sum_accuracy / n_train)
         if testfilename != 'none':
             print 'Test:  mean loss={}, accuracy={}'.format(loss_test.data,  accuracy_test.data)
 
