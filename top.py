@@ -93,16 +93,18 @@ if __name__ == '__main__':
     jobs = []
 
     # 2014手法: タッチアンドクロス
-    p0 = multiprocessing.Process(name='a-2014', target=worker_2014)
-    #p0.daemon = True
-    jobs.append(p0)
-    p0.start()
+    for i in range(0, 2):
+        p = multiprocessing.Process(name='a-2014', target=worker_2014)
+        #p.daemon = True
+        jobs.append(p)
+        p.start()
 
     # 2014手法: タッチアンドクロス (fix-flag)
-    p1 = multiprocessing.Process(name='a-2014-fix', target=worker_2014fix)
-    #p1.daemon = True
-    jobs.append(p1)
-    p1.start()
+    for i in range(0, 2):
+        p = multiprocessing.Process(name='a-2014-fix', target=worker_2014fix)
+        #p.daemon = True
+        jobs.append(p)
+        p.start()
 
     # 2015手法: 機械学習＋タッチアンドクロス (level 0 ~ 3)
     for i in range(0, 4):
