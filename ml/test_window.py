@@ -188,25 +188,30 @@ def show_coveragerate(board_pr):
 
 # ボードと配線の座標を入力したとき、
 # その座標を含む配線の両端の数字セルの数字をタプルで返す
+# Issue #78: 配線ループ時は適当回数で打ち切る
 def find_terminals(_board, x, y):
     assert(_board[y][x]['type'] != 1)
 
     if _board[y][x]['shape'] == 1:
-        return (_find_terminals(_board, x, y - 1, 'south'), _find_terminals(_board, x, y + 1, 'north'))
+        return (_find_terminals(_board, x, y - 1, 'south', 0), _find_terminals(_board, x, y + 1, 'north', 0))
     elif _board[y][x]['shape'] == 2:
-        return (_find_terminals(_board, x, y - 1, 'south'), _find_terminals(_board, x - 1, y, 'east'))
+        return (_find_terminals(_board, x, y - 1, 'south', 0), _find_terminals(_board, x - 1, y, 'east', 0))
     elif _board[y][x]['shape'] == 3:
-        return (_find_terminals(_board, x, y - 1, 'south'), _find_terminals(_board, x + 1, y, 'west'))
+        return (_find_terminals(_board, x, y - 1, 'south', 0), _find_terminals(_board, x + 1, y, 'west', 0))
     elif _board[y][x]['shape'] == 4:
-        return (_find_terminals(_board, x, y + 1, 'north'), _find_terminals(_board, x - 1, y, 'east'))
+        return (_find_terminals(_board, x, y + 1, 'north', 0), _find_terminals(_board, x - 1, y, 'east', 0))
     elif _board[y][x]['shape'] == 5:
-        return (_find_terminals(_board, x, y + 1, 'north'), _find_terminals(_board, x + 1, y, 'west'))
+        return (_find_terminals(_board, x, y + 1, 'north', 0), _find_terminals(_board, x + 1, y, 'west', 0))
     elif _board[y][x]['shape'] == 6:
-        return (_find_terminals(_board, x - 1, y, 'east'), _find_terminals(_board, x + 1, y, 'west'))
+        return (_find_terminals(_board, x - 1, y, 'east', 0), _find_terminals(_board, x + 1, y, 'west', 0))
     else:
         raise Exception('Never reachable here')
 
-def _find_terminals(_board, x, y, _from):
+def _find_terminals(_board, x, y, _from, depth):
+    if 100 < depth:
+        return None
+    depth = depth + 1
+
     if _board[y][x]['type'] <= 0:
         return None
     elif _board[y][x]['type'] == 1:
@@ -216,44 +221,44 @@ def _find_terminals(_board, x, y, _from):
             return None
         elif _board[y][x]['shape'] == 1:
             if _from == 'south':
-                return _find_terminals(_board, x, y - 1, 'south')
+                return _find_terminals(_board, x, y - 1, 'south', depth)
             elif _from == 'north':
-                return _find_terminals(_board, x, y + 1, 'north')
+                return _find_terminals(_board, x, y + 1, 'north', depth)
             else:
                 return None
         elif _board[y][x]['shape'] == 2:
             if _from == 'west':
-                return _find_terminals(_board, x, y - 1, 'south')
+                return _find_terminals(_board, x, y - 1, 'south', depth)
             elif _from == 'north':
-                return _find_terminals(_board, x - 1, y, 'east')
+                return _find_terminals(_board, x - 1, y, 'east', depth)
             else:
                 return None
         elif _board[y][x]['shape'] == 3:
             if _from == 'east':
-                return _find_terminals(_board, x, y - 1, 'south')
+                return _find_terminals(_board, x, y - 1, 'south', depth)
             elif _from == 'north':
-                return _find_terminals(_board, x + 1, y, 'west')
+                return _find_terminals(_board, x + 1, y, 'west', depth)
             else:
                 return None
         elif _board[y][x]['shape'] == 4:
             if _from == 'west':
-                return _find_terminals(_board, x, y + 1, 'north')
+                return _find_terminals(_board, x, y + 1, 'north', depth)
             elif _from == 'south':
-                return _find_terminals(_board, x - 1, y, 'east')
+                return _find_terminals(_board, x - 1, y, 'east', depth)
             else:
                 return None
         elif _board[y][x]['shape'] == 5:
             if _from == 'east':
-                return _find_terminals(_board, x, y + 1, 'north')
+                return _find_terminals(_board, x, y + 1, 'north', depth)
             elif _from == 'south':
-                return _find_terminals(_board, x + 1, y, 'west')
+                return _find_terminals(_board, x + 1, y, 'west', depth)
             else:
                 return None
         elif _board[y][x]['shape'] == 6:
             if _from == 'east':
-                return _find_terminals(_board, x - 1, y, 'east')
+                return _find_terminals(_board, x - 1, y, 'east', depth)
             elif _from == 'west':
-                return _find_terminals(_board, x + 1, y, 'west')
+                return _find_terminals(_board, x + 1, y, 'west', depth)
             else:
                 return None
         else:
@@ -262,26 +267,31 @@ def _find_terminals(_board, x, y, _from):
 
 # ボードと配線の座標を入力したとき、
 # その座標を含む配線の座標のリスト (path) を返す
+# Issue #78: 配線ループ時は適当回数で打ち切る
 def find_path(_board, x, y):
     assert(_board[y][x]['type'] != 1)
 
     start = [{'x': x, 'y': y}]
     if _board[y][x]['shape'] == 1:
-        return _find_path(_board, x, y - 1, 'south') + start + _find_path(_board, x, y + 1, 'north')
+        return _find_path(_board, x, y - 1, 'south', 0) + start + _find_path(_board, x, y + 1, 'north', 0)
     elif _board[y][x]['shape'] == 2:
-        return _find_path(_board, x, y - 1, 'south') + start + _find_path(_board, x - 1, y, 'east')
+        return _find_path(_board, x, y - 1, 'south', 0) + start + _find_path(_board, x - 1, y, 'east', 0)
     elif _board[y][x]['shape'] == 3:
-        return _find_path(_board, x, y - 1, 'south') + start + _find_path(_board, x + 1, y, 'west')
+        return _find_path(_board, x, y - 1, 'south', 0) + start + _find_path(_board, x + 1, y, 'west', 0)
     elif _board[y][x]['shape'] == 4:
-        return _find_path(_board, x, y + 1, 'north') + start + _find_path(_board, x - 1, y, 'east')
+        return _find_path(_board, x, y + 1, 'north', 0) + start + _find_path(_board, x - 1, y, 'east', 0)
     elif _board[y][x]['shape'] == 5:
-        return _find_path(_board, x, y + 1, 'north') + start + _find_path(_board, x + 1, y, 'west')
+        return _find_path(_board, x, y + 1, 'north', 0) + start + _find_path(_board, x + 1, y, 'west', 0)
     elif _board[y][x]['shape'] == 6:
-        return _find_path(_board, x - 1, y, 'east') + start + _find_path(_board, x + 1, y, 'west')
+        return _find_path(_board, x - 1, y, 'east', 0) + start + _find_path(_board, x + 1, y, 'west', 0)
     else:
         raise Exception('Never reachable here')
 
-def _find_path(_board, x, y, _from):
+def _find_path(_board, x, y, _from, depth):
+    if 100 < depth:
+        return []
+    depth = depth + 1
+
     cur = [{'x': x, 'y': y}]
 
     if _board[y][x]['type'] == 0:
@@ -293,44 +303,44 @@ def _find_path(_board, x, y, _from):
             return []
         elif _board[y][x]['shape'] == 1:
             if _from == 'south':
-                return _find_path(_board, x, y - 1, 'south') + cur
+                return _find_path(_board, x, y - 1, 'south', depth) + cur
             elif _from == 'north':
-                return _find_path(_board, x, y + 1, 'north') + cur
+                return _find_path(_board, x, y + 1, 'north', depth) + cur
             else:
                 return []
         elif _board[y][x]['shape'] == 2:
             if _from == 'west':
-                return _find_path(_board, x, y - 1, 'south') + cur
+                return _find_path(_board, x, y - 1, 'south', depth) + cur
             elif _from == 'north':
-                return _find_path(_board, x - 1, y, 'east') + cur
+                return _find_path(_board, x - 1, y, 'east', depth) + cur
             else:
                 return []
         elif _board[y][x]['shape'] == 3:
             if _from == 'east':
-                return _find_path(_board, x, y - 1, 'south') + cur
+                return _find_path(_board, x, y - 1, 'south', depth) + cur
             elif _from == 'north':
-                return _find_path(_board, x + 1, y, 'west') + cur
+                return _find_path(_board, x + 1, y, 'west', depth) + cur
             else:
                 return []
         elif _board[y][x]['shape'] == 4:
             if _from == 'west':
-                return _find_path(_board, x, y + 1, 'north') + cur
+                return _find_path(_board, x, y + 1, 'north', depth) + cur
             elif _from == 'south':
-                return _find_path(_board, x - 1, y, 'east') + cur
+                return _find_path(_board, x - 1, y, 'east', depth) + cur
             else:
                 return []
         elif _board[y][x]['shape'] == 5:
             if _from == 'east':
-                return _find_path(_board, x, y + 1, 'north') + cur
+                return _find_path(_board, x, y + 1, 'north', depth) + cur
             elif _from == 'south':
-                return _find_path(_board, x + 1, y, 'west') + cur
+                return _find_path(_board, x + 1, y, 'west', depth) + cur
             else:
                 return []
         elif _board[y][x]['shape'] == 6:
             if _from == 'east':
-                return _find_path(_board, x - 1, y, 'east') + cur
+                return _find_path(_board, x - 1, y, 'east', depth) + cur
             elif _from == 'west':
-                return _find_path(_board, x + 1, y, 'west') + cur
+                return _find_path(_board, x + 1, y, 'west', depth) + cur
             else:
                 return []
         else:
