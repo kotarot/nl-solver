@@ -6,8 +6,8 @@
 #define __BOARD_HPP__
 
 // マスと線の数の最大値
-#define MAX_BOXES 40
-#define MAX_LINES 100
+#define MAX_BOXES 64
+#define MAX_LINES 256
 
 // ボードクラス
 class Board{
