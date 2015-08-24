@@ -208,7 +208,7 @@ def find_terminals(_board, x, y):
         raise Exception('Never reachable here')
 
 def _find_terminals(_board, x, y, _from, depth):
-    if 100 < depth:
+    if 256 < depth:
         return None
     depth = depth + 1
 
@@ -288,7 +288,7 @@ def find_path(_board, x, y):
         raise Exception('Never reachable here')
 
 def _find_path(_board, x, y, _from, depth):
-    if 100 < depth:
+    if 256 < depth:
         return []
     depth = depth + 1
 
