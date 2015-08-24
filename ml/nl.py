@@ -102,7 +102,7 @@ def read_probfile(filename, n_dims):
             size = tokens[1].split('X')
             board_x, board_y = int(size[0]), int(size[1])
             # ボードサイズで初期化
-            _board = [[{'data': 0, 'type': -1, 'shape': -1} for x in range(0, board_x)] for y in range(0, board_y)]
+            _board = [[{'data': 0, 'type': 2, 'shape': -1} for x in range(0, board_x)] for y in range(0, board_y)]
         # 2行目
         elif 'LINE_NUM' in line:
             continue
