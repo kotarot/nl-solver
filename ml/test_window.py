@@ -441,9 +441,11 @@ for y in range(n_dims_half, board_y + n_dims_half):
             if board_pr[y][x + 1]['type'] == 2 and board_pr[y][x + 1]['shape'] in [2, 4, 6]:
                 cand = cand + [{'x': x + 1, 'y': y}]
             for c in cand:
-                path = find_path(board_pr, c['x'], c['y'])
-                for cell in path:
-                    board_pr[cell['y']][cell['x']]['float'] = '4-mult'
+                terminals = find_terminals(board_pr, c['x'], c['y'])
+                if terminals[0] != None and terminals[1] != None and terminals[0] != terminals[1]:
+                    path = find_path(board_pr, c['x'], c['y'])
+                    for cell in path:
+                        board_pr[cell['y']][cell['x']]['float'] = '4-mult'
 
 # (3)' (4)' 同じ数字セルを結んでいる線は戻す
 for y in range(n_dims_half, board_y + n_dims_half):
