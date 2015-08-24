@@ -241,6 +241,9 @@ def int2str(i, base):
     if not 2 <= base <= 36:
         raise ValueError('base must be 2 <= base <= 36')
 
+    if 36 <= i:
+        return '#'
+
     result = []
 
     temp = abs(i)
