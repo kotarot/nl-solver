@@ -39,7 +39,7 @@ args = parser.parse_args()
 def worker_2014():
     """ 2014手法: タッチアンドクロス """
     p = multiprocessing.current_process()
-    print 'Wroker 2014 Starting:', p.name, p.pid
+    print 'Worker 2014 Starting:', p.name, p.pid
     sys.stdout.flush()
 
     cmd = './single/solver --loop 500 --output A{}.txt {}.txt'.format(args.input, args.input)
@@ -56,7 +56,7 @@ def worker_2014():
 def worker_2014fix():
     """ 2014手法: タッチアンドクロス (fix-flag) """
     p = multiprocessing.current_process()
-    print 'Wroker 2014 (fix-flag) Starting:', p.name, p.pid
+    print 'Worker 2014 (fix-flag) Starting:', p.name, p.pid
     sys.stdout.flush()
 
     cmd = './single/solver --fix-flag --loop 500 --output A{}.txt {}.txt'.format(args.input, args.input)
@@ -72,7 +72,7 @@ def worker_2014fix():
 def worker_2015(level):
     """ 2015手法: 機械学習＋タッチアンドクロス """
     p = multiprocessing.current_process()
-    print 'Wroker 2015 Starting:', p.name, p.pid
+    print 'Worker 2015 Starting:', p.name, p.pid
     sys.stdout.flush()
 
     cmd = 'python ./ml/test_window.py --pickle {} --level {} --output FIX{}_{}.txt {}.txt'.format(PICKLE, level, args.input, level, args.input)
