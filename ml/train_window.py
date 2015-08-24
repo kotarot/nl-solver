@@ -149,18 +149,24 @@ for epoch in xrange(1, n_epoch + 1):
     # 順番をランダムに並び替える
     n_train = len(y_train)
     perm = np.random.permutation(n_train)
-    x_batch = x_train[perm[0:n_train]]
-    y_batch = y_train[perm[0:n_train]]
 
-    # 勾配を初期化
-    optimizer.zero_grads()
+    # バッチサイズごとに学習する
+    sum_loss = 0
+    sum_accuracy = 0
+    batchsize = 100
+    for i in range(0, n_train, batchsize):
+        x_batch = x_train[perm[i:i+batchsize]]
+        y_batch = y_train[perm[i:i+batchsize]]
 
-    # 順伝播させて誤差と精度を算出
-    loss_train, accuracy_train, _ = forward(x_batch, y_batch)
+        # 勾配を初期化
+        optimizer.zero_grads()
 
-    # 誤差逆伝播で勾配を計算
-    loss_train.backward()
-    optimizer.update()
+        # 順伝播させて誤差と精度を算出
+        loss_train, accuracy_train, _ = forward(x_batch, y_batch)
+
+        # 誤差逆伝播で勾配を計算
+        loss_train.backward()
+        optimizer.update()
 
     # Evaluation
     if testfilename != 'none':
