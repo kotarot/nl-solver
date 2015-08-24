@@ -444,6 +444,16 @@ for y in range(n_dims_half, board_y + n_dims_half):
                 for cell in path:
                     board_pr[cell['y']][cell['x']]['float'] = '4-mult'
 
+# (3)' (4)' 同じ数字セルを結んでいる線は戻す
+for y in range(n_dims_half, board_y + n_dims_half):
+    for x in range(n_dims_half, board_x + n_dims_half):
+        if board_pr[y][x]['type'] != 1 and (board_pr[y][x]['float'] == '3-diff' or board_pr[y][x]['float'] == '4-mult'):
+            terminals = find_terminals(board_pr, x, y)
+            if terminals[0] != None and terminals[1] != None and terminals[0] == terminals[1]:
+                path = find_path(board_pr, x, y)
+                for cell in path:
+                    board_pr[cell['y']][cell['x']]['float'] = None
+
 # 配線の表示とレッドラインカバー率を計算
 show_board(board_pr, True)
 if args.answer:
