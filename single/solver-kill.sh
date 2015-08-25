@@ -1,6 +1,6 @@
 #!/bin/bash -x
 
-if [ $OSAAA = "Windows_NT" ]
+if [ $OS = "Windows_NT" ]
 then
     PIDS=(`ps aux | grep solver | grep -v grep | awk '{ print $1 }'`)
 else
