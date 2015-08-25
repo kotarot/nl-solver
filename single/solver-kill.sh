@@ -19,7 +19,7 @@ done
 
 if [ $OS = "Windows_NT" ]
 then
-    PIDS=(`ps aux | grep python | grep top | grep -v bash | grep -v root | grep -v grep | awk '{ print $1 }'`)
+    PIDS=(`ps aux | grep python | grep -v bash | grep -v root | grep -v grep | awk '{ print $1 }'`)
 else
     PIDS=(`ps aux | grep python | grep top | grep -v bash | grep -v root | grep -v grep | awk '{ print $2; }'`)
 fi
