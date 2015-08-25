@@ -4,9 +4,9 @@
 
 if [ $OS = "Windows_NT" ]
 then
-    PIDS=(`ps aux | grep solver | grep -v grep | awk '{ print $1 }'`)
+    PIDS=(`ps aux | grep solver | grep -v bash | grep -v top | grep -v grep | awk '{ print $1 }'`)
 else
-    PIDS=(`ps aux | grep solver | grep -v grep | awk '{ print $2; }'`)
+    PIDS=(`ps aux | grep solver | grep -v bash | grep -v top | grep -v grep | awk '{ print $2; }'`)
 fi
 
 for pid in ${PIDS[*]}
@@ -19,9 +19,9 @@ done
 
 if [ $OS = "Windows_NT" ]
 then
-    PIDS=(`ps aux | grep python | grep -v grep | awk '{ print $1 }'`)
+    PIDS=(`ps aux | grep python | grep top | grep -v bash | grep -v root | grep -v grep | awk '{ print $1 }'`)
 else
-    PIDS=(`ps aux | grep python | grep -v grep | awk '{ print $2; }'`)
+    PIDS=(`ps aux | grep python | grep top | grep -v bash | grep -v root | grep -v grep | awk '{ print $2; }'`)
 fi
 
 for pid in ${PIDS[*]}
