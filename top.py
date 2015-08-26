@@ -26,14 +26,16 @@ import sys
 import time
 
 
-# 学習データ
-PICKLE = './ml/dump/s9_u200_e2000_dwindowxb_tnone.pkl'
-
 parser = argparse.ArgumentParser(description='Top script')
 parser.add_argument('input', nargs=None, default=None, type=str,
                     help='Name of input file')
+parser.add_argument('--size', '-s', default=9, type=int,
+                    help='Window size (default: 9)')
 args = parser.parse_args()
 #print args
+
+# 学習データ
+PICKLE = './ml/dump/s{}_u200_e2000_dwindowxb_tnone.pkl'.format(args.size)
 
 
 def worker_2014():
