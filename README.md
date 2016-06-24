@@ -14,7 +14,7 @@ TODO.
 python ml/train_window.py -h  # ヘルプ表示
 ```
 
-ソルブフェース:
+ソルブフェーズ:
 ```
 python top.py  # ヘルプ表示
 ```
