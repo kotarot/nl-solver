@@ -2,12 +2,12 @@
 
 nl-solver is a machine learning-based Numberlink puzzle solver.
 
-# Requirements
+## Requirements
 
 TODO.
 
 
-# Usage
+## Usage
 
 トレーニングフェーズ:
 ```
@@ -20,7 +20,7 @@ python top.py  # ヘルプ表示
 ```
 
 
-# Publications
+## Publications
 
 1. 寺田晃太朗, 川村一志, 多和田雅師, 藤原晃一, 戸川望, "機械学習を用いたナンバーリンクソルバ," 情報処理学会DAシンポジウム2015ポスター発表, Aug. 2015.
 1. 多和田雅師, 阿部晋矢, 川村一志, 藤代美佳, "発見的アルゴリズムによるナンバーリンクソルバ," 情報処理学会DAシンポジウム2014ポスター発表, Aug. 2014.
@@ -32,7 +32,7 @@ python top.py  # ヘルプ表示
 1. 情報処理学会 DAシンポジウム2014 アルゴリズムデザインコンテスト 特別賞
 
 
-# License
+## License
 
 nl-solver  
 Copyright (C) 2014--2016  Kazushi Kawamura, Kotaro Terada, and Togawa Lab.
