@@ -9,27 +9,27 @@ TODO.
 
 ## Usage
 
-ƒgƒŒ[ƒjƒ“ƒOƒtƒF[ƒY:
+ãƒˆãƒ¬ãƒ¼ãƒ‹ãƒ³ã‚°ãƒ•ã‚§ãƒ¼ã‚º:
 ```
-python ml/train_window.py -h  # ƒwƒ‹ƒv•\Ž¦
+python ml/train_window.py -h  # ãƒ˜ãƒ«ãƒ—è¡¨ç¤º
 ```
 
-ƒ\ƒ‹ƒuƒtƒF[ƒY:
+ã‚½ãƒ«ãƒ–ãƒ•ã‚§ãƒ¼ã‚º:
 ```
-python top.py  # ƒwƒ‹ƒv•\Ž¦
+python top.py  # ãƒ˜ãƒ«ãƒ—è¡¨ç¤º
 ```
 
 
 ## Publications
 
-1. Ž›“cW‘¾˜N, ì‘ºˆêŽu, ‘½˜a“c‰ëŽt, “¡Œ´Wˆê, ŒËì–], "‹@ŠBŠwK‚ð—p‚¢‚½ƒiƒ“ƒo[ƒŠƒ“ƒNƒ\ƒ‹ƒo," î•ñˆ—Šw‰ïDAƒVƒ“ƒ|ƒWƒEƒ€2015ƒ|ƒXƒ^[”­•\, Aug. 2015.
-1. ‘½˜a“c‰ëŽt, ˆ¢•”W–î, ì‘ºˆêŽu, “¡‘ã”ü‰À, "”­Œ©“IƒAƒ‹ƒSƒŠƒYƒ€‚É‚æ‚éƒiƒ“ƒo[ƒŠƒ“ƒNƒ\ƒ‹ƒo," î•ñˆ—Šw‰ïDAƒVƒ“ƒ|ƒWƒEƒ€2014ƒ|ƒXƒ^[”­•\, Aug. 2014.
+1. å¯ºç”°æ™ƒå¤ªæœ—, å·æ‘ä¸€å¿—, å¤šå’Œç”°é›…å¸«, è—¤åŽŸæ™ƒä¸€, æˆ¸å·æœ›, "æ©Ÿæ¢°å­¦ç¿’ã‚’ç”¨ã„ãŸãƒŠãƒ³ãƒãƒ¼ãƒªãƒ³ã‚¯ã‚½ãƒ«ãƒ," æƒ…å ±å‡¦ç†å­¦ä¼šDAã‚·ãƒ³ãƒã‚¸ã‚¦ãƒ 2015ãƒã‚¹ã‚¿ãƒ¼ç™ºè¡¨, Aug. 2015.
+1. å¤šå’Œç”°é›…å¸«, é˜¿éƒ¨æ™‹çŸ¢, å·æ‘ä¸€å¿—, è—¤ä»£ç¾Žä½³, "ç™ºè¦‹çš„ã‚¢ãƒ«ã‚´ãƒªã‚ºãƒ ã«ã‚ˆã‚‹ãƒŠãƒ³ãƒãƒ¼ãƒªãƒ³ã‚¯ã‚½ãƒ«ãƒ," æƒ…å ±å‡¦ç†å­¦ä¼šDAã‚·ãƒ³ãƒã‚¸ã‚¦ãƒ 2014ãƒã‚¹ã‚¿ãƒ¼ç™ºè¡¨, Aug. 2014.
 
 
 ## Awards
 
-1. î•ñˆ—Šw‰ï DAƒVƒ“ƒ|ƒWƒEƒ€2015 ƒAƒ‹ƒSƒŠƒYƒ€ƒfƒUƒCƒ“ƒRƒ“ƒeƒXƒg —DGÜ (Šw¶•”–å)
-1. î•ñˆ—Šw‰ï DAƒVƒ“ƒ|ƒWƒEƒ€2014 ƒAƒ‹ƒSƒŠƒYƒ€ƒfƒUƒCƒ“ƒRƒ“ƒeƒXƒg “Á•ÊÜ
+1. æƒ…å ±å‡¦ç†å­¦ä¼š DAã‚·ãƒ³ãƒã‚¸ã‚¦ãƒ 2015 ã‚¢ãƒ«ã‚´ãƒªã‚ºãƒ ãƒ‡ã‚¶ã‚¤ãƒ³ã‚³ãƒ³ãƒ†ã‚¹ãƒˆ å„ªç§€è³ž (å­¦ç”Ÿéƒ¨é–€)
+1. æƒ…å ±å‡¦ç†å­¦ä¼š DAã‚·ãƒ³ãƒã‚¸ã‚¦ãƒ 2014 ã‚¢ãƒ«ã‚´ãƒªã‚ºãƒ ãƒ‡ã‚¶ã‚¤ãƒ³ã‚³ãƒ³ãƒ†ã‚¹ãƒˆ ç‰¹åˆ¥è³ž
 
 
 ## License
