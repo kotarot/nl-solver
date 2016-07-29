@@ -137,7 +137,7 @@ int main(int argc, char *argv[]){
 				cout << "SUMMARY" << endl;
 				cout << "-------" << endl;
 				cout << " - filename:   " << in_filename << endl;
-				cout << " - size:       " << board->getSizeX() << " x " << board->getSizeY() << endl;
+				cout << " - size:       " << board->getSizeX() << " x " << board->getSizeY() << " x " << board->getSizeZ() << endl;
 				cout << " - iterations: " << (m - 1) << endl;
 				cout << " - CPU time:   "
 				     << ((double)(finish_time - start_time) / (double)CLOCKS_PER_SEC)
