@@ -357,11 +357,15 @@ bool routing(int trgt_line_id){
 			start_x = trgt_via->getSourceX();
 			start_y = trgt_via->getSourceY();
 			start = my_board_2[start_y][start_x];
-	
-			start->ne = my_board_1[start_y][start_x]->ne + trgt_via->getUsedLineNum() * penalty_V; 
-			start->nw = my_board_1[start_y][start_x]->nw + trgt_via->getUsedLineNum() * penalty_V; 
-			start->se = my_board_1[start_y][start_x]->se + trgt_via->getUsedLineNum() * penalty_V; 
-			start->sw = my_board_1[start_y][start_x]->sw + trgt_via->getUsedLineNum() * penalty_V; 
+
+            // ソース層にINT_MAXのコスト値が含まれている場合は引き継がない (issue #82)
+            if (my_board_1[start_y][start_x]->ne == INT_MAX || my_board_1[start_y][start_x]->nw == INT_MAX ||
+                my_board_1[start_y][start_x]->se == INT_MAX || my_board_1[start_y][start_x]->sw == INT_MAX) continue;
+
+			start->ne = my_board_1[start_y][start_x]->ne + trgt_via->getUsedLineNum() * penalty_V;
+			start->nw = my_board_1[start_y][start_x]->nw + trgt_via->getUsedLineNum() * penalty_V;
+			start->se = my_board_1[start_y][start_x]->se + trgt_via->getUsedLineNum() * penalty_V;
+			start->sw = my_board_1[start_y][start_x]->sw + trgt_via->getUsedLineNum() * penalty_V;
 
 			// 北方向を探索
 			if(isInserted_2(start_x,start_y-1,end_z)){
