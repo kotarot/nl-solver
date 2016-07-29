@@ -100,7 +100,7 @@ int main(int argc, char *argv[]){
 		// 内ループ
 		for (int n = 1; n <= I_LOOP; n++) { // 内ループ
 
-			cout << m-1 << ":" << n << endl;
+			//cout << m-1 << ":" << n << endl;
 
 			// 問題中で数字が隣接していないラインを選択
 			int id;
