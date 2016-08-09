@@ -10,6 +10,7 @@
 # Problem files
 *.txt
 !issue*
+*.zip
 
 # Executables
 *.exe
