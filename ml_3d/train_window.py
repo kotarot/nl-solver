@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-「トレーニング用スクリプト」
+「トレーニング用スクリプト 3Dバージョン」
 周囲 N x N = N^2 マスを切り出して (window) 学習してみる
 
 参考文献:
@@ -19,6 +19,7 @@ from chainer import cuda, Function, FunctionSet, gradient_check, Variable, optim
 import chainer.functions as F
 
 import nl
+import nl3d
 
 
 #### CONFIGURATION ####
@@ -37,7 +38,7 @@ parser.add_argument('--test', '-t', default='none', type=str,
 parser.add_argument('--show-wrong', '-w', default=False, action='store_true',
                     help='Set on to print incorrect lines in red (default: False)')
 parser.add_argument('--dataset', '-d', default='window', type=str,
-                    help='Input dataset type to ML (dafault: window)')
+                    help='Input dataset type to ML: window (dafault), windowsn, windowxa, windowxb')
 args = parser.parse_args()
 print args
 
@@ -109,14 +110,15 @@ for datafile in datafiles:
     # Training data
     if datafilename != testfilename and datafilename_woext != testfilename:
         print 'Reading train file: {}/{} ...'.format(DIR_DATA, datafilename)
-        _board_x, _board_y, _board = nl.read_ansfile(datafile, n_dims)
+        _board_x, _board_y, _board_z, _boards = nl3d.read_ansfile(datafile, n_dims)
 
-        x_data, y_data = nl.gen_dataset_shape(_board_x, _board_y, _board, n_dims, args.dataset) # 配線形状の分類
-        #x_data, y_data = nl.gen_dataset_dirsrc(board_x, board_y, board, n_dims) # 配線接続位置の分類 (ソースから)
-        #x_data, y_data = nl.gen_dataset_dirsnk(board_x, board_y, board, n_dims) # 配線接続位置の分類 (シンクから)
+        for z in range(_board_z):
+            x_data, y_data = nl.gen_dataset_shape(_board_x, _board_y, _boards[z], n_dims, args.dataset) # 配線形状の分類
+            #x_data, y_data = nl.gen_dataset_dirsrc(board_x, board_y, boards[z], n_dims) # 配線接続位置の分類 (ソースから)
+            #x_data, y_data = nl.gen_dataset_dirsnk(board_x, board_y, boards[z], n_dims) # 配線接続位置の分類 (シンクから)
 
-        x_train_raw = x_train_raw + x_data
-        y_train_raw = y_train_raw + y_data
+            x_train_raw = x_train_raw + x_data
+            y_train_raw = y_train_raw + y_data
     # Test data
     else:
         print 'Reading test file: {}/{} ...'.format(DIR_DATA, datafilename)
