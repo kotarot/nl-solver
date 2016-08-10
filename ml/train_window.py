@@ -37,7 +37,7 @@ parser.add_argument('--test', '-t', default='none', type=str,
 parser.add_argument('--show-wrong', '-w', default=False, action='store_true',
                     help='Set on to print incorrect lines in red (default: False)')
 parser.add_argument('--dataset', '-d', default='window', type=str,
-                    help='Input dataset type to ML (dafault: window)')
+                    help='Input dataset type to ML: window (dafault), windowsn, windowxa, windowxb')
 args = parser.parse_args()
 print args
 
