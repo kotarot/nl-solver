@@ -28,13 +28,13 @@ DIR_DUMP = './dump'
 
 parser = argparse.ArgumentParser(description='Machine learning based nl-solver test: WINDOW (training)')
 parser.add_argument('--size', '-s', default=3, type=int,
-                    help='Window size (dimension)')
+                    help='Window size or dimension (default: 3)')
 parser.add_argument('--unit', '-u', default=100, type=int,
-                    help='Number of units in hidden layer')
+                    help='Number of units in hidden layer (default: 100)')
 parser.add_argument('--epoch', '-e', default=100000, type=int,
-                    help='Number of epoches')
+                    help='Number of epoches (default:100000)')
 parser.add_argument('--test', '-t', default='none', type=str,
-                    help='Filename of test (which will not be trained) or none (default: none)')
+                    help='Problem name for test (default: none)')
 parser.add_argument('--show-wrong', '-w', default=False, action='store_true',
                     help='Set on to print incorrect lines in red (default: False)')
 parser.add_argument('--dataset', '-d', default='window', type=str,
@@ -111,22 +111,26 @@ for datafile in datafiles:
     if datafilename != testfilename and datafilename_woext != testfilename:
         print 'Reading train file: {}/{} ...'.format(DIR_DATA, datafilename)
         _board_x, _board_y, _board_z, _boards = nl3d.read_ansfile(datafile, n_dims)
+        print '  --> {} X {} X {}'.format(_board_x, _board_y, _board_z)
 
         for z in range(_board_z):
             x_data, y_data = nl.gen_dataset_shape(_board_x, _board_y, _boards[z], n_dims, args.dataset) # 配線形状の分類
-            #x_data, y_data = nl.gen_dataset_dirsrc(board_x, board_y, boards[z], n_dims) # 配線接続位置の分類 (ソースから)
-            #x_data, y_data = nl.gen_dataset_dirsnk(board_x, board_y, boards[z], n_dims) # 配線接続位置の分類 (シンクから)
+            #x_data, y_data = nl.gen_dataset_dirsrc(_board_x, _board_y, _boards[z], n_dims) # 配線接続位置の分類 (ソースから)
+            #x_data, y_data = nl.gen_dataset_dirsnk(_board_x, _board_y, _boards[z], n_dims) # 配線接続位置の分類 (シンクから)
 
             x_train_raw = x_train_raw + x_data
             y_train_raw = y_train_raw + y_data
     # Test data
     else:
         print 'Reading test file: {}/{} ...'.format(DIR_DATA, datafilename)
-        board_x, board_y, board = nl.read_ansfile(datafile, n_dims)
 
-        x_data, y_data = nl.gen_dataset_shape(board_x, board_y, board, n_dims, args.dataset) # 配線形状の分類
-        #x_data, y_data = nl.gen_dataset_dirsrc(board_x, board_y, board, n_dims) # 配線接続位置の分類 (ソースから)
-        #x_data, y_data = nl.gen_dataset_dirsnk(board_x, board_y, board, n_dims) # 配線接続位置の分類 (シンクから)
+        board_x, board_y, board_z, boards = nl3d.read_ansfile(datafile, n_dims)
+        print '  ==> {} X {} X {}'.format(board_x, board_y, board_z)
+
+        for z in range(board_z):
+            x_data, y_data = nl.gen_dataset_shape(board_x, board_y, boards[z], n_dims, args.dataset) # 配線形状の分類
+            #x_data, y_data = nl.gen_dataset_dirsrc(board_x, board_y, boards[z], n_dims) # 配線接続位置の分類 (ソースから)
+            #x_data, y_data = nl.gen_dataset_dirsnk(board_x, board_y, boards[z], n_dims) # 配線接続位置の分類 (シンクから)
 
         x_test_raw = x_test_raw + x_data
         y_test_raw = y_test_raw + y_data
@@ -187,20 +191,22 @@ for epoch in xrange(1, n_epoch + 1):
             # テストデータの配線を表示
             idx = 0
             str = ['   ', ' │ ', '─┘ ', ' └─', '─┐ ', ' ┌─', '───']
-            for y in range(n_dims_half, board_y + n_dims_half):
-                for x in range(n_dims_half, board_x + n_dims_half):
-                    if board[y][x]['type'] == 1:
-                        sys.stdout.write('\033[1;30;47m ' + nl.int2str(board[y][x]['data'], 36) + ' \033[0m')
-                    else:
-                        ex_shape = np.argmax(result.data[idx])
-                        # 正しい配線形状
-                        if (not args.show_wrong) or board[y][x]['shape'] == ex_shape:
-                            sys.stdout.write('\033[1;30;47m' + str[ex_shape] + '\033[0m')
-                        # 間違ってる配線形状
+            for z in range(board_z):
+                print 'LAYER %d' % z
+                for y in range(n_dims_half, board_y + n_dims_half):
+                    for x in range(n_dims_half, board_x + n_dims_half):
+                        if board[y][x]['type'] == 1:
+                            sys.stdout.write('\033[1;30;47m ' + nl.int2str(board[y][x]['data'], 36) + ' \033[0m')
                         else:
-                            sys.stdout.write('\033[1;31;47m' + str[ex_shape] + '\033[0m')
-                        idx = idx + 1
-                print ''
+                            ex_shape = np.argmax(result.data[idx])
+                            # 正しい配線形状
+                            if (not args.show_wrong) or board[y][x]['shape'] == ex_shape:
+                                sys.stdout.write('\033[1;30;47m' + str[ex_shape] + '\033[0m')
+                            # 間違ってる配線形状
+                            else:
+                                sys.stdout.write('\033[1;31;47m' + str[ex_shape] + '\033[0m')
+                            idx = idx + 1
+                    print ''
 
 # モデルをシリアライズ化して保存
 with open(DIR_DUMP + '/s{}_u{}_e{}_d{}_t{}.pkl'.format(n_dims, n_units, n_epoch, args.dataset, testfilename_short), 'w') as f:
