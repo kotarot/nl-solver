@@ -282,7 +282,7 @@ void pileVia_sub(NL* nl, line* l, point* p, line* l2, point* p2)
 			cpPoint(p2, &px);
 		}
 		nl->vias[nl->num_via - 1].length = max - min + 1;
-		for (k = 0; k < nl->vias->length; k++)
+		for (k = 0; k < nl->vias[nl->num_via - 1].length; k++)
 		{
 			cpPoint(&px,nl->vias[nl->num_via - 1].p+k);
 			px.xyz[Z]++;
@@ -331,7 +331,12 @@ void pileVia_sub(NL* nl, line* l, point* p, line* l2, point* p2)
 				}
 		nl->num_line--;
 	}
-	
+	//ƒrƒA‚ğ’n}‚É‘‚«“ü‚ê‚é
+	for (k = 1; k < nl->vias[nl->num_via - 1].length-1; k++)
+	{
+		cpVal(getVal(nl, p), getValXYZ(nl,p->xyz[X], p->xyz[Y], k));
+	}
+
 }
 void writeNLQ(NL* nl, char* filename)
 {
@@ -354,7 +359,8 @@ void writeNLQ(NL* nl, char* filename)
 		fprintfs(fp, "VIA#");
 		printVal(fp, &nl->vias[i].name);
 		for (j = 0; j < nl->vias[i].length; j++)
-			fprintfs(fp, " (%01d,%01d,%01d)",nl->vias[i].p[j].xyz[X], nl->vias[i].p[j].xyz[Y], nl->vias[i].p[j].xyz[Z]+1);
+			fprintfs(fp, " (%01d,%01d,%01d)",
+			nl->vias[i].p[j].xyz[X], nl->vias[i].p[j].xyz[Y], nl->vias[i].p[j].xyz[Z]+1);
 		fprintfs(fp, "\n");
 	}
 	fclose(fp);
