@@ -32,11 +32,11 @@ parser.add_argument('--size', '-s', default=3, type=int,
 parser.add_argument('--unit', '-u', default=100, type=int,
                     help='Number of units in hidden layer (default: 100)')
 parser.add_argument('--epoch', '-e', default=100000, type=int,
-                    help='Number of epoches (default:100000)')
+                    help='Number of epoches (default: 100000)')
 parser.add_argument('--test', '-t', default='none', type=str,
                     help='Problem name for test (default: none)')
-parser.add_argument('--show-wrong', '-w', default=False, action='store_true',
-                    help='Set on to print incorrect lines in red (default: False)')
+#parser.add_argument('--show-wrong', '-w', default=False, action='store_true',
+#                    help='Set on to print incorrect lines in red (default: False)')
 parser.add_argument('--dataset', '-d', default='window', type=str,
                     help='Input dataset type to ML: window (dafault), windowsn, windowxa, windowxb')
 args = parser.parse_args()
@@ -47,9 +47,9 @@ n_dims_half        = n_dims / 2
 n_units            = args.unit
 n_epoch            = args.epoch
 testfilename       = args.test
-testfilename_short = testfilename.replace('_', '')
-if '.txt' in testfilename:
-    testfilename_short = testfilename[0:-4]
+#testfilename_short = testfilename.replace('_', '')
+#if '.txt' in testfilename:
+#    testfilename_short = testfilename[0:-4]
 
 
 # [3.1] 準備
@@ -102,16 +102,19 @@ x_train_raw, y_train_raw = [], []
 x_test_raw,  y_test_raw  = [], []
 
 # トレーニング/テスト ファイルを読み込む
+# テストファイルは1回だけ読み込む
 datafiles = glob.glob(DIR_DATA + '/*.txt')
+has_read = False
 for datafile in datafiles:
     path_datafile = datafile.replace('\\', '/').split('/')
     datafilename = path_datafile[-1]
     datafilename_woext = datafilename[0:-4]
     # Training data
-    if datafilename != testfilename and datafilename_woext != testfilename:
-        print 'Reading train file: {}/{} ...'.format(DIR_DATA, datafilename)
+    if datafilename_woext[4:] != testfilename:
+        sys.stdout.write('Reading train file: {}/{} ...'.format(DIR_DATA, datafilename))
+
         _board_x, _board_y, _board_z, _boards = nl3d.read_ansfile(datafile, n_dims)
-        print '  --> {} X {} X {}'.format(_board_x, _board_y, _board_z)
+        sys.stdout.write('  --> {} X {} X {}\n'.format(_board_x, _board_y, _board_z))
 
         for z in range(_board_z):
             x_data, y_data = nl.gen_dataset_shape(_board_x, _board_y, _boards[z], n_dims, args.dataset) # 配線形状の分類
@@ -121,19 +124,20 @@ for datafile in datafiles:
             x_train_raw = x_train_raw + x_data
             y_train_raw = y_train_raw + y_data
     # Test data
-    else:
-        print 'Reading test file: {}/{} ...'.format(DIR_DATA, datafilename)
+    elif not has_read:
+        sys.stdout.write('Reading test file: {}/{} ...'.format(DIR_DATA, datafilename))
+        has_read = True
 
         board_x, board_y, board_z, boards = nl3d.read_ansfile(datafile, n_dims)
-        print '  ==> {} X {} X {}'.format(board_x, board_y, board_z)
+        sys.stdout.write('  ==> {} X {} X {}\n'.format(board_x, board_y, board_z))
 
         for z in range(board_z):
             x_data, y_data = nl.gen_dataset_shape(board_x, board_y, boards[z], n_dims, args.dataset) # 配線形状の分類
             #x_data, y_data = nl.gen_dataset_dirsrc(board_x, board_y, boards[z], n_dims) # 配線接続位置の分類 (ソースから)
             #x_data, y_data = nl.gen_dataset_dirsnk(board_x, board_y, boards[z], n_dims) # 配線接続位置の分類 (シンクから)
 
-        x_test_raw = x_test_raw + x_data
-        y_test_raw = y_test_raw + y_data
+            x_test_raw = x_test_raw + x_data
+            y_test_raw = y_test_raw + y_data
 print ''
 
 assert(len(x_train_raw) != 0)
@@ -182,7 +186,7 @@ for epoch in xrange(1, n_epoch + 1):
         loss_test, accuracy_test, result = forward(x_test, y_test, train=False)
 
     # 訓練データ/テストデータの誤差と、正解精度を表示
-    if epoch % 100 == 0:
+    if epoch % 10 == 0:
         print 'epoch', epoch
         print 'Train: mean loss={}, accuracy={}'.format(sum_loss / n_train, sum_accuracy / n_train)
         if testfilename != 'none':
@@ -192,19 +196,14 @@ for epoch in xrange(1, n_epoch + 1):
             idx = 0
             str = ['   ', ' │ ', '─┘ ', ' └─', '─┐ ', ' ┌─', '───']
             for z in range(board_z):
-                print 'LAYER %d' % z
+                print 'LAYER {}'.format(z + 1)
                 for y in range(n_dims_half, board_y + n_dims_half):
                     for x in range(n_dims_half, board_x + n_dims_half):
-                        if board[y][x]['type'] == 1:
-                            sys.stdout.write('\033[1;30;47m ' + nl.int2str(board[y][x]['data'], 36) + ' \033[0m')
+                        if boards[z][y][x]['type'] == 1:
+                            sys.stdout.write('\033[1;30;47m ' + nl.int2str(boards[z][y][x]['data'], 36) + ' \033[0m')
                         else:
                             ex_shape = np.argmax(result.data[idx])
-                            # 正しい配線形状
-                            if (not args.show_wrong) or board[y][x]['shape'] == ex_shape:
-                                sys.stdout.write('\033[1;30;47m' + str[ex_shape] + '\033[0m')
-                            # 間違ってる配線形状
-                            else:
-                                sys.stdout.write('\033[1;31;47m' + str[ex_shape] + '\033[0m')
+                            sys.stdout.write('\033[1;30;47m' + str[ex_shape] + '\033[0m')
                             idx = idx + 1
                     print ''
 

@@ -47,6 +47,7 @@ def read_ansfile(filename, n_dims):
                    + [{'data': int(token), 'shape': 0} for token in board_lines[line_num].split(',')] \
                    + [{'data': -1, 'type': -1, 'shape': -1} for i in range(0, n_dims_half)]
             _board.append(line_x)
+            line_num = line_num + 1
 
         # 上下の番兵
         _board_banpei = [[{'data': -1, 'type': -1, 'shape': -1} for i in range(0, board_x + n_dims - 1)] for j in range(0, n_dims_half)] \
