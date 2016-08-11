@@ -103,46 +103,58 @@ Prepare dataset
 Problemファイルを読み込む
 """
 def read_probfile(filename, n_dims):
-    board = []
+    boards = []
     board_x, board_y = -1, -1 # ボードの X と Y
     n_dims_half = n_dims / 2
 
-    _board = None
+    _boards = None
     for line in open(filename, 'r'):
         # 1行目
         if 'SIZE'in line:
             tokens = line.split(' ')
             size = tokens[1].split('X')
-            board_x, board_y = int(size[0]), int(size[1])
+            board_x, board_y, board_z = int(size[0]), int(size[1]), int(size[2])
             # ボードサイズで初期化
-            _board = [[{'data': 0, 'type': 2, 'shape': -1} for x in range(0, board_x)] for y in range(0, board_y)]
+            _boards = [[[{'data': 0, 'type': 2, 'shape': -1} for x in range(0, board_x)] for y in range(0, board_y)] for z in range(0, board_z)]
         # 2行目
         elif 'LINE_NUM' in line:
             continue
-        # 3行目以降
+        # 3行目以降 (LINE)
         elif 'LINE' in line or 'Line' in line:
             line = line.replace('(', '').replace(')', '')
             tokens = line.split(' ')
             line_tokens = tokens[0].split('#')
-            n_line = int(line_tokens[1])
-            point_tokens = tokens[1].split('-')
-            src = point_tokens[0].split(',')
-            snk = point_tokens[1].split(',')
-            _board[int(src[1])][int(src[0])] = {'data': n_line, 'type': 1, 'shape': 0}
-            _board[int(snk[1])][int(snk[0])] = {'data': n_line, 'type': 1, 'shape': 0}
+            line_id = int(line_tokens[1])
+            src = tokens[1].split(',')
+            snk = tokens[2].split(',')
+            _boards[int(src[2]) - 1][int(src[1])][int(src[0])] = {'data': line_id, 'type': 1, 'shape': 0}
+            _boards[int(snk[2]) - 1][int(snk[1])][int(snk[0])] = {'data': line_id, 'type': 1, 'shape': 0}
+        # 3行目以降 (VIA)
+        elif 'VIA' in line or 'Via' in line:
+            line = line.replace('(', '').replace(')', '')
+            tokens = line.split(' ')
+            line_tokens = tokens[0].split('#')
+            via_id = line_tokens[1]
+            src = tokens[1].split(',')
+            snk = tokens[2].split(',')
+            _boards[int(src[2]) - 1][int(src[1])][int(src[0])] = {'data': via_id, 'type': 'via', 'shape': 0}
+            _boards[int(snk[2]) - 1][int(snk[1])][int(snk[0])] = {'data': via_id, 'type': 'via', 'shape': 0}
 
     # 左右の番兵
-    for y in range(0, board_y):
-        _board[y] = [{'data': -1, 'type': -1, 'shape': -1} for i in range(0, n_dims_half)] \
-                  + _board[y] \
-                  + [{'data': -1, 'type': -1, 'shape': -1} for i in range(0, n_dims_half)]
+    for z in range(0, board_z):
+        for y in range(0, board_y):
+            _boards[z][y] = [{'data': -1, 'type': -1, 'shape': -1} for i in range(0, n_dims_half)] \
+                          + _boards[z][y] \
+                          + [{'data': -1, 'type': -1, 'shape': -1} for i in range(0, n_dims_half)]
 
     # 上下の番兵
-    board = [[{'data': -1, 'type': -1, 'shape': -1} for i in range(0, board_x + n_dims - 1)] for j in range(0, n_dims_half)] \
-          + _board \
-          + [[{'data': -1, 'type': -1, 'shape': -1} for i in range(0, board_x + n_dims - 1)] for j in range(0, n_dims_half)]
+    for z in range(0, board_z):
+        boards.append([])
+        boards[z] = [[{'data': -1, 'type': -1, 'shape': -1} for i in range(0, board_x + n_dims - 1)] for j in range(0, n_dims_half)] \
+                  + _boards[z] \
+                  + [[{'data': -1, 'type': -1, 'shape': -1} for i in range(0, board_x + n_dims - 1)] for j in range(0, n_dims_half)]
 
-    return board_x, board_y, board
+    return board_x, board_y, board_z, boards
 
 
 """
