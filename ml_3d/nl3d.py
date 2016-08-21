@@ -274,15 +274,15 @@ def gen_dataset_dd(board_x, board_y, board, n_dims, dataset):
                     for wy in range(-n_dims_half, n_dims_half + 1):
                         for wx in range(-n_dims_half, n_dims_half + 1):
                             if not (wx == 0 and wy == 0):
-                                cellx = 0
+                                cellx = 0.0
                                 if board[y + wy][x + wx]['data'] == -1:
-                                    cellx = -1
+                                    cellx = -1.0
                                 elif board[y + wy][x + wx]['type'] == 1:
-                                    cellx = 1
+                                    cellx = 0.5
                                 elif board[y + wy][x + wx]['type'] == 'via':
-                                    cellx = 2
+                                    cellx = 1.0
                                 else:
-                                    cellx = 0
+                                    cellx = 0.0
                                 dx.append(cellx)
                     x_data.append(dx)
                 else:
@@ -290,7 +290,7 @@ def gen_dataset_dd(board_x, board_y, board, n_dims, dataset):
 
                 # 出力
                 if dataset == 'dd4':
-                    # 対応ビア位置エリア (右上: 0, 左上: 1, 左下: 2, 右下: 3)
+                    # 対応ビア位置エリア (右上: 0, 左上: 1, 左下: 2, 右下: 3) --> 正規化
                     dy = -1
                     found = False
                     for vy in range(n_dims_half, board_y + n_dims_half):
@@ -298,14 +298,14 @@ def gen_dataset_dd(board_x, board_y, board, n_dims, dataset):
                             if board[vy][vx]['type'] == 'via' and board[y][x]['data'] == board[vy][vx]['data']:
                                 if vy <= y:
                                     if vx <= x:
-                                        dy = 1
+                                        dy = 0.0
                                     else:
-                                        dy = 0
+                                        dy = -0.5
                                 else:
                                     if vx <= x:
-                                        dy = 2
+                                        dy = 0.5
                                     else:
-                                        dy = 3
+                                        dy = 1.0
                                 found = True
                                 break
                         if found:
@@ -313,7 +313,7 @@ def gen_dataset_dd(board_x, board_y, board, n_dims, dataset):
                     assert(dy != -1)
                     y_data.append(dy)
                 elif dataset == 'dd8':
-                    # 対応ビア位置エリア (右上近: 0, 右上遠: 1, 左上近: 2,左上遠: 3, 左下近: 4, 左下遠: 5, 右下近: 6, 右下遠: 7)
+                    # 対応ビア位置エリア (右上近: 0, 右上遠: 1, 左上近: 2,左上遠: 3, 左下近: 4, 左下遠: 5, 右下近: 6, 右下遠: 7) --> 正規化
                     dy = -1
                     found = False
                     for vy in range(n_dims_half, board_y + n_dims_half):
@@ -322,25 +322,25 @@ def gen_dataset_dd(board_x, board_y, board, n_dims, dataset):
                                 if vy <= y:
                                     if vx <= x:
                                         if mdist(vy, y, vx, x) <= n_dims:
-                                            dy = 2
+                                            dy = -0.25
                                         else:
-                                            dy = 3
+                                            dy = 0.0
                                     else:
                                         if mdist(vy, y, vx, x) <= n_dims:
-                                            dy = 0
+                                            dy = -0.75
                                         else:
-                                            dy = 1
+                                            dy = -0.5
                                 else:
                                     if vx <= x:
                                         if mdist(vy, y, vx, x) <= n_dims:
-                                            dy = 4
+                                            dy = 0.25
                                         else:
-                                            dy = 5
+                                            dy = 0.5
                                     else:
                                         if mdist(vy, y, vx, x) <= n_dims:
-                                            dy = 6
+                                            dy = 0.75
                                         else:
-                                            dy = 7
+                                            dy = 1.0
                                 found = True
                                 break
                         if found:
