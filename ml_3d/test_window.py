@@ -19,6 +19,7 @@ from chainer import cuda, Function, FunctionSet, gradient_check, Variable, optim
 import chainer.functions as F
 
 import nl
+import nl3d
 
 
 parser = argparse.ArgumentParser(description='Machine learning based nl-solver test: WINDOW (testing)')
@@ -40,24 +41,24 @@ input_pickle  = args.pickle
 output_fix    = args.output
 
 # (1) pickle ファイル名から dims を読み取る
-# (2) pickle ファイル名から dataset を読み取る
+# (2) pickle ファイル名から method を読み取る
 n_dims = -1
-dataset = None
+method = None
 pickle_path = input_pickle.split('/')
 pickle_filename = pickle_path[-1]
 for token in pickle_filename.split('_'):
     if token[0:1] == 's':
         n_dims = int(token[1:])
-    if token[0:1] == 'd':
+    if token[0:1] == 'm':
         filetokens = token[1:].split('.')
-        dataset = filetokens[0]
+        method = filetokens[0]
 assert(1 <= n_dims)
-assert(dataset != None)
+assert(method != None)
 n_dims_half = n_dims / 2
 
 
 # [3.1] 準備
-# Prepare dataset --> nl.py
+# Prepare method --> nl.py
 
 
 # [3.2] モデルの定義
@@ -350,43 +351,55 @@ def _find_path(_board, x, y, _from, depth):
 
 # Testing phase
 if (not args.answer):
-    board_x, board_y, board = nl.read_probfile(input_problem, n_dims)
+    board_x, board_y, board_z, boards = nl3d.read_probfile(input_problem, n_dims)
 else:
-    board_x, board_y, board = nl.read_ansfile(input_problem, n_dims)
-x_data, _ = nl.gen_dataset_shape(board_x, board_y, board, n_dims, dataset)
+    board_x, board_y, board_z, boards = nl3d.read_ansfile(input_problem, n_dims)
 
-x_test = np.array(x_data, dtype=np.float32)
+x_data = [[] for z in range(board_z)]
+for z in range(board_z):
+    x_data[z], _ = nl.gen_dataset_shape(board_x, board_y, boards[z], n_dims, method)
 
-result = evaluate(x_test)
+x_test = [[] for z in range(board_z)]
+for z in range(board_z):
+    x_test[z] = np.array(x_data[z], dtype=np.float32)
 
-# board_pr: 予想される配線のボード
+result = [[] for z in range(board_z)]
+for z in range(board_z):
+    result[z] = evaluate(x_test[z])
+
+# boards_pr: 予想される配線のボード
 # `wrong` に間違った配線形状かどうか記録する
-board_pr = copy.deepcopy(board)
-idx = 0
-for y in range(n_dims_half, board_y + n_dims_half):
-    for x in range(n_dims_half, board_x + n_dims_half):
-        if board_pr[y][x]['type'] != 1:
-            board_pr[y][x]['shape'] = np.argmax(result.data[idx])
-            if board[y][x]['type'] != board_pr[y][x]['type'] or board[y][x]['shape'] != board_pr[y][x]['shape']:
-                board_pr[y][x]['wrong'] = True
-            else:
-                board_pr[y][x]['wrong'] = False
-            idx = idx + 1
+boards_pr = copy.deepcopy(boards)
+for z in range(board_z):
+    idx = 0
+    for y in range(n_dims_half, board_y + n_dims_half):
+        for x in range(n_dims_half, board_x + n_dims_half):
+            if boards_pr[z][y][x]['type'] != 1:
+                boards_pr[z][y][x]['shape'] = np.argmax(result[z].data[idx])
+                if boards[z][y][x]['type'] != boards_pr[z][y][x]['type'] or boards[z][y][x]['shape'] != boards_pr[z][y][x]['shape']:
+                    boards_pr[z][y][x]['wrong'] = True
+                else:
+                    boards_pr[z][y][x]['wrong'] = False
+                idx = idx + 1
 
 # テストデータの配線を表示
-show_board(board_pr)
+for z in range(board_z):
+    print 'LAYER {}'.format(z + 1)
+    show_board(boards_pr[z])
 
 # 答えデータを入力した場合   ...... 答えを参照してチェック
 #             入力しない場合 ...... 指定したレベルの fix-file を出力
 if args.answer:
-    show_wrong_stat(board_pr)
+    for z in range(board_z):
+        show_wrong_stat(boards_pr[z])
 
 # 浮きセルをリセット
 # 浮きセルはタッチアンドクロス手法で固定しないセルのこと
 # None または 文字列 が格納される
-for y in range(n_dims_half, board_y + n_dims_half):
-    for x in range(n_dims_half, board_x + n_dims_half):
-        board_pr[y][x]['float'] = None
+for z in range(board_z):
+    for y in range(n_dims_half, board_y + n_dims_half):
+        for x in range(n_dims_half, board_x + n_dims_half):
+            boards_pr[z][y][x]['float'] = None
 
 # [レベル 0]
 # 以下を浮きセルとする
@@ -400,67 +413,74 @@ print ''
 print '[Level 0]'
 
 # (1) 線が途切れてるセルを特定して浮きセルに設定する
-board_pr = find_gapcells(board_pr)
-for y in range(n_dims_half, board_y + n_dims_half):
-    for x in range(n_dims_half, board_x + n_dims_half):
-        if board_pr[y][x]['type'] != 1:
-            if board_pr[y][x]['hasgap']:
-                board_pr[y][x]['float'] = '1-gap'
+for z in range(board_z):
+    boards_pr[z] = find_gapcells(boards_pr[z])
+    for y in range(n_dims_half, board_y + n_dims_half):
+        for x in range(n_dims_half, board_x + n_dims_half):
+            if boards_pr[z][y][x]['type'] != 1:
+                if boards_pr[z][y][x]['hasgap']:
+                    boards_pr[z][y][x]['float'] = '1-gap'
 
 # (2) 空欄
-for y in range(n_dims_half, board_y + n_dims_half):
-    for x in range(n_dims_half, board_x + n_dims_half):
-        if board_pr[y][x]['type'] == 0 or board_pr[y][x]['shape'] == 0:
-            board_pr[y][x]['float'] = '2-blank'
+for z in range(board_z):
+    for y in range(n_dims_half, board_y + n_dims_half):
+        for x in range(n_dims_half, board_x + n_dims_half):
+            if boards_pr[z][y][x]['type'] == 0 or boards_pr[z][y][x]['shape'] == 0:
+                boards_pr[z][y][x]['float'] = '2-blank'
 
 # (3) 異なる数字セルを結んでしまっている
-for y in range(n_dims_half, board_y + n_dims_half):
-    for x in range(n_dims_half, board_x + n_dims_half):
-        if board_pr[y][x]['type'] != 1 and board_pr[y][x]['float'] is None:
-            terminals = find_terminals(board_pr, x, y)
-            if terminals[0] != None and terminals[1] != None and terminals[0] != terminals[1]:
-                path = find_path(board_pr, x, y)
-                for cell in path:
-                    board_pr[cell['y']][cell['x']]['float'] = '3-diff'
+for z in range(board_z):
+    for y in range(n_dims_half, board_y + n_dims_half):
+        for x in range(n_dims_half, board_x + n_dims_half):
+            if boards_pr[z][y][x]['type'] != 1 and boards_pr[z][y][x]['float'] is None:
+                terminals = find_terminals(boards_pr[z], x, y)
+                if terminals[0] != None and terminals[1] != None and terminals[0] != terminals[1]:
+                    path = find_path(boards_pr[z], x, y)
+                    for cell in path:
+                        boards_pr[z][cell['y']][cell['x']]['float'] = '3-diff'
 
 # (4) 同じ数字から複数
-for y in range(n_dims_half, board_y + n_dims_half):
-    for x in range(n_dims_half, board_x + n_dims_half):
-        if board_pr[y][x]['type'] == 1:
-            cand = []
-            # 上 (北)
-            if board_pr[y - 1][x]['type'] == 2 and board_pr[y - 1][x]['shape'] in [1, 4, 5]:
-                cand = cand + [{'x': x, 'y': y - 1}]
-            # 下 (南)
-            if board_pr[y + 1][x]['type'] == 2 and board_pr[y + 1][x]['shape'] in [1, 2, 3]:
-                cand = cand + [{'x': x, 'y': y + 1}]
-            # 左 (西)
-            if board_pr[y][x - 1]['type'] == 2 and board_pr[y][x - 1]['shape'] in [3, 5, 6]:
-                cand = cand + [{'x': x - 1, 'y': y}]
-            # 右 (東)
-            if board_pr[y][x + 1]['type'] == 2 and board_pr[y][x + 1]['shape'] in [2, 4, 6]:
-                cand = cand + [{'x': x + 1, 'y': y}]
-            for c in cand:
-                terminals = find_terminals(board_pr, c['x'], c['y'])
-                if terminals[0] != None and terminals[1] != None and terminals[0] != terminals[1]:
-                    path = find_path(board_pr, c['x'], c['y'])
-                    for cell in path:
-                        board_pr[cell['y']][cell['x']]['float'] = '4-mult'
+for z in range(board_z):
+    for y in range(n_dims_half, board_y + n_dims_half):
+        for x in range(n_dims_half, board_x + n_dims_half):
+            if boards_pr[z][y][x]['type'] == 1:
+                cand = []
+                # 上 (北)
+                if boards_pr[z][y - 1][x]['type'] == 2 and boards_pr[z][y - 1][x]['shape'] in [1, 4, 5]:
+                    cand = cand + [{'x': x, 'y': y - 1}]
+                # 下 (南)
+                if boards_pr[z][y + 1][x]['type'] == 2 and boards_pr[z][y + 1][x]['shape'] in [1, 2, 3]:
+                    cand = cand + [{'x': x, 'y': y + 1}]
+                # 左 (西)
+                if boards_pr[z][y][x - 1]['type'] == 2 and boards_pr[z][y][x - 1]['shape'] in [3, 5, 6]:
+                    cand = cand + [{'x': x - 1, 'y': y}]
+                # 右 (東)
+                if boards_pr[z][y][x + 1]['type'] == 2 and boards_pr[z][y][x + 1]['shape'] in [2, 4, 6]:
+                    cand = cand + [{'x': x + 1, 'y': y}]
+                for c in cand:
+                    terminals = find_terminals(boards_pr[z], c['x'], c['y'])
+                    if terminals[0] != None and terminals[1] != None and terminals[0] != terminals[1]:
+                        path = find_path(boards_pr[z], c['x'], c['y'])
+                        for cell in path:
+                            boards_pr[z][cell['y']][cell['x']]['float'] = '4-mult'
 
 # (3)' (4)' 同じ数字セルを結んでいる線は戻す
-for y in range(n_dims_half, board_y + n_dims_half):
-    for x in range(n_dims_half, board_x + n_dims_half):
-        if board_pr[y][x]['type'] != 1 and (board_pr[y][x]['float'] == '3-diff' or board_pr[y][x]['float'] == '4-mult'):
-            terminals = find_terminals(board_pr, x, y)
-            if terminals[0] != None and terminals[1] != None and terminals[0] == terminals[1]:
-                path = find_path(board_pr, x, y)
-                for cell in path:
-                    board_pr[cell['y']][cell['x']]['float'] = None
+for z in range(board_z):
+    for y in range(n_dims_half, board_y + n_dims_half):
+        for x in range(n_dims_half, board_x + n_dims_half):
+            if boards_pr[z][y][x]['type'] != 1 and (boards_pr[z][y][x]['float'] == '3-diff' or boards_pr[z][y][x]['float'] == '4-mult'):
+                terminals = find_terminals(boards_pr[z], x, y)
+                if terminals[0] != None and terminals[1] != None and terminals[0] == terminals[1]:
+                    path = find_path(boards_pr[z], x, y)
+                    for cell in path:
+                        boards_pr[z][cell['y']][cell['x']]['float'] = None
 
 # 配線の表示とレッドラインカバー率を計算
-show_board(board_pr, True)
-if args.answer:
-    show_coveragerate(board_pr)
+for z in range(board_z):
+    print 'LAYER {}'.format(z + 1)
+    show_board(boards_pr[z], True)
+    if args.answer:
+        show_coveragerate(boards_pr[z])
 
 # [レベル n]
 # レベル n - 1 で途切れセルとして浮きセルに記録されたセルを
@@ -471,20 +491,23 @@ for level in range(1, args.level + 1):
     print ''
     print '[Level {}]'.format(level)
 
-    _board_pr = copy.deepcopy(board_pr)
-    for y in range(n_dims_half, board_y + n_dims_half):
-        for x in range(n_dims_half, board_x + n_dims_half):
-            if board_pr[y][x]['float'] == '1-gap':
-                _board_pr[y - 1][x]['float'] = '1-gap'
-                _board_pr[y + 1][x]['float'] = '1-gap'
-                _board_pr[y][x - 1]['float'] = '1-gap'
-                _board_pr[y][x + 1]['float'] = '1-gap'
-    board_pr = copy.deepcopy(_board_pr)
+    _boards_pr = copy.deepcopy(boards_pr)
+    for z in range(board_z):
+        for y in range(n_dims_half, board_y + n_dims_half):
+            for x in range(n_dims_half, board_x + n_dims_half):
+                if boards_pr[z][y][x]['float'] == '1-gap':
+                    _boards_pr[z][y - 1][x]['float'] = '1-gap'
+                    _boards_pr[z][y + 1][x]['float'] = '1-gap'
+                    _boards_pr[z][y][x - 1]['float'] = '1-gap'
+                    _boards_pr[z][y][x + 1]['float'] = '1-gap'
+    boards_pr = copy.deepcopy(_boards_pr)
 
     # 配線の表示とレッドラインカバー率を計算
-    show_board(board_pr, True)
-    if args.answer:
-        show_coveragerate(board_pr)
+    for z in range(board_z):
+        print 'LAYER {}'.format(z + 1)
+        show_board(boards_pr[z], True)
+        if args.answer:
+            show_coveragerate(boards_pr[z])
 
 # Fix ファイルに書き込む
 if not args.answer:
@@ -493,14 +516,15 @@ if not args.answer:
         output_fix = 'fix.txt'
 
     with open(output_fix, 'w') as f:
-        for y in range(n_dims_half, board_y + n_dims_half):
-            line = ''
-            for x in range(n_dims_half, board_x + n_dims_half):
-                if board_pr[y][x]['float'] is None:
-                    line = line + str(board_pr[y][x]['shape'])
-                else:
-                    line = line + '0'
-            f.write(line + '\n')
+        for z in range(board_z):
+            for y in range(n_dims_half, board_y + n_dims_half):
+                line = ''
+                for x in range(n_dims_half, board_x + n_dims_half):
+                    if boards_pr[z][y][x]['float'] is None:
+                        line = line + str(boards_pr[z][y][x]['shape'])
+                    else:
+                        line = line + '0'
+                f.write(line + '\n')
 
         print ''
         print 'Finish writing to fix-file `{}`.'.format(output_fix)
