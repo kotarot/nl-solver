@@ -3,8 +3,9 @@
 import os
 import sys
 import re
+import random
 
-debug = True
+debug = False
 
 def read_problem(fn):
 	"""
@@ -207,6 +208,93 @@ def print_boards(b):
 		lcnt+=1
 		print ""
 
+def get_matrix(b, ans=False):
+	res = []
+	for z in b:
+		tmpz = []
+		for y in z:
+			tmpy = []
+			for x in y:
+				if x['type'] == 0:
+					tmpy.append(0)
+				elif x['type'] >= 4:
+					if ans:
+						tmpy.append(0.6 + (x['type']-4)/20.0)
+					else:
+						tmpy.append(0)
+				else:
+					if x['type'] == 2:
+						# via
+						tmpy.append(0.4 + int(x['value'])/500.0)
+					else:
+						# line
+						tmpy.append(0.2 + int(x['value'])/500.0)
+			if len(tmpy) % 2 == 1:
+				tmpy.append(0)
+			tmpz.append(tmpy[:])
+		res.append(tmpz[:])
+	return res
+
+def get_board(mat):
+	res = []
+	for z in mat:
+		tmpz = []
+		for y in z:
+			tmpy = []
+			for x in y:
+				if x < 0.2:
+					tmpy.append({'type':0, 'value':0})
+				elif x < 0.4:
+					tmpy.append({'type':1, 'value':int((x-0.2)*500)})
+				elif x < 0.6:
+					tmpy.append({'type':2, 'value':int((x-0.4)*500)})
+				else:
+					if (x-0.6)*20 < 6:
+						tmpy.append({'type': int((x-0.6)*20+4), 'value':0})
+					else:
+						tmpy.append({'type':0, 'value':0})
+			tmpz.append(tmpy[:])
+		res.append(tmpz[:])
+	return res
+
+def get_randomized_matrix(b, ans=False, seed=None):
+	random.seed(seed)
+	mat = get_matrix(b, ans)
+	vias = {}
+	lines = {}
+	for z, zv in enumerate(mat):
+		for y, yv in enumerate(zv):
+			for x, xv in enumerate(yv):
+				if 0.2 <= xv and xv < 0.4:
+					if not xv in lines:
+						lines[xv] = []
+					lines[xv].append((x, y, z))
+				elif 0.4 <= xv and xv <= 0.6:
+					if not xv in vias:
+						vias[xv] = []
+					vias[xv].append((x, y, z))
+
+	for i in range(100):
+		s = random.sample(lines.keys(), 2)
+		tmp = lines[s[0]][:]
+		lines[s[0]] = lines[s[1]][:]
+		lines[s[1]] = tmp[:]
+
+		s = random.sample(vias.keys(), 2)
+		tmp = vias[s[0]][:]
+		vias[s[0]] = vias[s[1]][:]
+		vias[s[1]] = tmp[:]
+
+	for k, v in lines.items():
+		for v2 in v:
+			mat[v2[2]][v2[1]][v2[0]] = k
+
+	for k, v in vias.items():
+		for v2 in v:
+			mat[v2[2]][v2[1]][v2[0]] = k
+
+	return mat
+
 def main():
 	pass
 
@@ -219,4 +307,25 @@ if __name__ == '__main__':
 	boards2 = read_answer("../../T01_A06.txt", problem = boards)
 
 	print_boards(boards)
-	print_boards(boards2)
+	# print_boards(boards2)
+
+	res = get_matrix(boards2, ans=True)
+
+	for z in res:
+		for y in z:
+			for x in y:
+				if x < 0 : x = 0
+				sys.stdout.write("{0:3.2f} ".format(x))
+			sys.stdout.write("\n")
+		sys.stdout.write("\n")
+
+
+	res = get_randomized_matrix(boards2, ans=True)
+
+	for z in res:
+		for y in z:
+			for x in y:
+				if x < 0 : x = 0
+				sys.stdout.write("{0:3.2f} ".format(x))
+			sys.stdout.write("\n")
+		sys.stdout.write("\n")
