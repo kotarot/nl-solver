@@ -63,7 +63,12 @@ void printSolution(){
 	for(int z=0;z<board->getSizeZ();z++){
 		for(int y=0;y<board->getSizeY();y++){
 			for(int x=0;x<board->getSizeX();x++){
-				for_print[z][y][x] = -1;
+				Box* trgt_box = board->box(x,y,z);
+				if(trgt_box->isTypeBlank()){
+					for_print[z][y][x] = -1;
+				}else{
+					for_print[z][y][x] = trgt_box->getIndex();
+				}
 			}
 		}
 	}
@@ -118,7 +123,12 @@ void printSolutionToFile(char *filename) {
 	for(int z=0;z<board->getSizeZ();z++){
 		for(int y=0;y<board->getSizeY();y++){
 			for(int x=0;x<board->getSizeX();x++){
-				for_print[z][y][x] = -1;
+				Box* trgt_box = board->box(x,y,z);
+				if(trgt_box->isTypeBlank()){
+					for_print[z][y][x] = -1;
+				}else{
+					for_print[z][y][x] = trgt_box->getIndex();
+				}
 			}
 		}
 	}
