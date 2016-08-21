@@ -332,12 +332,13 @@ def gen_dataset_dd(board_x, board_y, board_z, boards, arg_z, n_dims, dataset):
                     board_width = max(board_x, board_y)
                     dx.append(1.0 * (alt_x - x) / board_width)
                     dx.append(1.0 * (alt_y - y) / board_width)
+                #print dx
                 x_data.append(dx)
 
                 # 出力
                 if dataset == 'dd4':
                     # 対応ビア位置エリア (右上: 0, 左上: 1, 左下: 2, 右下: 3) --> 正規化
-                    dy = -1
+                    dy = -100
                     found = False
                     for vy in range(n_dims_half, board_y + n_dims_half):
                         for vx in range(n_dims_half, board_x + n_dims_half):
@@ -356,11 +357,11 @@ def gen_dataset_dd(board_x, board_y, board_z, boards, arg_z, n_dims, dataset):
                                 break
                         if found:
                             break
-                    assert(dy != -1)
+                    assert(-100 < dy)
                     y_data.append(dy)
                 elif dataset == 'dd8' or dataset == 'ddx8':
                     # 対応ビア位置エリア (右上近: 0, 右上遠: 1, 左上近: 2,左上遠: 3, 左下近: 4, 左下遠: 5, 右下近: 6, 右下遠: 7) --> 正規化
-                    dy = -1
+                    dy = -100
                     found = False
                     for vy in range(n_dims_half, board_y + n_dims_half):
                         for vx in range(n_dims_half, board_x + n_dims_half):
@@ -391,7 +392,7 @@ def gen_dataset_dd(board_x, board_y, board_z, boards, arg_z, n_dims, dataset):
                                 break
                         if found:
                             break
-                    assert(dy != -1)
+                    assert(-100 < dy)
                     y_data.append(dy)
                 else:
                     raise NotImplementedError()
