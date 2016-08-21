@@ -671,7 +671,7 @@ bool routing(int trgt_line_id, bool debug_option){
 
 if (debug_option) { /*** デバッグ用*/
 	cout << endl;
-	cout << "LAYER So (line_id: " << trgt_line_id << ")" << endl;
+	cout << "LAYER So (line_id: " << trgt_line_id << ") (z: " << (start_z + 1) << ")" << endl;
 	cout << "========" << endl;
 	for(int y=0;y<board->getSizeY();y++){
 		for(int x=0;x<board->getSizeX();x++){
@@ -709,7 +709,7 @@ if (debug_option) { /*** デバッグ用*/
 		}
 		cout << endl;
 	}
-	cout << "LAYER Si (line_id: " << trgt_line_id << ")" << endl;
+	cout << "LAYER Si (line_id: " << trgt_line_id << ") (z: " << (end_z + 1) << ")" << endl;
 	cout << "========" << endl;
 	for(int y=0;y<board->getSizeY();y++){
 		for(int x=0;x<board->getSizeX();x++){
