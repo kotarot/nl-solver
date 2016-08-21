@@ -4,7 +4,11 @@ nl-solver is a machine learning-based Numberlink puzzle solver.
 
 ## Requirements
 
-TODO.
+バージョンは我々が使用しているものなので、もっと古くても動くかもしれない。
+
+* Python 2.7.11
+* Numpy 1.11.1 `pip install numpy`
+* Chainer 1.13.0 `pip install chainer`
 
 
 ## Usage
