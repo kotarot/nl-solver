@@ -180,6 +180,7 @@ def norm_number(n):
   - windowxa : 自セルの周囲 + 同じ数字の数 + 上下/左右にまたがる同じ数字の数
   - windowxb : 自セルの周囲 + 上下/左右にまたがる同じ数字の数
 """
+"""
 def gen_dataset_shape(board_x, board_y, board, n_dims, dataset):
     x_data, y_data = [], []
     n_dims_half = n_dims / 2
@@ -232,6 +233,79 @@ def gen_dataset_shape(board_x, board_y, board, n_dims, dataset):
                 # 出力: direction
                 if 'shape' in board[y][x]:
                     y_data.append(board[y][x]['shape'])
+
+    return x_data, y_data
+"""
+
+
+"""
+データセットを生成 (2016年 ビアdistance-and-direction)
+入力: ビアを2、ターミナル数字が存在するセルを 1、存在しないセルを 0、ボード外を -1 とした (N^2 - 1) 次元のベクトル
+出力: どのエリアのビアを使用するか
+
+[dataset]
+  - dd4: 4方向
+"""
+def gen_dataset_dd(board_x, board_y, board, n_dims, dataset):
+    x_data, y_data = [], []
+    n_dims_half = n_dims / 2
+
+    assert(dataset == 'dd4')
+    for y in range(n_dims_half, board_y + n_dims_half):
+        for x in range(n_dims_half, board_x + n_dims_half):
+            # ターミナル数字セルの場合
+            # かつ、もう一方のセルが同じ層に無い（別層にある）場合
+            # のみ対象
+            if board[y][x]['type'] == 1:
+                count_same = 0
+                for ay in range(n_dims_half, board_y + n_dims_half):
+                    for ax in range(n_dims_half, board_x + n_dims_half):
+                        if board[ay][ax]['type'] == 1 and board[ay][ax]['data'] == board[y][x]['data']:
+                            count_same += 1
+                assert(count_same == 1 or count_same == 2)
+                if count_same == 2:
+                    break
+
+                # 入力: window
+                dx = []
+                # 自セルの周囲
+                for wy in range(-n_dims_half, n_dims_half + 1):
+                    for wx in range(-n_dims_half, n_dims_half + 1):
+                        if not (wx == 0 and wy == 0):
+                            cellx = 0
+                            if board[y + wy][x + wx]['data'] == -1:
+                                cellx = -1
+                            elif board[y + wy][x + wx]['type'] == 1:
+                                cellx = 1
+                            elif board[y + wy][x + wx]['type'] == 'via':
+                                cellx = 2
+                            else:
+                                cellx = 0
+                            dx.append(cellx)
+                x_data.append(dx)
+
+                # 出力: 対応ビア位置エリア (右上: 0, 左上: 1, 左下: 2, 右下: 3)
+                dy = -1
+                found = False
+                for vy in range(n_dims_half, board_y + n_dims_half):
+                    for vx in range(n_dims_half, board_x + n_dims_half):
+                        if board[vy][vx]['type'] == 'via' and board[y][x]['data'] == board[vy][vx]['data']:
+                            if vy <= y:
+                                if vx <= x:
+                                    dy = 1
+                                else:
+                                    dy = 0
+                            else:
+                                if vx <= x:
+                                    dy = 2
+                                else:
+                                    dy = 3
+                            found = True
+                            break
+                    if found:
+                        break
+                assert(dy != -1)
+                y_data.append(dy)
 
     return x_data, y_data
 

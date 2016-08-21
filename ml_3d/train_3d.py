@@ -2,8 +2,13 @@
 # -*- coding: utf-8 -*-
 
 """
-「トレーニング用スクリプト Window 3Dバージョン」
-周囲 N x N = N^2 マスを切り出して (window) 学習してみる
+「トレーニング用スクリプト 3D 2016年バージョン」
+
+アイデア:
+セルそのものを直接学習するのではなく、戦略を学習する。
+
+メソッド:
+* dd4: distance-and-direction 数字とビアの位置と方向からどの4方向のビアを使えばよいか推定する
 
 参考文献:
 * Python - 【機械学習】ディープラーニング フレームワークChainerを試しながら解説してみる。 - Qiita http://qiita.com/kenmatsu4/items/7b8d24d4c5144a686412
@@ -23,20 +28,21 @@ import nl3d
 
 
 #### CONFIGURATION ####
+DIR_PROB = './problem'
 DIR_DATA = './answer'
 DIR_DUMP = './dump'
 
-parser = argparse.ArgumentParser(description='train_window -- 2015')
+parser = argparse.ArgumentParser(description='train_3d -- 2016')
 parser.add_argument('--size', '-s', default=3, type=int,
                     help='Window size or dimension (default: 3)')
 parser.add_argument('--unit', '-u', default=100, type=int,
                     help='Number of units in hidden layer (default: 100)')
-parser.add_argument('--epoch', '-e', default=100000, type=int,
-                    help='Number of epochs (default: 100000)')
+parser.add_argument('--epoch', '-e', default=1000, type=int,
+                    help='Number of epochs (default: 1000)')
 parser.add_argument('--test', '-t', default='none', type=str,
-                    help='Problem name for test (e.g. 00) (default: none)')
-parser.add_argument('--method', '-m', default='window', type=str,
-                    help='Method of selecting input data type to ML: window (dafault), windowsn, windowxa, windowxb')
+                    help='Team-Problem name for test (e.g. T01_A06) (default: none)')
+parser.add_argument('--method', '-m', default='dd4', type=str,
+                    help='Method of selecting input data type to ML: dd4 (dafault)')
 args = parser.parse_args()
 print args
 
@@ -57,25 +63,18 @@ testfilename_short = testfilename.replace('_', '')
 # [3.2] モデルの定義
 # Prepare multi-layer perceptron model
 # 多層パーセプトロン (中間層 n_units 次元)
-# 入力: N x N - 1 = N^2 - 1 次元 (method = window の場合)
-#       N x N = N^2 次元         (method = windowsn の場合)
-#       N x N = N^2 + 2 次元     (method = windowxa の場合)
-#       N x N = N^2 + 1 次元     (method = windowxb の場合)
-# 出力: 7次元
-if args.method == 'window':
+# method = dd4 の場合
+#   入力: N x N - 1 = N^2 - 1 次元
+#   出力: 4次元
+if args.method == 'dd4':
     input_dims = n_dims**2 - 1
-elif args.method == 'windowsn':
-    input_dims = n_dims**2
-elif args.method == 'windowxa':
-    input_dims = n_dims**2 + 2
-elif args.method == 'windowxb':
-    input_dims = n_dims**2 + 1
+    output_dims = 4
 else:
     raise NotImplementedError()
 
 model = FunctionSet(l1=F.Linear(input_dims, n_units),
                     l2=F.Linear(n_units, n_units),
-                    l3=F.Linear(n_units, 7))
+                    l3=F.Linear(n_units, output_dims))
 
 # Neural net architecture
 # ニューラルネットの構造
@@ -107,17 +106,31 @@ for datafile in datafiles:
     path_datafile = datafile.replace('\\', '/').split('/')
     datafilename = path_datafile[-1]
     datafilename_woext = datafilename[0:-4]
+
+    # テストとして指定した問題番号は合っているけど、チーム名が違う場合 --> スキップ
+    if datafilename_woext[5:] == testfilename[5:] and datafilename_woext != testfilename:
+        continue
+
     # Training data
-    if datafilename_woext[5:] != testfilename:
+    if datafilename_woext != testfilename:
         sys.stdout.write('Reading train file: {}/{} ...'.format(DIR_DATA, datafilename))
 
-        _board_x, _board_y, _board_z, _boards = nl3d.read_ansfile(datafile, n_dims)
-        sys.stdout.write('  --> {} X {} X {}\n'.format(_board_x, _board_y, _board_z))
+        board_x, board_y, board_z, boards = nl3d.read_ansfile(datafile, n_dims)
+        sys.stdout.write('  --> {} X {} X {}\n'.format(board_x, board_y, board_z))
 
-        for z in range(_board_z):
-            x_data, y_data = nl.gen_dataset_shape(_board_x, _board_y, _boards[z], n_dims, args.method) # 配線形状の分類
-            #x_data, y_data = nl.gen_dataset_dirsrc(_board_x, _board_y, _boards[z], n_dims) # 配線接続位置の分類 (ソースから)
-            #x_data, y_data = nl.gen_dataset_dirsnk(_board_x, _board_y, _boards[z], n_dims) # 配線接続位置の分類 (シンクから)
+        # 対応する問題ファイルを読み込む (ビアは問題からのみわかるため)
+        probfilename = '{}/NL_Q{}'.format(DIR_PROB, datafilename[5:])
+        _, _, _, pboards = nl3d.read_probfile(probfilename, n_dims)
+        # 答えファイルに基づいた内部データにビア情報を付加する
+        for z in range(board_z):
+            for y in range(n_dims_half, board_y + n_dims_half):
+                for x in range(n_dims_half, board_x + n_dims_half):
+                    if pboards[z][y][x]['type'] == 'via':
+                        assert(boards[z][y][x]['type'] == 1)
+                        boards[z][y][x]['type'] = 'via'
+
+        for z in range(board_z):
+            x_data, y_data = nl3d.gen_dataset_dd(board_x, board_y, boards[z], n_dims, args.method)
 
             x_train_raw = x_train_raw + x_data
             y_train_raw = y_train_raw + y_data
@@ -129,10 +142,19 @@ for datafile in datafiles:
         board_x, board_y, board_z, boards = nl3d.read_ansfile(datafile, n_dims)
         sys.stdout.write('  ==> {} X {} X {}\n'.format(board_x, board_y, board_z))
 
+        # 対応する問題ファイルを読み込む (ビアは問題からのみわかるため)
+        probfilename = '{}/NL_Q{}'.format(DIR_PROB, datafilename[5:])
+        _, _, _, pboards = nl3d.read_probfile(probfilename, n_dims)
+        # 答えファイルに基づいた内部データにビア情報を付加する
         for z in range(board_z):
-            x_data, y_data = nl.gen_dataset_shape(board_x, board_y, boards[z], n_dims, args.method) # 配線形状の分類
-            #x_data, y_data = nl.gen_dataset_dirsrc(board_x, board_y, boards[z], n_dims) # 配線接続位置の分類 (ソースから)
-            #x_data, y_data = nl.gen_dataset_dirsnk(board_x, board_y, boards[z], n_dims) # 配線接続位置の分類 (シンクから)
+            for y in range(n_dims_half, board_y + n_dims_half):
+                for x in range(n_dims_half, board_x + n_dims_half):
+                    if pboards[z][y][x]['type'] == 'via':
+                        assert(boards[z][y][x]['type'] == 1)
+                        boards[z][y][x]['type'] = 'via'
+
+        for z in range(board_z):
+            x_data, y_data = nl3d.gen_dataset_dd(board_x, board_y, boards[z], n_dims, args.method)
 
             x_test_raw = x_test_raw + x_data
             y_test_raw = y_test_raw + y_data
@@ -191,6 +213,7 @@ for epoch in xrange(1, n_epoch + 1):
             print 'Test:  mean loss={}, accuracy={}'.format(loss_test.data,  accuracy_test.data)
 
             # テストデータの配線を表示
+            """
             idx = 0
             str = ['   ', ' │ ', '─┘ ', ' └─', '─┐ ', ' ┌─', '───']
             for z in range(board_z):
@@ -204,6 +227,7 @@ for epoch in xrange(1, n_epoch + 1):
                             sys.stdout.write('\033[1;30;47m' + str[ex_shape] + '\033[0m')
                             idx = idx + 1
                     print ''
+            """
 
 # モデルをシリアライズ化して保存
 with open(DIR_DUMP + '/s{}_u{}_e{}_m{}_t{}.pkl'.format(n_dims, n_units, n_epoch, args.method, testfilename_short), 'w') as f:
