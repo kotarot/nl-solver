@@ -42,7 +42,7 @@ parser.add_argument('--epoch', '-e', default=1000, type=int,
 parser.add_argument('--test', '-t', default='none', type=str,
                     help='Team-Problem name for test (e.g. T01_A06) (default: none)')
 parser.add_argument('--method', '-m', default='dd4', type=str,
-                    help='Method of selecting input data type to ML: dd4 (dafault)')
+                    help='Method of selecting input data type to ML: dd4 (dafault), dd8')
 args = parser.parse_args()
 print args
 
@@ -66,9 +66,15 @@ testfilename_short = testfilename.replace('_', '')
 # method = dd4 の場合
 #   入力: N x N - 1 = N^2 - 1 次元
 #   出力: 4次元
+# method = dd8 の場合
+#   入力: N x N - 1 = N^2 - 1 次元
+#   出力: 8次元
 if args.method == 'dd4':
     input_dims = n_dims**2 - 1
     output_dims = 4
+elif args.method == 'dd8':
+    input_dims = n_dims**2 - 1
+    output_dims = 8
 else:
     raise NotImplementedError()
 

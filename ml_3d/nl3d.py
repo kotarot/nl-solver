@@ -245,12 +245,13 @@ def gen_dataset_shape(board_x, board_y, board, n_dims, dataset):
 
 [dataset]
   - dd4: 4方向
+  - dd8: 4方向 + 距離 (window内か外か)
 """
 def gen_dataset_dd(board_x, board_y, board, n_dims, dataset):
     x_data, y_data = [], []
     n_dims_half = n_dims / 2
 
-    assert(dataset == 'dd4')
+    assert(dataset == 'dd4' or dataset == 'dd8')
     for y in range(n_dims_half, board_y + n_dims_half):
         for x in range(n_dims_half, board_x + n_dims_half):
             # ターミナル数字セルの場合
@@ -268,44 +269,86 @@ def gen_dataset_dd(board_x, board_y, board, n_dims, dataset):
 
                 # 入力: window
                 dx = []
-                # 自セルの周囲
-                for wy in range(-n_dims_half, n_dims_half + 1):
-                    for wx in range(-n_dims_half, n_dims_half + 1):
-                        if not (wx == 0 and wy == 0):
-                            cellx = 0
-                            if board[y + wy][x + wx]['data'] == -1:
-                                cellx = -1
-                            elif board[y + wy][x + wx]['type'] == 1:
-                                cellx = 1
-                            elif board[y + wy][x + wx]['type'] == 'via':
-                                cellx = 2
-                            else:
+                if dataset == 'dd4' or dataset == 'dd8':
+                    # 自セルの周囲
+                    for wy in range(-n_dims_half, n_dims_half + 1):
+                        for wx in range(-n_dims_half, n_dims_half + 1):
+                            if not (wx == 0 and wy == 0):
                                 cellx = 0
-                            dx.append(cellx)
-                x_data.append(dx)
+                                if board[y + wy][x + wx]['data'] == -1:
+                                    cellx = -1
+                                elif board[y + wy][x + wx]['type'] == 1:
+                                    cellx = 1
+                                elif board[y + wy][x + wx]['type'] == 'via':
+                                    cellx = 2
+                                else:
+                                    cellx = 0
+                                dx.append(cellx)
+                    x_data.append(dx)
+                else:
+                    raise NotImplementedError()
 
-                # 出力: 対応ビア位置エリア (右上: 0, 左上: 1, 左下: 2, 右下: 3)
-                dy = -1
-                found = False
-                for vy in range(n_dims_half, board_y + n_dims_half):
-                    for vx in range(n_dims_half, board_x + n_dims_half):
-                        if board[vy][vx]['type'] == 'via' and board[y][x]['data'] == board[vy][vx]['data']:
-                            if vy <= y:
-                                if vx <= x:
-                                    dy = 1
+                # 出力
+                if dataset == 'dd4':
+                    # 対応ビア位置エリア (右上: 0, 左上: 1, 左下: 2, 右下: 3)
+                    dy = -1
+                    found = False
+                    for vy in range(n_dims_half, board_y + n_dims_half):
+                        for vx in range(n_dims_half, board_x + n_dims_half):
+                            if board[vy][vx]['type'] == 'via' and board[y][x]['data'] == board[vy][vx]['data']:
+                                if vy <= y:
+                                    if vx <= x:
+                                        dy = 1
+                                    else:
+                                        dy = 0
                                 else:
-                                    dy = 0
-                            else:
-                                if vx <= x:
-                                    dy = 2
-                                else:
-                                    dy = 3
-                            found = True
+                                    if vx <= x:
+                                        dy = 2
+                                    else:
+                                        dy = 3
+                                found = True
+                                break
+                        if found:
                             break
-                    if found:
-                        break
-                assert(dy != -1)
-                y_data.append(dy)
+                    assert(dy != -1)
+                    y_data.append(dy)
+                elif dataset == 'dd8':
+                    # 対応ビア位置エリア (右上近: 0, 右上遠: 1, 左上近: 2,左上遠: 3, 左下近: 4, 左下遠: 5, 右下近: 6, 右下遠: 7)
+                    dy = -1
+                    found = False
+                    for vy in range(n_dims_half, board_y + n_dims_half):
+                        for vx in range(n_dims_half, board_x + n_dims_half):
+                            if board[vy][vx]['type'] == 'via' and board[y][x]['data'] == board[vy][vx]['data']:
+                                if vy <= y:
+                                    if vx <= x:
+                                        if mdist(vy, y, vx, x) <= n_dims:
+                                            dy = 2
+                                        else:
+                                            dy = 3
+                                    else:
+                                        if mdist(vy, y, vx, x) <= n_dims:
+                                            dy = 0
+                                        else:
+                                            dy = 1
+                                else:
+                                    if vx <= x:
+                                        if mdist(vy, y, vx, x) <= n_dims:
+                                            dy = 4
+                                        else:
+                                            dy = 5
+                                    else:
+                                        if mdist(vy, y, vx, x) <= n_dims:
+                                            dy = 6
+                                        else:
+                                            dy = 7
+                                found = True
+                                break
+                        if found:
+                            break
+                    assert(dy != -1)
+                    y_data.append(dy)
+                else:
+                    raise NotImplementedError()
 
     return x_data, y_data
 
@@ -357,3 +400,10 @@ def int2str(i, base):
         result.append('-')
 
     return ''.join(reversed(result))
+
+
+"""
+マンハッタン距離
+"""
+def mdist(x1, y1, x2, y2):
+    return abs(x1 - x2) + abs(y1 - y2)
