@@ -13,14 +13,14 @@ nl-solver is a machine learning-based Numberlink puzzle solver.
 
 ## Usage
 
-トレーニングフェーズ:
+(2015年版) 機械学習トレーニングフェーズ:
 ```
 python ml/train_window.py -h  # ヘルプ表示
 ```
 
-ソルブフェーズ:
+(2015年版) ソルブフェーズ:
 ```
-python top.py  # ヘルプ表示
+python top.py -h  # ヘルプ表示
 ```
 
 
