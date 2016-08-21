@@ -269,6 +269,8 @@ def gen_dataset_dd(board_x, board_y, board, n_dims, dataset):
 
                 # 入力: window
                 dx = []
+                ones = [] # 1回現れた数字のリスト
+                twos = [] # 2回現れた数字のリスト
                 if dataset == 'dd4' or dataset == 'dd8':
                     # 自セルの周囲
                     for wy in range(-n_dims_half, n_dims_half + 1):
@@ -279,11 +281,30 @@ def gen_dataset_dd(board_x, board_y, board, n_dims, dataset):
                                     cellx = -1.0
                                 elif board[y + wy][x + wx]['type'] == 1:
                                     cellx = 0.5
+                                    if board[y + wy][x + wx]['data'] not in ones:
+                                        ones.append(board[y + wy][x + wx]['data'])
+                                    else:
+                                        twos.append(board[y + wy][x + wx]['data'])
                                 elif board[y + wy][x + wx]['type'] == 'via':
                                     cellx = 1.0
                                 else:
                                     cellx = 0.0
                                 dx.append(cellx)
+                    # 同じ数字の数 (上下/左右にまたがる)
+                    cross_ver, cross_hor = 0, 0
+                    for n in twos:
+                        points = []
+                        for wy in range(-n_dims_half, n_dims_half + 1):
+                            for wx in range(-n_dims_half, n_dims_half + 1):
+                                if board[y + wy][x + wx]['data'] == n and board[y + wy][x + wx]['type'] == 1:
+                                    points.append({'wx': wx, 'wy': wy})
+                        assert(len(points) == 2)
+                        if points[0]['wy'] * points[1]['wy'] <= 0: # 上下またがる
+                            cross_ver = cross_ver + 1
+                        if points[0]['wx'] * points[1]['wx'] <= 0: # 左右またがる
+                            cross_hor = cross_hor + 1
+                    dx.append(norm_number(cross_ver))
+                    dx.append(norm_number(cross_hor))
                     x_data.append(dx)
                 else:
                     raise NotImplementedError()

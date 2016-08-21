@@ -64,16 +64,16 @@ testfilename_short = testfilename.replace('_', '')
 # Prepare multi-layer perceptron model
 # 多層パーセプトロン (中間層 n_units 次元)
 # method = dd4 の場合
-#   入力: N x N - 1 = N^2 - 1 次元
+#   入力: (N x N - 1) + 2 = N^2 + 1 次元
 #   出力: 4次元
 # method = dd8 の場合
-#   入力: N x N - 1 = N^2 - 1 次元
+#   入力: (N x N - 1) + 2 = N^2 + 1 次元
 #   出力: 8次元
 if args.method == 'dd4':
-    input_dims = n_dims**2 - 1
+    input_dims = n_dims**2 + 1
     output_dims = 4
 elif args.method == 'dd8':
-    input_dims = n_dims**2 - 1
+    input_dims = n_dims**2 + 1
     output_dims = 8
 else:
     raise NotImplementedError()
