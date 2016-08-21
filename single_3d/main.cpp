@@ -27,23 +27,28 @@ int main(int argc, char *argv[]){
 	char *in_filename  = NULL; // 問題ファイル名
 	char *out_filename = NULL; // 出力解答ファイル名
 	int outer_loops = O_LOOP;  // 外ループ回数
+	bool debug_option = false; // デバッグ出力 (ルーティング)
 
 	// Options 取得
 	struct option longopts[] = {
 		{"loop",     required_argument, NULL, 'l'},
 		{"output",   required_argument, NULL, 'o'},
+		{"debug",    no_argument,       NULL, 'd'},
 		{"version",  no_argument,       NULL, 'v'},
 		{"help",     no_argument,       NULL, 'h'},
 		{0, 0, 0, 0}
 	};
 	int opt, optidx;
-	while ((opt = getopt_long(argc, argv, "l:o:vh", longopts, &optidx)) != -1) {
+	while ((opt = getopt_long(argc, argv, "l:o:dvh", longopts, &optidx)) != -1) {
 		switch (opt) {
 			case 'l':
 				outer_loops = atoi(optarg);
 				break;
 			case 'o':
 				out_filename = optarg;
+				break;
+			case 'd':
+				debug_option = true;
 				break;
 			case 'v':
 				version();
@@ -78,7 +83,7 @@ int main(int argc, char *argv[]){
 		// 数字が隣接する場合スキップ
 		if(board->line(i)->getHasLine() == false) continue;
 		
-		if(!routing(i)){
+		if( !routing(i, debug_option) ){
 			cerr << "Cannot solve!! (error: 1)" << endl;
 			exit(1);
 		}
@@ -117,7 +122,7 @@ int main(int argc, char *argv[]){
 			penalty_V = (int)(NV * (mt_genrand_int32(0, m - 1)));
 
 			// 経路の探索
-			if ( !routing(id) ) {
+			if ( !routing(id, debug_option) ) {
 				cerr << "Cannot solve!! (error: 2)" << endl; // 失敗したらプログラム終了
 				exit(2);
 			}

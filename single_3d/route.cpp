@@ -12,7 +12,7 @@ extern int penalty_T;
 extern int penalty_C;
 extern int penalty_V;
 
-bool routing(int trgt_line_id){
+bool routing(int trgt_line_id, bool debug_option){
 
 	Line* trgt_line = board->line(trgt_line_id);
 	trgt_line->clearTrack();
@@ -669,9 +669,9 @@ bool routing(int trgt_line_id){
 		}
 	}
 
-/*** デバッグ用
+if (debug_option) { /*** デバッグ用*/
 	cout << endl;
-	cout << "LAYER So" << endl;
+	cout << "LAYER So (line_id: " << trgt_line_id << ")" << endl;
 	cout << "========" << endl;
 	for(int y=0;y<board->getSizeY();y++){
 		for(int x=0;x<board->getSizeX();x++){
@@ -709,7 +709,7 @@ bool routing(int trgt_line_id){
 		}
 		cout << endl;
 	}
-	cout << "LAYER Si" << endl;
+	cout << "LAYER Si (line_id: " << trgt_line_id << ")" << endl;
 	cout << "========" << endl;
 	for(int y=0;y<board->getSizeY();y++){
 		for(int x=0;x<board->getSizeX();x++){
@@ -747,7 +747,7 @@ bool routing(int trgt_line_id){
 		}
 		cout << endl;
 	}
-***/
+} /* ***/
 
 	int now_x = trgt_line->getSinkX();
 	int now_y = trgt_line->getSinkY();

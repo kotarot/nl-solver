@@ -6,7 +6,7 @@
 #define __ROUTE_HPP__
 
 // ルーティング
-bool routing(int trgt_line_id);
+bool routing(int trgt_line_id, bool debug_option);
 bool isInserted_1(int x,int y,int z);
 bool isInserted_2(int x,int y,int z);
 int countLine(int x,int y,int z);
