@@ -10,6 +10,7 @@
 
 # Problem files
 *.txt
+*.original
 !issue*
 *.zip
 

@@ -42,7 +42,7 @@ parser.add_argument('--epoch', '-e', default=1000, type=int,
 parser.add_argument('--test', '-t', default='none', type=str,
                     help='Team-Problem name for test (e.g. T01_A06) (default: none)')
 parser.add_argument('--method', '-m', default='dd4', type=str,
-                    help='Method of selecting input data type to ML: dd4 (dafault), dd8')
+                    help='Method of selecting input data type to ML: dd4 (dafault), dd8, ddx8')
 args = parser.parse_args()
 print args
 
@@ -69,11 +69,17 @@ testfilename_short = testfilename.replace('_', '')
 # method = dd8 の場合
 #   入力: (N x N - 1) + 2 = N^2 + 1 次元
 #   出力: 8次元
+# method = ddx8 の場合
+#   入力: (N x N - 1) + 2 + 2 = N^2 + 3 次元
+#   出力: 8次元
 if args.method == 'dd4':
     input_dims = n_dims**2 + 1
     output_dims = 4
 elif args.method == 'dd8':
     input_dims = n_dims**2 + 1
+    output_dims = 8
+elif args.method == 'ddx8':
+    input_dims = n_dims**2 + 3
     output_dims = 8
 else:
     raise NotImplementedError()
@@ -136,7 +142,7 @@ for datafile in datafiles:
                         boards[z][y][x]['type'] = 'via'
 
         for z in range(board_z):
-            x_data, y_data = nl3d.gen_dataset_dd(board_x, board_y, boards[z], n_dims, args.method)
+            x_data, y_data = nl3d.gen_dataset_dd(board_x, board_y, board_z, boards, z, n_dims, args.method)
 
             x_train_raw = x_train_raw + x_data
             y_train_raw = y_train_raw + y_data
@@ -160,7 +166,7 @@ for datafile in datafiles:
                         boards[z][y][x]['type'] = 'via'
 
         for z in range(board_z):
-            x_data, y_data = nl3d.gen_dataset_dd(board_x, board_y, boards[z], n_dims, args.method)
+            x_data, y_data = nl3d.gen_dataset_dd(board_x, board_y, board_z, boards, z, n_dims, args.method)
 
             x_test_raw = x_test_raw + x_data
             y_test_raw = y_test_raw + y_data

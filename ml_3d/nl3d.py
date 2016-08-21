@@ -244,34 +244,55 @@ def gen_dataset_shape(board_x, board_y, board, n_dims, dataset):
 出力: どのエリアのビアを使用するか
 
 [dataset]
-  - dd4: 4方向
-  - dd8: 4方向 + 距離 (window内か外か)
+  - dd4: (入力) window + 同じ数字 --> (出力) 4方向
+  - dd8: (入力) window + 同じ数字 --> (出力) 4方向 + 距離 (window内か外か)
+  - ddx8: (入力) window + 同じ数字 + 他方層の相対位置 --> 4方向 + 距離 (window内か外か)
 """
-def gen_dataset_dd(board_x, board_y, board, n_dims, dataset):
+def gen_dataset_dd(board_x, board_y, board_z, boards, arg_z, n_dims, dataset):
+    board = boards[arg_z]
     x_data, y_data = [], []
     n_dims_half = n_dims / 2
 
-    assert(dataset == 'dd4' or dataset == 'dd8')
+    assert(dataset == 'dd4' or dataset == 'dd8' or dataset == 'ddx8')
     for y in range(n_dims_half, board_y + n_dims_half):
         for x in range(n_dims_half, board_x + n_dims_half):
             # ターミナル数字セルの場合
             # かつ、もう一方のセルが同じ層に無い（別層にある）場合
             # のみ対象
             if board[y][x]['type'] == 1:
-                count_same = 0
+                count_terms = 0
                 for ay in range(n_dims_half, board_y + n_dims_half):
                     for ax in range(n_dims_half, board_x + n_dims_half):
                         if board[ay][ax]['type'] == 1 and board[ay][ax]['data'] == board[y][x]['data']:
-                            count_same += 1
-                assert(count_same == 1 or count_same == 2)
-                if count_same == 2:
-                    break
+                            count_terms += 1
+                assert(count_terms == 1 or count_terms == 2)
+                if count_terms == 2:
+                    continue
+
+                # 別層 (他方層) にある同じ数字の別端点の座標
+                if dataset == 'ddx8':
+                    terms = []
+                    for tz in range(board_z):
+                        for ty in range(n_dims_half, board_y + n_dims_half):
+                            for tx in range(n_dims_half, board_x + n_dims_half):
+                                if boards[tz][ty][tx]['type'] == 1 and boards[tz][ty][tx]['data'] == board[y][x]['data']:
+                                    terms.append( {'x': tx, 'y': ty, 'z': tz} );
+                    #print board[y][x]['data'], terms
+                    assert(len(terms) == 2)
+                    if terms[0]['x'] == x and terms[0]['y'] == y:
+                        alt_x = terms[1]['x']
+                        alt_y = terms[1]['y']
+                    elif terms[1]['x'] == x and terms[1]['y'] == y:
+                        alt_x = terms[0]['x']
+                        alt_y = terms[0]['y']
+                    else:
+                        assert(False)
 
                 # 入力: window
                 dx = []
                 ones = [] # 1回現れた数字のリスト
                 twos = [] # 2回現れた数字のリスト
-                if dataset == 'dd4' or dataset == 'dd8':
+                if dataset == 'dd4' or dataset == 'dd8' or dataset == 'ddx8':
                     # 自セルの周囲
                     for wy in range(-n_dims_half, n_dims_half + 1):
                         for wx in range(-n_dims_half, n_dims_half + 1):
@@ -305,9 +326,13 @@ def gen_dataset_dd(board_x, board_y, board, n_dims, dataset):
                             cross_hor = cross_hor + 1
                     dx.append(norm_number(cross_ver))
                     dx.append(norm_number(cross_hor))
-                    x_data.append(dx)
                 else:
                     raise NotImplementedError()
+                if dataset == 'ddx8':
+                    board_width = max(board_x, board_y)
+                    dx.append(1.0 * (alt_x - x) / board_width)
+                    dx.append(1.0 * (alt_y - y) / board_width)
+                x_data.append(dx)
 
                 # 出力
                 if dataset == 'dd4':
@@ -333,7 +358,7 @@ def gen_dataset_dd(board_x, board_y, board, n_dims, dataset):
                             break
                     assert(dy != -1)
                     y_data.append(dy)
-                elif dataset == 'dd8':
+                elif dataset == 'dd8' or dataset == 'ddx8':
                     # 対応ビア位置エリア (右上近: 0, 右上遠: 1, 左上近: 2,左上遠: 3, 左下近: 4, 左下遠: 5, 右下近: 6, 右下遠: 7) --> 正規化
                     dy = -1
                     found = False
