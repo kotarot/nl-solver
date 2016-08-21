@@ -35,10 +35,8 @@ parser.add_argument('--epoch', '-e', default=100000, type=int,
                     help='Number of epoches (default: 100000)')
 parser.add_argument('--test', '-t', default='none', type=str,
                     help='Problem name for test (default: none)')
-#parser.add_argument('--show-wrong', '-w', default=False, action='store_true',
-#                    help='Set on to print incorrect lines in red (default: False)')
-parser.add_argument('--dataset', '-d', default='window', type=str,
-                    help='Input dataset type to ML: window (dafault), windowsn, windowxa, windowxb')
+parser.add_argument('--method', '-m', default='window', type=str,
+                    help='Method of selecting input data type to ML: window (dafault), windowsn, windowxa, windowxb')
 args = parser.parse_args()
 print args
 
@@ -53,24 +51,24 @@ testfilename       = args.test
 
 
 # [3.1] 準備
-# Prepare dataset --> nl.py
+# Prepare method --> nl.py
 
 
 # [3.2] モデルの定義
 # Prepare multi-layer perceptron model
 # 多層パーセプトロン (中間層 n_units 次元)
-# 入力: N x N - 1 = N^2 - 1 次元 (dataset = window の場合)
-#       N x N = N^2 次元         (dataset = windowsn の場合)
-#       N x N = N^2 + 2 次元     (dataset = windowxa の場合)
-#       N x N = N^2 + 1 次元     (dataset = windowxb の場合)
+# 入力: N x N - 1 = N^2 - 1 次元 (method = window の場合)
+#       N x N = N^2 次元         (method = windowsn の場合)
+#       N x N = N^2 + 2 次元     (method = windowxa の場合)
+#       N x N = N^2 + 1 次元     (method = windowxb の場合)
 # 出力: 7次元
-if args.dataset == 'window':
+if args.method == 'window':
     input_dims = n_dims**2 - 1
-elif args.dataset == 'windowsn':
+elif args.method == 'windowsn':
     input_dims = n_dims**2
-elif args.dataset == 'windowxa':
+elif args.method == 'windowxa':
     input_dims = n_dims**2 + 2
-elif args.dataset == 'windowxb':
+elif args.method == 'windowxb':
     input_dims = n_dims**2 + 1
 else:
     raise NotImplementedError()
@@ -117,7 +115,7 @@ for datafile in datafiles:
         sys.stdout.write('  --> {} X {} X {}\n'.format(_board_x, _board_y, _board_z))
 
         for z in range(_board_z):
-            x_data, y_data = nl.gen_dataset_shape(_board_x, _board_y, _boards[z], n_dims, args.dataset) # 配線形状の分類
+            x_data, y_data = nl.gen_dataset_shape(_board_x, _board_y, _boards[z], n_dims, args.method) # 配線形状の分類
             #x_data, y_data = nl.gen_dataset_dirsrc(_board_x, _board_y, _boards[z], n_dims) # 配線接続位置の分類 (ソースから)
             #x_data, y_data = nl.gen_dataset_dirsnk(_board_x, _board_y, _boards[z], n_dims) # 配線接続位置の分類 (シンクから)
 
@@ -132,7 +130,7 @@ for datafile in datafiles:
         sys.stdout.write('  ==> {} X {} X {}\n'.format(board_x, board_y, board_z))
 
         for z in range(board_z):
-            x_data, y_data = nl.gen_dataset_shape(board_x, board_y, boards[z], n_dims, args.dataset) # 配線形状の分類
+            x_data, y_data = nl.gen_dataset_shape(board_x, board_y, boards[z], n_dims, args.method) # 配線形状の分類
             #x_data, y_data = nl.gen_dataset_dirsrc(board_x, board_y, boards[z], n_dims) # 配線接続位置の分類 (ソースから)
             #x_data, y_data = nl.gen_dataset_dirsnk(board_x, board_y, boards[z], n_dims) # 配線接続位置の分類 (シンクから)
 
@@ -208,5 +206,5 @@ for epoch in xrange(1, n_epoch + 1):
                     print ''
 
 # モデルをシリアライズ化して保存
-with open(DIR_DUMP + '/s{}_u{}_e{}_d{}_t{}.pkl'.format(n_dims, n_units, n_epoch, args.dataset, testfilename_short), 'w') as f:
+with open(DIR_DUMP + '/s{}_u{}_e{}_m{}_t{}.pkl'.format(n_dims, n_units, n_epoch, args.method, testfilename_short), 'w') as f:
     pickle.dump(model, f)
