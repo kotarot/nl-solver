@@ -46,7 +46,17 @@ void printBoard(){
 	}
 }
 
-// ラインナンバーから色をマッピング
+// ラインナンバーから色をマッピング (Foreground colors)
+// 31m ~ 37m まで 7色
+string getcolorescape_fore(int n) {
+	int color = ((n - 1) % 7) + 31;
+	stringstream ss;
+	ss << color;
+	string p = "\033[";
+	string s = "m";
+	return p + ss.str() + s;
+}
+// ラインナンバーから色をマッピング (Background colors)
 // 41m ~ 47m まで 7色
 string getcolorescape(int n) {
 	int color = ((n - 1) % 7) + 41;
@@ -102,13 +112,19 @@ void printSolution(){
 		cout << "LAYER " << z+1 << endl;
 		for(int y=0;y<board->getSizeY();y++){
 			for(int x=0;x<board->getSizeX();x++){
-				if(for_print[z][y][x] < 0){
+				int n = for_print[z][y][x];
+				if(n < 0){
 					// 線が引かれていないマス："00"表示
 					cout << " \033[37m00\033[0m";
 				}else{
-					// その他(2桁表示)
-					int n = for_print[z][y][x];
-					cout << " " << getcolorescape(n) << setfill('0') << setw(2) << n << "\033[0m";
+					Box* trgt_box = board->box(x,y,z);
+					if(trgt_box->isTypeNumber()){
+						// 線が引かれているマス [端点] (2桁表示)
+						cout << " " << getcolorescape_fore(n) << setfill('0') << setw(2) << n << "\033[0m";
+					}else{
+						// 線が引かれているマス [非端点] (2桁表示)
+						cout << " " << getcolorescape(n) << setfill('0') << setw(2) << n << "\033[0m";
+					}
 				}
 			}
 			cout << endl;
