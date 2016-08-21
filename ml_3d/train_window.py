@@ -34,7 +34,7 @@ parser.add_argument('--unit', '-u', default=100, type=int,
 parser.add_argument('--epoch', '-e', default=100000, type=int,
                     help='Number of epoches (default: 100000)')
 parser.add_argument('--test', '-t', default='none', type=str,
-                    help='Problem name for test (default: none)')
+                    help='Problem name for test (e.g. A00) (default: none)')
 parser.add_argument('--method', '-m', default='window', type=str,
                     help='Method of selecting input data type to ML: window (dafault), windowsn, windowxa, windowxb')
 args = parser.parse_args()
@@ -45,7 +45,7 @@ n_dims_half        = n_dims / 2
 n_units            = args.unit
 n_epoch            = args.epoch
 testfilename       = args.test
-#testfilename_short = testfilename.replace('_', '')
+testfilename_short = testfilename.replace('_', '')
 #if '.txt' in testfilename:
 #    testfilename_short = testfilename[0:-4]
 
