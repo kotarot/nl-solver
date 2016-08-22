@@ -224,23 +224,6 @@ for epoch in xrange(1, n_epoch + 1):
         if testfilename != 'none':
             print 'Test:  mean loss={}, accuracy={}'.format(loss_test.data,  accuracy_test.data)
 
-            # テストデータの配線を表示
-            """
-            idx = 0
-            str = ['   ', ' │ ', '─┘ ', ' └─', '─┐ ', ' ┌─', '───']
-            for z in range(board_z):
-                print 'LAYER {}'.format(z + 1)
-                for y in range(n_dims_half, board_y + n_dims_half):
-                    for x in range(n_dims_half, board_x + n_dims_half):
-                        if boards[z][y][x]['type'] == 1:
-                            sys.stdout.write('\033[1;30;47m ' + nl.int2str(boards[z][y][x]['data'], 36) + ' \033[0m')
-                        else:
-                            ex_shape = np.argmax(result.data[idx])
-                            sys.stdout.write('\033[1;30;47m' + str[ex_shape] + '\033[0m')
-                            idx = idx + 1
-                    print ''
-            """
-
 # モデルをシリアライズ化して保存
 with open(DIR_DUMP + '/s{}_u{}_e{}_m{}_t{}.pkl'.format(n_dims, n_units, n_epoch, args.method, testfilename_short), 'w') as f:
     pickle.dump(model, f)
