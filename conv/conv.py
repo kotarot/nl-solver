@@ -104,7 +104,7 @@ if __name__ == '__main__':
 		a = conv_nl.get_matrix(boards2, ans=True)
 		answer.append([a[:]])
 
-		for i in range(5):
+		for i in range(10):
 			p = conv_nl.get_randomized_matrix(boards2, ans=False, seed=i)
 			problem.append([p[:]])
 			a = conv_nl.get_randomized_matrix(boards2, ans=True, seed=i)
