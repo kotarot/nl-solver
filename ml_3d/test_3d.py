@@ -16,6 +16,7 @@ import chainer.functions as F
 
 import nl
 import nl3d
+import nnmodel
 
 
 parser = argparse.ArgumentParser(description='test_3d -- 2016')
@@ -64,14 +65,14 @@ with open(input_pickle, 'r') as f:
     model = pickle.load(f)
 
 
-# Neural net architecture
-# ニューラルネットの構造
-def evaluate(x_data):
-    x = Variable(x_data)
-    h1 = F.dropout(F.relu(model.l1(x)),  train=False)
-    h2 = F.dropout(F.relu(model.l2(h1)), train=False)
-    y  = model.l3(h2)
-    return y
+# # Neural net architecture
+# # ニューラルネットの構造
+# def evaluate(x_data):
+#     x = Variable(x_data)
+#     h1 = F.dropout(F.relu(model.l1(x)),  train=False)
+#     h2 = F.dropout(F.relu(model.l2(h1)), train=False)
+#     y  = model.l3(h2)
+#     return y
 
 
 # 数字から方向・距離を表す文字列にマッピング
@@ -108,9 +109,11 @@ x_test = [[] for z in range(board_z)]
 for z in range(board_z):
     x_test[z] = np.array(x_data[z], dtype=np.float32)
 
+nn = nnmodel.Model1(model)
+
 result = [[] for z in range(board_z)]
 for z in range(board_z):
-    result[z] = evaluate(x_test[z])
+    result[z] = nn.evaluate(x_test[z])
 
 # 結果を見る (超簡易的バージョン)
 for z in range(board_z):

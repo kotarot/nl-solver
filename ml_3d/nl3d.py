@@ -260,14 +260,16 @@ def gen_dataset_dd(board_x, board_y, board_z, boards, arg_z, n_dims, dataset, te
                 else:
                     raise NotImplementedError()
                 if dataset == 'ddx8':
-                    board_width = max(board_x, board_y)
-                    dist_x = 1.0 * (alt_x - x) / board_width
+                    # board_width = max(board_x, board_y)
+                    dist_x = 1.0 * (alt_x - x) / board_x
+                    # dist_x = 1.0 * (alt_x - x) / board_width
                     #dist_x = 1.0 * (alt_x - x) / board_width * 2.0
                     #if dist_x < 0.0:
                     #    dist_x = max(dist_x, -1.0)
                     #else:
                     #    dist_x = min(dist_x, 1.0)
-                    dist_y = 1.0 * (alt_y - y) / board_width
+                    dist_y = 1.0 * (alt_y - y) / board_y
+                    # dist_y = 1.0 * (alt_y - y) / board_width
                     #dist_y = 1.0 * (alt_y - y) / board_width * 2.0
                     #if dist_y < 0.0:
                     #    dist_y = max(dist_y, -1.0)
