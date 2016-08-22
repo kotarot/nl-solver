@@ -248,7 +248,7 @@ def gen_dataset_shape(board_x, board_y, board, n_dims, dataset):
   - dd8: (入力) window + 同じ数字 --> (出力) 4方向 + 距離 (window内か外か)
   - ddx8: (入力) window + 同じ数字 + 他方層の相対位置 --> 4方向 + 距離 (window内か外か)
 """
-def gen_dataset_dd(board_x, board_y, board_z, boards, arg_z, n_dims, dataset):
+def gen_dataset_dd(board_x, board_y, board_z, boards, arg_z, n_dims, dataset, testmode=False):
     board = boards[arg_z]
     x_data, y_data = [], []
     n_dims_half = n_dims / 2
@@ -348,32 +348,36 @@ def gen_dataset_dd(board_x, board_y, board_z, boards, arg_z, n_dims, dataset):
                 x_data.append(dx)
 
                 # 出力
-                if dataset == 'dd4':
-                    # 対応ビア位置エリア (右上: 0, 左上: 1, 左下: 2, 右下: 3) --> 正規化
-                    dy = -100
+                if testmode:
+                    y_data = []
+                elif dataset == 'dd4':
+                    # 対応ビア位置エリア (右上: 0, 左上: 1, 左下: 2, 右下: 3)
+                    #  ※ Yは正規化してはいけなくて整数じゃないと正確に学習できない
+                    dy = -1
                     found = False
                     for vy in range(n_dims_half, board_y + n_dims_half):
                         for vx in range(n_dims_half, board_x + n_dims_half):
                             if board[vy][vx]['type'] == 'via' and board[y][x]['data'] == board[vy][vx]['data']:
                                 if vy <= y:
                                     if vx <= x:
-                                        dy = 0.0
+                                        dy = 1
                                     else:
-                                        dy = -0.5
+                                        dy = 0
                                 else:
                                     if vx <= x:
-                                        dy = 0.5
+                                        dy = 2
                                     else:
-                                        dy = 1.0
+                                        dy = 3
                                 found = True
                                 break
                         if found:
                             break
-                    assert(-100 < dy)
+                    assert(-1 < dy)
                     y_data.append(dy)
                 elif dataset == 'dd8' or dataset == 'ddx8':
-                    # 対応ビア位置エリア (右上近: 0, 右上遠: 1, 左上近: 2,左上遠: 3, 左下近: 4, 左下遠: 5, 右下近: 6, 右下遠: 7) --> 正規化
-                    dy = -100
+                    # 対応ビア位置エリア (右上近: 0, 右上遠: 1, 左上近: 2,左上遠: 3, 左下近: 4, 左下遠: 5, 右下近: 6, 右下遠: 7)
+                    #  ※ Yは正規化してはいけなくて整数じゃないと正確に学習できない
+                    dy = -1
                     found = False
                     for vy in range(n_dims_half, board_y + n_dims_half):
                         for vx in range(n_dims_half, board_x + n_dims_half):
@@ -381,30 +385,30 @@ def gen_dataset_dd(board_x, board_y, board_z, boards, arg_z, n_dims, dataset):
                                 if vy <= y:
                                     if vx <= x:
                                         if mdist(vy, y, vx, x) <= n_dims:
-                                            dy = -0.25
+                                            dy = 2
                                         else:
-                                            dy = 0.0
+                                            dy = 3
                                     else:
                                         if mdist(vy, y, vx, x) <= n_dims:
-                                            dy = -0.75
+                                            dy = 0
                                         else:
-                                            dy = -0.5
+                                            dy = 1
                                 else:
                                     if vx <= x:
                                         if mdist(vy, y, vx, x) <= n_dims:
-                                            dy = 0.25
+                                            dy = 4
                                         else:
-                                            dy = 0.5
+                                            dy = 5
                                     else:
                                         if mdist(vy, y, vx, x) <= n_dims:
-                                            dy = 0.75
+                                            dy = 6
                                         else:
-                                            dy = 1.0
+                                            dy = 7
                                 found = True
                                 break
                         if found:
                             break
-                    assert(-100 < dy)
+                    assert(-1 < dy)
                     y_data.append(dy)
                 else:
                     raise NotImplementedError()
