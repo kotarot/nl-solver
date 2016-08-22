@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
 	}
 	else
 	{
-		num = argc - 1;
+		num = (argc - 1)/2;
 		for (i = 0; i < num; i+=2)
 		{
 			sprintfs(qfilename[i], "%s", argv[i]);
@@ -57,7 +57,7 @@ int main(int argc, char* argv[])
 
 	//”züÅ“K‰»
 	//–¢ŽÀ‘•
-	optMap(&nl);
+	//optMap(&nl);
 
 	int r = rand()%1000;
 	char str[1024];

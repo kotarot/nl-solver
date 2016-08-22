@@ -516,6 +516,8 @@ void optMap_sub(NL* nl)
 
 
 
+
+
 	free(map);
 }
 void optMap(NL* nl)
