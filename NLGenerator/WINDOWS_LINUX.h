@@ -16,6 +16,7 @@
 #define FOPEN(_File,_Filename,_Mode) (*_File=fopen(_Filename,_Mode))
 #define FREAD(x,...) fread(x,__VA_ARGS__)
 #define fopens(_File,_Filename,_Mode) (*_File=fopen(_Filename,_Mode))
+#define fprintfs(x,...) fprintf_s(x,__VA_ARGS__)
 #define sprintfs(x,...) sprintf(x,__VA_ARGS__)
 #define sscanfs(x,...) sscanf(x,__VA_ARGS__)
 #else

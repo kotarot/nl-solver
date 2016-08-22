@@ -43,8 +43,8 @@ typedef struct
 	int size[3];
 	int num_line;
 	int num_via;
-	line* lines;
-	via* vias;
+	line lines[1024];
+	via vias[1024];
 	val* map;
 }NL;
 
@@ -59,6 +59,8 @@ void writeNLQ(NL*, char*);
 void writeNLA(NL*, char*);
 int pileVia(NL* nl, point* p);
 void pileVia_sub(NL* nl, line* l, point* p, line* l2, point* p2);
+void checkNL(NL* nl);
+void optMap(NL* nl);
 
 void cpVal(val* src, val* dst);
 void cpPoint(point* src, point* dst);

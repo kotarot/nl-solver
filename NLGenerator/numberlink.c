@@ -33,7 +33,7 @@ void readOLD_NLQ(NL* nl, char* filename)
 	sscanfs(str, "SIZE %dX%d", nl->size + X, nl->size + Y);
 	fgets(str, sizeof(str), fp);
 	sscanfs(str, "LINE_NUM %d", &(nl->num_line));
-	nl->lines = (line*)calloc(nl->num_line, sizeof(line));
+	//nl->lines = (line*)calloc(nl->num_line, sizeof(line));
 	for (i = 0; i < nl->num_line; i++)
 	{
 		int tmp;
@@ -118,10 +118,10 @@ void mergeNL(NL* srcs[], int n_src, NL* dst)
 		dst->num_line += srcs[i]->num_line;
 	}
 
-	dst->lines = (line*)calloc(dst->num_line, sizeof(line));
+	//dst->lines = (line*)calloc(dst->num_line, sizeof(line));
 	dst->num_via = 0;
-	//ビア最大数はライン数以下なので，最大値で領域を確保する
-	dst->vias = (via*)calloc(dst->num_line, sizeof(via));
+	////ビア最大数はライン数以下なので，最大値で領域を確保する
+	//dst->vias = (via*)calloc(dst->num_line, sizeof(via));
 	dst->map = (val*)calloc(dst->size[X] * dst->size[Y] * dst->size[Z], sizeof(val));
 
 	int index = 0;
@@ -264,8 +264,8 @@ void pileVia_sub(NL* nl, line* l, point* p, line* l2, point* p2)
 		int min;
 		int max;
 		nl->num_via++;
-		nl->vias[nl->num_via - 1].name.value[0] = (nl->num_via / ('z' - 'a'+1)) + 'a'-1;
-		nl->vias[nl->num_via - 1].name.value[1] = (nl->num_via % ('z' - 'a'+1)) + 'a'-1;
+		nl->vias[nl->num_via - 1].name.value[0] = ((nl->num_via-1) / ('z' - 'a'+1)) + 'a'-1;
+		nl->vias[nl->num_via - 1].name.value[1] = ((nl->num_via-1) % ('z' - 'a'+1)) + 'a';
 		if (nl->vias[nl->num_via - 1].name.value[0] == 'a' - 1)
 			nl->vias[nl->num_via - 1].name.value[0] = ' ';
 		point px;
@@ -401,4 +401,126 @@ void printVal(FILE* fp, val* src)
 		fprintfs(fp, "%c", src->value[1]);
 	else
 		fprintfs(fp, "%c%c", src->value[0], src->value[1]);
+}
+
+void delLine(NL* nl, line* l)
+{
+	int i, j, k;
+	val v;
+	val last;
+	val zero;
+	cpVal(&l->name, &v);
+	cpVal(&nl->lines[nl->num_line-1].name, &last);
+	zero.value[0] = '0';
+	zero.value[1] = '0';
+	for (k = 0; k < nl->size[Z]; k++)
+		for (i = 0; i < nl->size[Y]; i++)
+			for (j = 0; j < nl->size[X]; j++)
+			{
+		point p;
+		p.xyz[X] = j;
+		p.xyz[Y] = i;
+		p.xyz[Z] = k;
+		val* now = getVal(nl, &p);
+		if (equalsVal(now, &v))cpVal(&zero, now);
+		if (equalsVal(now, &last))cpVal(&v, now);
+			}
+	
+	cpLine(nl->lines + nl->num_line - 1, l);
+	cpVal(&v, &l->name);
+	nl->num_line--;
+}
+void checkNL(NL* nl)
+{
+	while (nl->num_line >= 100)
+	{
+		int index=rand() % nl->num_line;
+		delLine(nl, nl->lines+index);
+	}
+}
+int isEdge(NL* nl, int x, int y, int z)
+{
+	val* v=getValXYZ(nl,x,y,z);
+	val* tmp;
+	int f = 0;
+	if (x == 0)f++;
+	else
+	{
+		tmp = getValXYZ(nl, x - 1, y, z);
+		if (equalsVal(v, tmp))f++;
+	}
+	if (x == nl->size[X]-1)f++;
+	else
+	{
+		tmp = getValXYZ(nl, x + 1, y, z);
+		if (equalsVal(v, tmp))f++;
+	}
+	if (y == 0)f++;
+	else
+	{
+		tmp = getValXYZ(nl, x, y-1, z);
+		if (equalsVal(v, tmp))f++;
+	}
+	if (y == nl->size[Y] - 1)f++;
+	else
+	{
+		tmp = getValXYZ(nl, x, y+1, z);
+		if (equalsVal(v, tmp))f++;
+	}
+	return f == 4 ? 1 : 0;
+}
+void optMap_sub(NL* nl)
+{
+	int i,j;
+	point p,q;
+	p.xyz[X] = rand() % nl->size[X];
+	p.xyz[Y] = rand() % nl->size[Y];
+	p.xyz[Z] = rand() % nl->size[Z];
+	q.xyz[X] = -1;
+	val v;
+	val zero;
+	cpVal(getVal(nl, &p),&v);
+	zero.value[0] = '0';
+	zero.value[1] = '0';
+	if (equalsVal(&v, &zero))return;
+	
+	int* map;
+	map = (int*)calloc(nl->size[X] * nl->size[Y]*4, sizeof(int));
+	for (i = 0; i < nl->size[Y];i++)
+		for (j = 0; j < nl->size[X]; j++)
+		{
+		map[(i*nl->size[X] + j) * 4] = 0;
+		map[(i*nl->size[X] + j) * 4 + 1] = 0;
+		map[(i*nl->size[X] + j) * 4 + 2] = 0;
+		map[(i*nl->size[X] + j) * 4 + 3] = 0;
+		if (isEdge(nl, j, i, p.xyz[Z]))
+		{
+			if (q.xyz[X] == -1)
+			{
+				q.xyz[X] = j;
+				q.xyz[Y] = i;
+				q.xyz[Z] = p.xyz[Z];
+			}
+			else
+			{
+				p.xyz[X] = j;
+				p.xyz[Y] = i;
+			}
+		}
+		}
+	//ここまでで
+	//端点はp,q
+	//(ラインの端なのかビアなのかは区別しない)
+	//
+	//未実装
+
+
+
+	free(map);
+}
+void optMap(NL* nl)
+{
+	int i;
+	for(i=0;i<10000;i++)
+		optMap_sub(nl);
 }

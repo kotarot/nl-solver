@@ -4,49 +4,78 @@
 #include "WINDOWS_LINUX.h"
 #include "numberlink.h"
 
-char fold[] = "C:\\Users\\tawada\\Desktop\\160715ADC\\OLD\\ADC2015\\20X20\\";
-char fold2[] = "C:\\Users\\tawada\\Desktop\\160715ADC\\OLD\\ADC2015\\17X20\\";
-
-int main()
+int main(int argc, char* argv[])
 {
-	char qfilename1[] = "Q07.txt";
-	char afilename1[] = "AQ07.txt";
-	char qfilename2[] = "Q13.txt";
-	char afilename2[] = "AQ13.txt";
-	char qfilename3[] = "QXX.txt";
-	char afilename3[] = "AQXX.txt";
-	char str[1024];
-	char str2[1024];
-	NL* old[3];
-	old[0] = (NL*)calloc(1, sizeof(NL));
-	old[1] = (NL*)calloc(1, sizeof(NL));
-	old[2] = (NL*)calloc(1, sizeof(NL));
-	sprintfs(str, "%s%s", fold, qfilename1);
-	sprintfs(str2, "%s%s", fold, afilename1);
-	readOLD_NL(old[0], str, str2);
-	sprintfs(str, "%s%s", fold, qfilename2);
-	sprintfs(str2, "%s%s", fold, afilename2);
-	readOLD_NL(old[1], str, str2);
-	sprintfs(str, "%s%s", fold, qfilename3);
-	sprintfs(str2, "%s%s", fold, afilename3);
-	readOLD_NL(old[2], str, str2);
-	NL nl;
-	mergeNL(old, 3, &nl);
-	point p;
 	int i;
+	int num;
+	char qfilename[8][1024];
+	char afilename[8][1024];
+	
 	srand((unsigned int)time(NULL));
-	for (i = 0; i < 1000; i++)
+	
+	if (argc < 2)
+	{
+		char filename[5][7] = { "76.txt", "84.txt", "87.txt", "95.txt", "96.txt"};
+		num = (rand()%3)+2;
+		for (i = 0; i < num; i++)
+		{
+			int tmp = rand() % 5;
+			sprintfs(qfilename[i], "old/p%s", filename[tmp]);
+			sprintfs(afilename[i], "old/a%s", filename[tmp]);
+		}
+	}
+	else
+	{
+		num = argc - 1;
+		for (i = 0; i < num; i+=2)
+		{
+			sprintfs(qfilename[i], "%s", argv[i]);
+			sprintfs(afilename[i], "%s", argv[i+1]);
+		}
+	}
+	NL* old[8];
+	for (i = 0; i < num; i++)
+	{
+		old[i] = (NL*)calloc(1, sizeof(NL));
+		readOLD_NL(old[i], qfilename[i], afilename[i]);
+	}
+
+	NL nl;
+	mergeNL(old, num, &nl);
+	point p;
+
+	for (i = 0; i < 10000; i++)
 	{
 		p.xyz[X] = rand() % nl.size[X];
 		p.xyz[Y] = rand() % nl.size[Y];
-		p.xyz[Z] = (rand() % 2)+1;
+		p.xyz[Z] = (rand() % (num-1))+1;
 		pileVia(&nl, &p);
 	}
-	int r = rand()%100;
-	sprintfs(str, "2016-08-10\\NL_Q%02d.txt", r);
-	sprintfs(str2, "2016-08-10\\T99_A%02d.txt", r);
-	writeNLQ(&nl, str);
-	writeNLA(&nl, str2);
+
+	//LINE数100未満
+	checkNL(&nl);
+
+	//配線最適化
+	//未実装
+	optMap(&nl);
+
+	int r = rand()%1000;
+	char str[1024];
+	char ID[1024];
+	//命名規則
+	//XXXYYYZLLLVVV
+	//XXX:X方向の大きさ
+	//YYY:Y方向の大きさ
+	//ZZ:Z方向の大きさ
+	//LLL:ライン数
+	//VVV:ビア数
+	//RRR:乱数
+	sprintfs(ID, "%02dX%02dX%01d-%03d-%03d-%03d", nl.size[X], nl.size[Y], nl.size[Z], nl.num_line,nl.num_via,r);
+	
+	sprintfs(str, "3D-problem/NL_Q%s.txt", ID);
+	writeNLQ(&nl, str); 
+	sprintfs(str, "3D-problem/T99_A%s.txt", ID);
+	writeNLA(&nl, str);
 	return 0;
 }
 
