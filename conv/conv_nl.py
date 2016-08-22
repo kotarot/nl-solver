@@ -219,40 +219,58 @@ def get_matrix(b, ans=False):
 					tmpy.append(0)
 				elif x['type'] >= 4:
 					if ans:
-						tmpy.append(0.6 + (x['type']-4)/20.0)
+						# tmpy.append(0.6 + (x['type']-4)/20.0)
+						tmpy.append(0.125 + (x['type']-4)*0.125)
 					else:
 						tmpy.append(0)
 				else:
-					if x['type'] == 2:
-						# via
-						tmpy.append(0.4 + int(x['value'])/500.0)
+					if ans:
+						if x['type'] == 2:
+							tmpy.append(0.90)
+						else:
+							tmpy.append(0.95)
 					else:
-						# line
-						tmpy.append(0.2 + int(x['value'])/500.0)
+						if x['type'] == 2:
+							# via
+							tmpy.append(0.4 + int(x['value'])/500.0)
+						else:
+							# line
+							tmpy.append(0.2 + int(x['value'])/500.0)
 			if len(tmpy) % 2 == 1:
 				tmpy.append(0)
 			tmpz.append(tmpy[:])
 		res.append(tmpz[:])
 	return res
 
-def get_board(mat):
+def get_board(mat, ans=False):
 	res = []
 	for z in mat:
 		tmpz = []
 		for y in z:
 			tmpy = []
 			for x in y:
-				if x < 0.2:
-					tmpy.append({'type':0, 'value':0})
-				elif x < 0.4:
-					tmpy.append({'type':1, 'value':int((x-0.2)*500)})
-				elif x < 0.6:
-					tmpy.append({'type':2, 'value':int((x-0.4)*500)})
-				else:
-					if (x-0.6)*20 < 6:
-						tmpy.append({'type': int((x-0.6)*20+4), 'value':0})
-					else:
+				if ans:
+					if x < 0.0625:
 						tmpy.append({'type':0, 'value':0})
+					elif x < 0.85:
+						tmpy.append({'type': int((x-0.125)*8+4), 'value':0})
+					elif x < 0.925:
+						tmpy.append({'type':1, 'value':"V"})
+					else:
+						tmpy.append({'type':2, 'value':"L"})
+
+				else:
+					if x < 0.2:
+						tmpy.append({'type':0, 'value':0})
+					elif x < 0.4:
+						tmpy.append({'type':1, 'value':int((x-0.2)*500)})
+					elif x < 0.6:
+						tmpy.append({'type':2, 'value':int((x-0.4)*500)})
+					else:
+						if (x-0.6)*20 < 6:
+							tmpy.append({'type': int((x-0.6)*20+4), 'value':0})
+						else:
+							tmpy.append({'type':0, 'value':0})
 			tmpz.append(tmpy[:])
 		res.append(tmpz[:])
 	return res
@@ -265,33 +283,35 @@ def get_randomized_matrix(b, ans=False, seed=None):
 	for z, zv in enumerate(mat):
 		for y, yv in enumerate(zv):
 			for x, xv in enumerate(yv):
-				if 0.2 <= xv and xv < 0.4:
-					if not xv in lines:
-						lines[xv] = []
-					lines[xv].append((x, y, z))
-				elif 0.4 <= xv and xv <= 0.6:
-					if not xv in vias:
-						vias[xv] = []
-					vias[xv].append((x, y, z))
+				if not ans:
+					if 0.2 <= xv and xv < 0.4:
+						if not xv in lines:
+							lines[xv] = []
+						lines[xv].append((x, y, z))
+					elif 0.4 <= xv and xv <= 0.6:
+						if not xv in vias:
+							vias[xv] = []
+						vias[xv].append((x, y, z))
 
-	for i in range(100):
-		s = random.sample(lines.keys(), 2)
-		tmp = lines[s[0]][:]
-		lines[s[0]] = lines[s[1]][:]
-		lines[s[1]] = tmp[:]
+	if not ans:
+		for i in range(100):
+			s = random.sample(lines.keys(), 2)
+			tmp = lines[s[0]][:]
+			lines[s[0]] = lines[s[1]][:]
+			lines[s[1]] = tmp[:]
 
-		s = random.sample(vias.keys(), 2)
-		tmp = vias[s[0]][:]
-		vias[s[0]] = vias[s[1]][:]
-		vias[s[1]] = tmp[:]
+			s = random.sample(vias.keys(), 2)
+			tmp = vias[s[0]][:]
+			vias[s[0]] = vias[s[1]][:]
+			vias[s[1]] = tmp[:]
 
-	for k, v in lines.items():
-		for v2 in v:
-			mat[v2[2]][v2[1]][v2[0]] = k
+		for k, v in lines.items():
+			for v2 in v:
+				mat[v2[2]][v2[1]][v2[0]] = k
 
-	for k, v in vias.items():
-		for v2 in v:
-			mat[v2[2]][v2[1]][v2[0]] = k
+		for k, v in vias.items():
+			for v2 in v:
+				mat[v2[2]][v2[1]][v2[0]] = k
 
 	return mat
 

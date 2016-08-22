@@ -63,7 +63,7 @@ def main(_problem, _answer, _target=None):
 
 	print ""
 	# Learn
-	for epoch in range(10000):
+	for epoch in range(100):
 		if epoch % 10 == 0 :
 			sys.stdout.write("\r\033[KEpoch: {0}".format(epoch))
 			sys.stdout.flush()
@@ -104,7 +104,7 @@ if __name__ == '__main__':
 		a = conv_nl.get_matrix(boards2, ans=True)
 		answer.append([a[:]])
 
-		for i in range(10):
+		for i in range(5):
 			p = conv_nl.get_randomized_matrix(boards2, ans=False, seed=i)
 			problem.append([p[:]])
 			a = conv_nl.get_randomized_matrix(boards2, ans=True, seed=i)
