@@ -183,6 +183,7 @@ def gen_dataset_dd(board_x, board_y, board_z, boards, arg_z, n_dims, dataset, te
     board = boards[arg_z]
     x_data, y_data = [], []
     n_dims_half = n_dims / 2
+    names = []
 
     assert(dataset == 'dd4' or dataset == 'dd8' or dataset == 'ddx8')
     for y in range(n_dims_half, board_y + n_dims_half):
@@ -192,6 +193,7 @@ def gen_dataset_dd(board_x, board_y, board_z, boards, arg_z, n_dims, dataset, te
             # のみ対象
             if board[y][x]['type'] == 1:
                 count_terms = 0
+                names.append(board[y][x]['data'])
                 for ay in range(n_dims_half, board_y + n_dims_half):
                     for ax in range(n_dims_half, board_x + n_dims_half):
                         if board[ay][ax]['type'] == 1 and board[ay][ax]['data'] == board[y][x]['data']:
@@ -346,7 +348,10 @@ def gen_dataset_dd(board_x, board_y, board_z, boards, arg_z, n_dims, dataset, te
                 else:
                     raise NotImplementedError()
 
-    return x_data, y_data
+    if testmode:
+    	return x_data, names
+    else:
+	    return x_data, y_data
 
 
 """

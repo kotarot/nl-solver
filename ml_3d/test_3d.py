@@ -17,6 +17,7 @@ import chainer.functions as F
 import nl
 import nl3d
 import nnmodel
+import board
 
 
 parser = argparse.ArgumentParser(description='test_3d -- 2016')
@@ -102,8 +103,9 @@ board_x, board_y, board_z, boards = nl3d.read_probfile(input_problem, n_dims)
 #    board_x, board_y, board_z, boards = nl3d.read_ansfile(input_problem, n_dims)
 
 x_data = [[] for z in range(board_z)]
+names = [[] for z in range(board_z)]
 for z in range(board_z):
-    x_data[z], _ = nl3d.gen_dataset_dd(board_x, board_y, board_z, boards, z, n_dims, method, testmode=True)
+    x_data[z], names[z] = nl3d.gen_dataset_dd(board_x, board_y, board_z, boards, z, n_dims, method, testmode=True)
 
 x_test = [[] for z in range(board_z)]
 for z in range(board_z):
@@ -115,8 +117,17 @@ result = [[] for z in range(board_z)]
 for z in range(board_z):
     result[z] = nn.evaluate(x_test[z])
 
+b = board.Board(boards)
+
+print n_dims
+
 # 結果を見る (超簡易的バージョン)
 for z in range(board_z):
     print 'LAYER {}'.format(z + 1)
-    for d in result[z].data:
-        print num_to_dd(np.argmax(d))
+    for k, d in enumerate(result[z].data):
+        print names[z][k], num_to_dd(np.argmax(d)), b.search_line(names[z][k], z=z+1)
+        # print sorted(enumerate(v), key=lambda x: x[1], reverse=True)
+        # res.append(d)
+
+a = b.search_via(x=lambda t: t > 3)
+print len(a), a

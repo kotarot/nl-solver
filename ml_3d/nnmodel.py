@@ -43,8 +43,8 @@ class Model2:
         if isinstance(model, tuple):
             input_dims, n_units, output_dims = model
             self.model = FunctionSet(l1=F.Linear(input_dims, n_units),
-                                     l2=F.Linear(n_units, n_units),
-                                     l3=F.Linear(n_units, output_dims))
+                                     l2=F.Linear(n_units, n_units/2),
+                                     l3=F.Linear(n_units/2, output_dims))
         else:
             self.model = model
 
