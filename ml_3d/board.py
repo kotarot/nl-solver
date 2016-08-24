@@ -2,10 +2,14 @@
 
 class Board:
 
-	def __init__(self, board):
+	def __init__(self, board, n_dims):
 		self.board = board
 		self.lines = {}
 		self.vias = {}
+		self.n_dims = n_dims
+		self.n_dims_half = n_dims / 2
+
+		ndh = self.n_dims_half
 
 		for z, zl in enumerate(board):
 			for y, yl in enumerate(zl):
@@ -14,11 +18,11 @@ class Board:
 					if xl["type"] == 1:
 						if not _key in self.lines:
 							self.lines[_key] = []
-						self.lines[_key].append((x-1, y-1, z+1))
+						self.lines[_key].append((x-ndh, y-ndh, z+1))
 					elif xl["type"] == 'via':
 						if not _key in self.vias:
 							self.vias[_key] = []
-						self.vias[_key].append((x-1, y-1, z+1))
+						self.vias[_key].append((x-ndh, y-ndh, z+1))
 
 	def __call__(self):
 		return self.board
@@ -113,3 +117,7 @@ class Board:
 				res.append(_l)
 
 		return res
+
+	@staticmethod
+	def mdist(l1, l2):
+		return abs(l1[0] - l2[0]) + abs(l1[1] - l2[1])

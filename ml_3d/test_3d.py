@@ -117,17 +117,43 @@ result = [[] for z in range(board_z)]
 for z in range(board_z):
     result[z] = nn.evaluate(x_test[z])
 
-b = board.Board(boards)
-
-print n_dims
+b = board.Board(boards, n_dims)
 
 # 結果を見る (超簡易的バージョン)
 for z in range(board_z):
     print 'LAYER {}'.format(z + 1)
+    print 'Vias : {}'.format(b.search_via(z=z+1))
     for k, d in enumerate(result[z].data):
-        print names[z][k], num_to_dd(np.argmax(d)), b.search_line(names[z][k], z=z+1)
-        # print sorted(enumerate(v), key=lambda x: x[1], reverse=True)
-        # res.append(d)
 
-a = b.search_via(x=lambda t: t > 3)
-print len(a), a
+        dlist = sorted(enumerate(d), key=lambda x: x[1], reverse=True)
+
+        # dist = np.argmax(d)
+        line = b.search_line(names[z][k], z=z+1)
+        # print names[z][k], num_to_dd(dist), line
+        print names[z][k], num_to_dd(dlist[0][0]), line
+
+        vias = []
+        _x, _y, _z = line
+
+        for _dist in dlist:
+            dist = _dist[0]
+            tvias = []
+            if dist == 0 or dist == 1:
+                tvias = b.search_via(x=lambda n: n>_x, y=lambda n: n<=_y, z=z+1)
+            if dist == 2 or dist == 3:
+                tvias = b.search_via(x=lambda n: n<=_x, y=lambda n: n<=_y, z=z+1)
+            if dist == 4 or dist == 5:
+                tvias = b.search_via(x=lambda n: n<=_x, y=lambda n: n>_y, z=z+1)
+            if dist == 6 or dist == 7:
+                tvias = b.search_via(x=lambda n: n>_x, y=lambda n: n>_y, z=z+1)
+            for via in tvias:
+                if dist % 2 == 0:
+                    if board.Board.mdist(line, via) <= n_dims:
+                        vias.append(via)
+                else:
+                    if board.Board.mdist(line, via) > n_dims:
+                        vias.append(via)
+
+        print "  via: {}".format(vias)
+        # print dlist
+

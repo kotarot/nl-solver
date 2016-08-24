@@ -193,7 +193,6 @@ def gen_dataset_dd(board_x, board_y, board_z, boards, arg_z, n_dims, dataset, te
             # のみ対象
             if board[y][x]['type'] == 1:
                 count_terms = 0
-                names.append(board[y][x]['data'])
                 for ay in range(n_dims_half, board_y + n_dims_half):
                     for ax in range(n_dims_half, board_x + n_dims_half):
                         if board[ay][ax]['type'] == 1 and board[ay][ax]['data'] == board[y][x]['data']:
@@ -201,6 +200,8 @@ def gen_dataset_dd(board_x, board_y, board_z, boards, arg_z, n_dims, dataset, te
                 assert(count_terms == 1 or count_terms == 2)
                 if count_terms == 2:
                     continue
+
+                names.append(board[y][x]['data'])
 
                 # 別層 (他方層) にある同じ数字の別端点の座標
                 if dataset == 'ddx8':
