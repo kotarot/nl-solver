@@ -118,6 +118,25 @@ class Board:
 
 		return res
 
+	"""
+	ビア名とz座標を与えると，そのビアの座標が中間かどうかを判定してくれる．
+	"""
+	def is_middle_via(self, name, z):
+
+		if not name in self.vias:
+			return None
+
+		vias = self.vias[name]
+
+		maxz = max([v[2] for v in vias])
+		minz = min([v[2] for v in vias])
+
+		if (z != minz) and (z != maxz):
+			return True
+		else:
+			return False
+
 	@staticmethod
 	def mdist(l1, l2):
-		return abs(l1[0] - l2[0]) + abs(l1[1] - l2[1])
+		# return abs(l1[0] - l2[0]) + abs(l1[1] - l2[1])
+		return max(abs(l1[0] - l2[0]), abs(l1[1] - l2[1]))*2

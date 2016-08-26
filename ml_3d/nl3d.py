@@ -186,6 +186,9 @@ def gen_dataset_dd(board_x, board_y, board_z, boards, arg_z, n_dims, dataset, te
     n_dims_half = n_dims / 2
     names = []
 
+    import board as b
+    bd = b.Board(boards, n_dims)
+
     assert(dataset == 'dd4' or dataset == 'dd8' or dataset == 'ddx8' or dataset == 'ddv8')
     for y in range(n_dims_half, board_y + n_dims_half):
         for x in range(n_dims_half, board_x + n_dims_half):
@@ -244,7 +247,10 @@ def gen_dataset_dd(board_x, board_y, board_z, boards, arg_z, n_dims, dataset, te
                                     else:
                                         twos.append(board[y + wy][x + wx]['data'])
                                 elif board[y + wy][x + wx]['type'] == 'via':
-                                    cellx = 1.0
+                                    if bd.is_middle_via(board[y + wy][x + wx]['data'], arg_z):
+                                        cellx = -1.0
+                                    else:
+                                        cellx = 1.0
                                 else:
                                     cellx = 0.0
                                 dx.append(cellx)
@@ -259,7 +265,10 @@ def gen_dataset_dd(board_x, board_y, board_z, boards, arg_z, n_dims, dataset, te
                                     elif boards[alt_z][alt_y + wy][alt_x + wx]['type'] == 1:
                                         cellx = 0.5
                                     elif boards[alt_z][alt_y + wy][alt_x + wx]['type'] == 'via':
-                                        cellx = 1.0
+                                        if bd.is_middle_via(boards[alt_z][alt_y + wy][alt_x + wx]['data'], arg_z):
+                                            cellx = -1.0
+                                        else:
+                                            cellx = 1.0
                                     else:
                                         cellx = 0.0
                                     dx.append(cellx)
@@ -415,4 +424,5 @@ def int2str(i, base):
 マンハッタン距離
 """
 def mdist(x1, y1, x2, y2):
-    return abs(x1 - x2) + abs(y1 - y2)
+    # return abs(x1 - x2) + abs(y1 - y2)
+    return max(abs(x1-x2), abs(y1-y2)) * 2
