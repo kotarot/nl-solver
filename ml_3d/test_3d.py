@@ -149,11 +149,13 @@ for z in range(board_z):
             for via in tvias:
                 if dist % 2 == 0:
                     if board.Board.mdist(line, via) <= n_dims:
-                        vias.append(via)
+                        vias.append((via, _dist[1]))
                 else:
                     if board.Board.mdist(line, via) > n_dims:
-                        vias.append(via)
+                        vias.append((via, _dist[1]))
 
-        print "  via: {}".format(vias)
+        print "  Via candidates:"
+        for i, v in enumerate(vias):
+            print "    {}, {} ({})".format(i, v[0], v[1])
         # print dlist
 
