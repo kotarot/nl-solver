@@ -119,7 +119,7 @@ for z in range(board_z):
 
 b = board.Board(boards, n_dims)
 
-# 結果を見る (超簡易的バージョン)
+# 結果を見る
 for z in range(board_z):
     print 'LAYER {}'.format(z + 1)
     print 'Vias : {}'.format(b.search_via(z=z+1))

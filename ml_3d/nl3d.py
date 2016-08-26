@@ -178,6 +178,7 @@ def norm_number(n):
   - dd4: (入力) window + 同じ数字 --> (出力) 4方向
   - dd8: (入力) window + 同じ数字 --> (出力) 4方向 + 距離 (window内か外か)
   - ddx8: (入力) window + 同じ数字 + 他方層の相対位置 --> 4方向 + 距離 (window内か外か)
+  - ddv8: (入力) window * 2 + 同じ数字 + 他方層の相対位置 --> 4方向 + 距離 (window内か外か)
 """
 def gen_dataset_dd(board_x, board_y, board_z, boards, arg_z, n_dims, dataset, testmode=False):
     board = boards[arg_z]
@@ -185,7 +186,7 @@ def gen_dataset_dd(board_x, board_y, board_z, boards, arg_z, n_dims, dataset, te
     n_dims_half = n_dims / 2
     names = []
 
-    assert(dataset == 'dd4' or dataset == 'dd8' or dataset == 'ddx8')
+    assert(dataset == 'dd4' or dataset == 'dd8' or dataset == 'ddx8' or dataset == 'ddv8')
     for y in range(n_dims_half, board_y + n_dims_half):
         for x in range(n_dims_half, board_x + n_dims_half):
             # ターミナル数字セルの場合
@@ -204,7 +205,7 @@ def gen_dataset_dd(board_x, board_y, board_z, boards, arg_z, n_dims, dataset, te
                 names.append(board[y][x]['data'])
 
                 # 別層 (他方層) にある同じ数字の別端点の座標
-                if dataset == 'ddx8':
+                if dataset == 'ddx8' or dataset == 'ddv8':
                     terms = []
                     for tz in range(board_z):
                         for ty in range(n_dims_half, board_y + n_dims_half):
@@ -216,9 +217,11 @@ def gen_dataset_dd(board_x, board_y, board_z, boards, arg_z, n_dims, dataset, te
                     if terms[0]['x'] == x and terms[0]['y'] == y:
                         alt_x = terms[1]['x']
                         alt_y = terms[1]['y']
+                        alt_z = terms[1]['z']
                     elif terms[1]['x'] == x and terms[1]['y'] == y:
                         alt_x = terms[0]['x']
                         alt_y = terms[0]['y']
+                        alt_z = terms[0]['z']
                     else:
                         assert(False)
 
@@ -226,7 +229,7 @@ def gen_dataset_dd(board_x, board_y, board_z, boards, arg_z, n_dims, dataset, te
                 dx = []
                 ones = [] # 1回現れた数字のリスト
                 twos = [] # 2回現れた数字のリスト
-                if dataset == 'dd4' or dataset == 'dd8' or dataset == 'ddx8':
+                if dataset == 'dd4' or dataset == 'dd8' or dataset == 'ddx8' or dataset == 'ddv8':
                     # 自セルの周囲
                     for wy in range(-n_dims_half, n_dims_half + 1):
                         for wx in range(-n_dims_half, n_dims_half + 1):
@@ -245,6 +248,23 @@ def gen_dataset_dd(board_x, board_y, board_z, boards, arg_z, n_dims, dataset, te
                                 else:
                                     cellx = 0.0
                                 dx.append(cellx)
+                    # 他層セルの周囲
+                    if dataset == 'ddv8':
+                        for wy in range(-n_dims_half, n_dims_half + 1):
+                            for wx in range(-n_dims_half, n_dims_half + 1):
+                                if not (wx == 0 and wy == 0):
+                                    cellx = 0.0
+                                    if boards[alt_z][alt_y + wy][alt_x + wx]['data'] == -1:
+                                        cellx = -1.0
+                                    elif boards[alt_z][alt_y + wy][alt_x + wx]['type'] == 1:
+                                        cellx = 0.5
+                                    elif boards[alt_z][alt_y + wy][alt_x + wx]['type'] == 'via':
+                                        cellx = 1.0
+                                    else:
+                                        cellx = 0.0
+                                    dx.append(cellx)
+
+
                     # 同じ数字の数 (上下/左右にまたがる)
                     cross_ver, cross_hor = 0, 0
                     for n in twos:
@@ -262,7 +282,7 @@ def gen_dataset_dd(board_x, board_y, board_z, boards, arg_z, n_dims, dataset, te
                     dx.append(norm_number(cross_hor))
                 else:
                     raise NotImplementedError()
-                if dataset == 'ddx8':
+                if dataset == 'ddx8' or dataset == 'ddv8':
                     # board_width = max(board_x, board_y)
                     dist_x = 1.0 * (alt_x - x) / board_x
                     # dist_x = 1.0 * (alt_x - x) / board_width
@@ -310,7 +330,7 @@ def gen_dataset_dd(board_x, board_y, board_z, boards, arg_z, n_dims, dataset, te
                             break
                     assert(-1 < dy)
                     y_data.append(dy)
-                elif dataset == 'dd8' or dataset == 'ddx8':
+                elif dataset == 'dd8' or dataset == 'ddx8' or dataset == 'ddv8':
                     # 対応ビア位置エリア (右上近: 0, 右上遠: 1, 左上近: 2,左上遠: 3, 左下近: 4, 左下遠: 5, 右下近: 6, 右下遠: 7)
                     #  ※ Yは正規化してはいけなくて整数じゃないと正確に学習できない
                     dy = -1
