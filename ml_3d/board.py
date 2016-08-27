@@ -250,6 +250,7 @@ class Board:
 			stxt.append("SIZE {}X{}\n".format(x_num, y_num))
 			stxt.append("LINE_NUM {}\n".format(len(zv)))
 			for k, v in zv.items():
+				print k, v
 				stxt.append("LINE#{0} ({1[0][0]},{1[0][1]})-({1[1][0]},{1[1][1]})\n".format(k, v))
 
 			fn = "{}_L{}.txt".format(fpath, z+1)

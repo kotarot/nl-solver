@@ -168,12 +168,15 @@ for z in range(board_z):
                 if dist == 6 or dist == 7:
                     tvias = b.search_via(x=lambda n: n>_x, y=lambda n: n>_y, z=z+1)
                 for via in tvias:
+                    # 機械学習のスコアに，距離を加えてみる．
+                    # 距離の逆数を加えると，距離が短いほどスコアが高くなる
+                    mdist = board.Board.mdist(line, via[1])
                     if dist % 2 == 0:
-                        if board.Board.mdist(line, via[1]) <= n_dims:
-                            vias.append((via, _dist[1]))
+                        if mdist <= n_dims:
+                            vias.append((via, _dist[1]+1.0/mdist))
                     else:
-                        if board.Board.mdist(line, via[1]) > n_dims:
-                            vias.append((via, _dist[1]))
+                        if mdist > n_dims:
+                            vias.append((via, _dist[1]+1.0/mdist))
 
         # print "  Via candidates:"
         for i, v in enumerate(vias):
@@ -185,43 +188,44 @@ via_candidates = sorted(via_candidates, key=lambda v: v['candidates'][1], revers
 vias_key = b.get_vias_key()
 
 assigned_vias_key = {}
-assigend_lines = [[] for i in range(0, board_z)]
+assigend_lines = {}
 confirmed_vias = {}
 
 # ここでvia割り当て作業
 for v in via_candidates:
-    # print v
     _key = v['candidates'][0][0]
     _layer = v['layer']
     _line = v['line']
     # print _key, v
     if not _key in assigned_vias_key:
-        if _line in assigend_lines[_layer-1]:
+        if _line in assigend_lines:
             pass
         else:
             assigned_vias_key[_key] = []
             assigned_vias_key[_key].append({'layer':_layer, 'line':_line, 'via':v['candidates'][0]})
-            # assigend_lines[_layer-1].append(_line)
+            print "assign: ", _key, v 
     elif not _key in confirmed_vias:
-        for v2 in assigned_vias_key[_key]:
-            if v2['layer'] != _layer and v2['line'] == _line:
-                if not _line in assigend_lines[_layer-1]:
+        if not _line in assigend_lines:
+            flag = True
+            for v2 in assigned_vias_key[_key]:
+                if v2['layer'] != _layer and v2['line'] == _line:
                     assigned_vias_key[_key].append({'layer':_layer, 'line':_line, 'via':v['candidates'][0]})
-                    assigend_lines[_layer-1].append(_line)
+                    assigend_lines[_line] = _key
                     confirmed_vias[_key] = {'line':_line, 'via':v['candidates'][0][1], 'prob':v['candidates'][1]}
-                    break
+                    flag = False
+                    print "assign decide: ", _key, v 
                 else:
                     pass
-            else:
-                pass
-        assigned_vias_key[_key].append({'layer':_layer, 'line':_line, 'via':v['candidates'][0]})
-
-                # pass
+            if flag:
+                assigned_vias_key[_key].append({'layer':_layer, 'line':_line, 'via':v['candidates'][0]})
+                print "assign: ", _key, v 
+        else:
+            pass
     else:
         pass
 
 for k, v in sorted(confirmed_vias.items(), key=lambda x: x[1]['prob'], reverse=True):
-    # print k, v
+    print k, v
     b.set_via_to_line(k, v['line'])
 
 b.output_boards()
