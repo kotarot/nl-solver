@@ -119,6 +119,8 @@ for z in range(board_z):
 
 b = board.Board(boards, n_dims)
 
+via_candidates = []
+
 # 結果を見る
 for z in range(board_z):
     print 'LAYER {}'.format(z + 1)
@@ -135,27 +137,91 @@ for z in range(board_z):
         vias = []
         _x, _y, _z = line
 
-        for _dist in dlist:
-            dist = _dist[0]
-            tvias = []
-            if dist == 0 or dist == 1:
-                tvias = b.search_via(x=lambda n: n>_x, y=lambda n: n<=_y, z=z+1)
-            if dist == 2 or dist == 3:
-                tvias = b.search_via(x=lambda n: n<=_x, y=lambda n: n<=_y, z=z+1)
-            if dist == 4 or dist == 5:
-                tvias = b.search_via(x=lambda n: n<=_x, y=lambda n: n>_y, z=z+1)
-            if dist == 6 or dist == 7:
-                tvias = b.search_via(x=lambda n: n>_x, y=lambda n: n>_y, z=z+1)
-            for via in tvias:
-                if dist % 2 == 0:
-                    if board.Board.mdist(line, via) <= n_dims:
-                        vias.append((via, _dist[1]))
-                else:
-                    if board.Board.mdist(line, via) > n_dims:
-                        vias.append((via, _dist[1]))
+        # 周囲の状況を調べる
+        sorroundings = b.get_sorroundings(1, line)
+        obstacles = 0
+        adjacent_via = []
+        for txy in [(-1,0), (1,0), (0,-1), (0,1)]:
+            tx = txy[0]
+            ty = txy[1]
+            if sorroundings[ty][tx] == -1.0 or sorroundings[ty][tx] == 0.5:
+                obstacles += 1
+            elif sorroundings[ty][tx] == 1.0:
+                adjacent_via.append((tx, ty))
 
-        print "  Via candidates:"
+        # 周囲が囲まれていて，viaが隣接しているときはそのviaを使う
+        if obstacles == 3 and len(adjacent_via) == 1:
+            tv = adjacent_via[0]
+            tvias = b.search_via(x=_x+tv[0], y=_y+tv[1], z=z+1)
+            vias.append((tvias[0], 100))
+        # それ以外の場合，学習結果の重みにもとづきビア候補を列挙
+        else:
+            for _dist in dlist:
+                dist = _dist[0]
+                tvias = []
+                if dist == 0 or dist == 1:
+                    tvias = b.search_via(x=lambda n: n>_x, y=lambda n: n<=_y, z=z+1)
+                if dist == 2 or dist == 3:
+                    tvias = b.search_via(x=lambda n: n<=_x, y=lambda n: n<=_y, z=z+1)
+                if dist == 4 or dist == 5:
+                    tvias = b.search_via(x=lambda n: n<=_x, y=lambda n: n>_y, z=z+1)
+                if dist == 6 or dist == 7:
+                    tvias = b.search_via(x=lambda n: n>_x, y=lambda n: n>_y, z=z+1)
+                for via in tvias:
+                    if dist % 2 == 0:
+                        if board.Board.mdist(line, via[1]) <= n_dims:
+                            vias.append((via, _dist[1]))
+                    else:
+                        if board.Board.mdist(line, via[1]) > n_dims:
+                            vias.append((via, _dist[1]))
+
+        # print "  Via candidates:"
         for i, v in enumerate(vias):
-            print "    {}, {} ({})".format(i, v[0], v[1])
-        # print dlist
+            # print "    {}, {} ({})".format(i, v[0], v[1])
+            via_candidates.append({'layer':z+1, 'line':names[z][k], 'candidates':v})
 
+via_candidates = sorted(via_candidates, key=lambda v: v['candidates'][1], reverse=True)
+
+vias_key = b.get_vias_key()
+
+assigned_vias_key = {}
+assigend_lines = [[] for i in range(0, board_z)]
+confirmed_vias = {}
+
+# ここでvia割り当て作業
+for v in via_candidates:
+    # print v
+    _key = v['candidates'][0][0]
+    _layer = v['layer']
+    _line = v['line']
+    # print _key, v
+    if not _key in assigned_vias_key:
+        if _line in assigend_lines[_layer-1]:
+            pass
+        else:
+            assigned_vias_key[_key] = []
+            assigned_vias_key[_key].append({'layer':_layer, 'line':_line, 'via':v['candidates'][0]})
+            # assigend_lines[_layer-1].append(_line)
+    elif not _key in confirmed_vias:
+        for v2 in assigned_vias_key[_key]:
+            if v2['layer'] != _layer and v2['line'] == _line:
+                if not _line in assigend_lines[_layer-1]:
+                    assigned_vias_key[_key].append({'layer':_layer, 'line':_line, 'via':v['candidates'][0]})
+                    assigend_lines[_layer-1].append(_line)
+                    confirmed_vias[_key] = {'line':_line, 'via':v['candidates'][0][1], 'prob':v['candidates'][1]}
+                    break
+                else:
+                    pass
+            else:
+                pass
+        assigned_vias_key[_key].append({'layer':_layer, 'line':_line, 'via':v['candidates'][0]})
+
+                # pass
+    else:
+        pass
+
+for k, v in sorted(confirmed_vias.items(), key=lambda x: x[1]['prob'], reverse=True):
+    # print k, v
+    b.set_via_to_line(k, v['line'])
+
+b.output_boards()
