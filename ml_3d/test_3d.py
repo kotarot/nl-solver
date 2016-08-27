@@ -9,6 +9,7 @@ import argparse
 import copy
 import pickle
 import sys
+import random
 
 import numpy as np
 from chainer import cuda, Function, FunctionSet, gradient_check, Variable, optimizers
@@ -186,6 +187,7 @@ for z in range(board_z):
 via_candidates = sorted(via_candidates, key=lambda v: v['candidates'][1], reverse=True)
 
 vias_key = b.get_vias_key()
+lines_key = b.get_lines_key()
 
 assigned_vias_key = {}
 assigend_lines = {}
@@ -224,8 +226,23 @@ for v in via_candidates:
     else:
         pass
 
+# 全てのviaを割り当てたか確認．割り当てられてなかったら適当に割り当てる．
+not_assigned_via = []
+not_assigned_line = []
+for v in vias_key:
+    if not v in confirmed_vias:
+        not_assigned_via.append(v)
+for v in lines_key:
+    if not v in assigend_lines:
+        not_assigned_line.append(v)
+
+random.shuffle(not_assigned_via)
+
 for k, v in sorted(confirmed_vias.items(), key=lambda x: x[1]['prob'], reverse=True):
     print k, v
     b.set_via_to_line(k, v['line'])
+
+for k, v in enumerate(not_assigned_via):
+    b.set_via_to_line(v, not_assigned_line[k])
 
 b.output_boards()

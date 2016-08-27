@@ -148,6 +148,8 @@ class Board:
 
 	def get_vias_key(self):
 		return self.vias.keys()
+	def get_lines_key(self):
+		return self.lines.keys()
 
 	"""
 	周囲+/-distマスの状況を返す．
