@@ -25,6 +25,7 @@ import chainer.functions as F
 
 import nl
 import nl3d
+import nnmodel
 
 
 #### CONFIGURATION ####
@@ -42,7 +43,7 @@ parser.add_argument('--epoch', '-e', default=1000, type=int,
 parser.add_argument('--test', '-t', default='none', type=str,
                     help='Team-Problem name for test (e.g. T01_A06) (default: none)')
 parser.add_argument('--method', '-m', default='dd4', type=str,
-                    help='Method of selecting input data type to ML: dd4 (dafault), dd8, ddx8')
+                    help='Method of selecting input data type to ML: dd4 (dafault), dd8, ddx8, ddv8')
 args = parser.parse_args()
 print args
 
@@ -72,6 +73,9 @@ testfilename_short = testfilename.replace('_', '')
 # method = ddx8 の場合
 #   入力: (N x N - 1) + 2 + 2 = N^2 + 3 次元
 #   出力: 8次元
+# method = ddv8 の場合
+#   入力: (N x N - 1) * 2 + 2 + 2 = 2*N^2 + 2 次元
+#   出力: 8次元
 if args.method == 'dd4':
     input_dims = n_dims**2 + 1
     output_dims = 4
@@ -81,24 +85,29 @@ elif args.method == 'dd8':
 elif args.method == 'ddx8':
     input_dims = n_dims**2 + 3
     output_dims = 8
+elif args.method == 'ddv8':
+    input_dims = 2*(n_dims**2) + 2
+    output_dims = 8
 else:
     raise NotImplementedError()
 
-model = FunctionSet(l1=F.Linear(input_dims, n_units),
-                    l2=F.Linear(n_units, n_units),
-                    l3=F.Linear(n_units, output_dims))
+# model = FunctionSet(l1=F.Linear(input_dims, n_units),
+#                     l2=F.Linear(n_units, n_units),
+#                     l3=F.Linear(n_units, output_dims))
 
-# Neural net architecture
-# ニューラルネットの構造
-def forward(x_data, y_data, train=True):
-    x, t = Variable(x_data), Variable(y_data)
-    h1 = F.dropout(F.relu(model.l1(x)),  train=train)
-    h2 = F.dropout(F.relu(model.l2(h1)), train=train)
-    y  = model.l3(h2)
-    # 多クラス分類なので誤差関数としてソフトマックス関数の
-    # 交差エントロピー関数を用いて、誤差を導出
-    return F.softmax_cross_entropy(y, t), F.accuracy(y, t), y
+# # Neural net architecture
+# # ニューラルネットの構造
+# def forward(x_data, y_data, train=True):
+#     x, t = Variable(x_data), Variable(y_data)
+#     h1 = F.dropout(F.relu(model.l1(x)),  train=train)
+#     h2 = F.dropout(F.relu(model.l2(h1)), train=train)
+#     y  = model.l3(h2)
+#     # 多クラス分類なので誤差関数としてソフトマックス関数の
+#     # 交差エントロピー関数を用いて、誤差を導出
+#     return F.softmax_cross_entropy(y, t), F.accuracy(y, t), y
 
+nn = nnmodel.Model1((input_dims, n_units, output_dims))
+model = nn()
 
 # [3.3] Optimizerの設定
 # Setup optimizer
@@ -204,7 +213,7 @@ for epoch in xrange(1, n_epoch + 1):
         optimizer.zero_grads()
 
         # 順伝播させて誤差と精度を算出
-        loss_train, accuracy_train, _ = forward(x_batch, y_batch)
+        loss_train, accuracy_train, _ = nn.forward(x_batch, y_batch)
 
         # 誤差逆伝播で勾配を計算
         loss_train.backward()
@@ -215,7 +224,7 @@ for epoch in xrange(1, n_epoch + 1):
 
     # Evaluation
     if testfilename != 'none':
-        loss_test, accuracy_test, result = forward(x_test, y_test, train=False)
+        loss_test, accuracy_test, result = nn.forward(x_test, y_test, train=False)
 
     # 訓練データ/テストデータの誤差と、正解精度を表示
     if epoch % 10 == 0:
