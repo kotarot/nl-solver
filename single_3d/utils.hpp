@@ -4,7 +4,10 @@
 // 問題盤を表示
 void printBoard();
 
-// 正解を表示（正解表示は数字２桁）
+// 現状のラインを表示(解導出できなかった場合)
+void printLine(int i);
+
+// 正解を表示 (正解表示は数字２桁)
 void printSolution();
 // 正解を表示 (ファイル出力)
 void printSolutionToFile(char *filename);

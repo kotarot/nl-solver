@@ -46,6 +46,72 @@ void printBoard(){
 	}
 }
 
+// 現状のラインを表示
+void printLine(int i){
+
+	cout << endl;
+	cout << "Line " << i << endl;
+	Line* trgt_line = board->line(i);
+	vector<Point>* trgt_track = trgt_line->getTrack();
+	
+	map<int,map<int,map<int,int> > > for_print;
+	for(int z=0;z<board->getSizeZ();z++){
+		for(int y=0;y<board->getSizeY();y++){
+			for(int x=0;x<board->getSizeX();x++){
+				for_print[z][y][x] = -1;
+			}
+		}
+	}
+
+	if(!trgt_line->getHasLine()){
+		for_print[trgt_line->getSourceZ()][trgt_line->getSourceY()][trgt_line->getSourceX()] = -2;
+		for_print[trgt_line->getSinkZ()][trgt_line->getSinkY()][trgt_line->getSinkX()] = -2;
+	}
+	else{
+		for(int j=0;j<(int)(trgt_track->size());j++){
+			Point p = (*trgt_track)[j];
+			int point_x = p.x;
+			int point_y = p.y;
+			int point_z = p.z;
+			for_print[point_z][point_y][point_x] = -2;
+		}
+	}
+
+	for(int z=0;z<board->getSizeZ();z++){
+		for(int y=0;y<board->getSizeY();y++){
+			for(int x=0;x<board->getSizeX();x++){
+				Box* trgt_box = board->box(x,y,z);
+				if(!trgt_box->isTypeNumber()) continue;
+				for_print[z][y][x] = trgt_box->getIndex();
+			}
+		}
+	}
+
+	for(int z=0;z<board->getSizeZ();z++){
+		if(z == trgt_line->getSourceZ()){
+			cout << "LAYER So (z: " << (z + 1) << ")" << endl;
+			cout << "========" << endl;
+		}
+		else if(z == trgt_line->getSinkZ()){
+			cout << "LAYER Si (z: " << (z + 1) << ")" << endl;
+			cout << "========" << endl;
+		}
+		else{
+			continue;
+		}
+		for(int y=0;y<board->getSizeY();y++){
+			for(int x=0;x<board->getSizeX();x++){
+				if(for_print[z][y][x] == -2) cout << " @";
+				else if(for_print[z][y][x] == -1) cout << " .";
+				else{
+					cout << " " << changeIntToChar(for_print[z][y][x]);
+				}
+			}
+			cout << endl;
+		}
+	}
+}
+
 // ラインナンバーから色をマッピング (Foreground colors)
 // 31m ~ 37m まで 7色
 string getcolorescape_fore(int n) {
@@ -73,17 +139,17 @@ void printSolution(){
 	for(int z=0;z<board->getSizeZ();z++){
 		for(int y=0;y<board->getSizeY();y++){
 			for(int x=0;x<board->getSizeX();x++){
-				Box* trgt_box = board->box(x,y,z);
-				if(trgt_box->isTypeBlank()){
-					for_print[z][y][x] = -1;
-				}else{
-					for_print[z][y][x] = trgt_box->getIndex();
-				}
+				for_print[z][y][x] = -1;
 			}
 		}
 	}
 	for(int i=1;i<=board->getLineNum();i++){
 		Line* trgt_line = board->line(i);
+		if(!trgt_line->getHasLine()){
+			for_print[trgt_line->getSourceZ()][trgt_line->getSourceY()][trgt_line->getSourceX()] = i;
+			for_print[trgt_line->getSinkZ()][trgt_line->getSinkY()][trgt_line->getSinkX()] = i;
+			continue;
+		}
 		vector<Point>* trgt_track = trgt_line->getTrack();
 		for(int j=0;j<(int)(trgt_track->size());j++){
 			Point p = (*trgt_track)[j];
@@ -139,17 +205,17 @@ void printSolutionToFile(char *filename) {
 	for(int z=0;z<board->getSizeZ();z++){
 		for(int y=0;y<board->getSizeY();y++){
 			for(int x=0;x<board->getSizeX();x++){
-				Box* trgt_box = board->box(x,y,z);
-				if(trgt_box->isTypeBlank()){
-					for_print[z][y][x] = -1;
-				}else{
-					for_print[z][y][x] = trgt_box->getIndex();
-				}
+				for_print[z][y][x] = -1;
 			}
 		}
 	}
 	for(int i=1;i<=board->getLineNum();i++){
 		Line* trgt_line = board->line(i);
+		if(!trgt_line->getHasLine()){
+			for_print[trgt_line->getSourceZ()][trgt_line->getSourceY()][trgt_line->getSourceX()] = i;
+			for_print[trgt_line->getSinkZ()][trgt_line->getSinkY()][trgt_line->getSinkX()] = i;
+			continue;
+		}
 		vector<Point>* trgt_track = trgt_line->getTrack();
 		for(int j=0;j<(int)(trgt_track->size());j++){
 			Point p = (*trgt_track)[j];

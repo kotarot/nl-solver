@@ -18,9 +18,9 @@ bool routing(int trgt_line_id, bool debug_option){
 	trgt_line->clearTrack();
 	
 	// ボードの初期化
-	vector<vector<IntraBox*> > my_board_1(board->getSizeY(), vector<IntraBox*>(board->getSizeX())); // ソース側のボード
-	vector<vector<IntraBox*> > my_board_2(board->getSizeY(), vector<IntraBox*>(board->getSizeX())); // シンク側のボード
-	IntraBox init = {
+	vector<vector<IntraBox_4*> > my_board_1(board->getSizeY(), vector<IntraBox_4*>(board->getSizeX())); // ソース側のボード
+	vector<vector<IntraBox_4*> > my_board_2(board->getSizeY(), vector<IntraBox_4*>(board->getSizeX())); // シンク側のボード
+	IntraBox_4 init = {
 		INT_MAX,INT_MAX,INT_MAX,INT_MAX,
 		{false,false,false,false},
 		{false,false,false,false},
@@ -28,14 +28,14 @@ bool routing(int trgt_line_id, bool debug_option){
 		{false,false,false,false}};
 	for(int y=0;y<board->getSizeY();y++){
 		for(int x=0;x<board->getSizeX();x++){
-			my_board_1[y][x] = new IntraBox;
+			my_board_1[y][x] = new IntraBox_4;
 			*(my_board_1[y][x]) = init;
-			my_board_2[y][x] = new IntraBox;
+			my_board_2[y][x] = new IntraBox_4;
 			*(my_board_2[y][x]) = init;
 		}
 	}
 	int start_x, start_y;
-	IntraBox* start;
+	IntraBox_4* start;
 	queue<Search> qu;
 
 	int start_z = trgt_line->getSourceZ();
@@ -53,22 +53,22 @@ bool routing(int trgt_line_id, bool debug_option){
 	
 	// 北方向を探索
 	if(isInserted_1(start_x,start_y-1,start_z)){
-		Search trgt = {start_x,start_y-1,SOUTH,NOT_USE};
+		Search trgt = {start_x,start_y-1,SOUTH};
 		qu.push(trgt);
 	}
 	// 東方向を探索
 	if(isInserted_1(start_x+1,start_y,start_z)){
-		Search trgt = {start_x+1,start_y,WEST,NOT_USE};
+		Search trgt = {start_x+1,start_y,WEST};
 		qu.push(trgt);
 	}
 	// 南方向を探索
 	if(isInserted_1(start_x,start_y+1,start_z)){
-		Search trgt = {start_x,start_y+1,NORTH,NOT_USE};
+		Search trgt = {start_x,start_y+1,NORTH};
 		qu.push(trgt);
 	}
 	// 西方向を探索
 	if(isInserted_1(start_x-1,start_y,start_z)){
-		Search trgt = {start_x-1,start_y,EAST,NOT_USE};
+		Search trgt = {start_x-1,start_y,EAST};
 		qu.push(trgt);
 	}
 	
@@ -78,23 +78,20 @@ bool routing(int trgt_line_id, bool debug_option){
 		qu.pop();
 		
 		Box* trgt_box = board->box(trgt.x,trgt.y,start_z);
-		IntraBox* trgt_ibox = my_board_1[trgt.y][trgt.x];
-		bool update = false; // コストの更新があったか？
+		IntraBox_4* trgt_ibox = my_board_1[trgt.y][trgt.x];
 		
-		int turn_count = 0;
-		if(trgt.c != NOT_USE && trgt.c != trgt.d) turn_count++;
-	
+		bool update = false; // コストの更新があったか？
 		// コスト計算
 		if(trgt.d == SOUTH){ // 南から来た
-			IntraBox* find_ibox = my_board_1[trgt.y+1][trgt.x];
+			IntraBox_4* find_ibox = my_board_1[trgt.y+1][trgt.x];
 			// タッチ数
 			int touch_count = countLine(trgt.x,trgt.y,start_z) - trgt_box->getSouthNum();
 			if(touch_count < 0){ cout << "error! (error: 10)" << endl; exit(10); }
 			// コスト
-			int cost_se = (find_ibox->ne) + ML + touch_count * penalty_T + turn_count * BT;
-			int cost_ne = (find_ibox->ne) + ML + touch_count * penalty_T + trgt_box->getEastNum() * penalty_C + turn_count * BT;
-			int cost_sw = (find_ibox->nw) + ML + touch_count * penalty_T + turn_count * BT;
-			int cost_nw = (find_ibox->nw) + ML + touch_count * penalty_T + trgt_box->getWestNum() * penalty_C + turn_count * BT;
+			int cost_se = (find_ibox->ne) + ML + touch_count * penalty_T;
+			int cost_ne = (find_ibox->ne) + ML + touch_count * penalty_T + trgt_box->getEastNum() * penalty_C;
+			int cost_sw = (find_ibox->nw) + ML + touch_count * penalty_T;
+			int cost_nw = (find_ibox->nw) + ML + touch_count * penalty_T + trgt_box->getWestNum() * penalty_C;
 			// 南東マス
 			if(cost_se < trgt_ibox->se){
 				update = true;
@@ -145,15 +142,15 @@ bool routing(int trgt_line_id, bool debug_option){
 			}
 		}
 		if(trgt.d == WEST){ // 西から来た
-			IntraBox* find_ibox = my_board_1[trgt.y][trgt.x-1];
+			IntraBox_4* find_ibox = my_board_1[trgt.y][trgt.x-1];
 			// タッチ数
 			int touch_count = countLine(trgt.x,trgt.y,start_z) - trgt_box->getWestNum();
 			if(touch_count < 0){ cout << "error! (error: 11)" << endl; exit(11); }
 			// コスト
-			int cost_nw = (find_ibox->ne) + ML + touch_count * penalty_T + turn_count * BT;
-			int cost_ne = (find_ibox->ne) + ML + touch_count * penalty_T + trgt_box->getNorthNum() * penalty_C + turn_count * BT;
-			int cost_sw = (find_ibox->se) + ML + touch_count * penalty_T + turn_count * BT;
-			int cost_se = (find_ibox->se) + ML + touch_count * penalty_T + trgt_box->getSouthNum() * penalty_C + turn_count * BT;
+			int cost_nw = (find_ibox->ne) + ML + touch_count * penalty_T;
+			int cost_ne = (find_ibox->ne) + ML + touch_count * penalty_T + trgt_box->getNorthNum() * penalty_C;
+			int cost_sw = (find_ibox->se) + ML + touch_count * penalty_T;
+			int cost_se = (find_ibox->se) + ML + touch_count * penalty_T + trgt_box->getSouthNum() * penalty_C;
 			// 北西マス
 			if(cost_nw < trgt_ibox->nw){
 				update = true;
@@ -204,15 +201,15 @@ bool routing(int trgt_line_id, bool debug_option){
 			}
 		}
 		if(trgt.d == NORTH){ // 北から来た
-			IntraBox* find_ibox = my_board_1[trgt.y-1][trgt.x];
+			IntraBox_4* find_ibox = my_board_1[trgt.y-1][trgt.x];
 			// タッチ数
 			int touch_count = countLine(trgt.x,trgt.y,start_z) - trgt_box->getNorthNum();
 			if(touch_count < 0){ cout << "error! (error: 12)" << endl; exit(12); }
 			// コスト
-			int cost_ne = (find_ibox->se) + ML + touch_count * penalty_T + turn_count * BT;
-			int cost_se = (find_ibox->se) + ML + touch_count * penalty_T + trgt_box->getEastNum() * penalty_C + turn_count * BT;
-			int cost_nw = (find_ibox->sw) + ML + touch_count * penalty_T + turn_count * BT;
-			int cost_sw = (find_ibox->sw) + ML + touch_count * penalty_T + trgt_box->getWestNum() * penalty_C + turn_count * BT;
+			int cost_ne = (find_ibox->se) + ML + touch_count * penalty_T;
+			int cost_se = (find_ibox->se) + ML + touch_count * penalty_T + trgt_box->getEastNum() * penalty_C;
+			int cost_nw = (find_ibox->sw) + ML + touch_count * penalty_T;
+			int cost_sw = (find_ibox->sw) + ML + touch_count * penalty_T + trgt_box->getWestNum() * penalty_C;
 			// 北東マス
 			if(cost_ne < trgt_ibox->ne){
 				update = true;
@@ -263,15 +260,15 @@ bool routing(int trgt_line_id, bool debug_option){
 			}
 		}
 		if(trgt.d == EAST){ // 東から来た
-			IntraBox* find_ibox = my_board_1[trgt.y][trgt.x+1];
+			IntraBox_4* find_ibox = my_board_1[trgt.y][trgt.x+1];
 			// タッチ数
 			int touch_count = countLine(trgt.x,trgt.y,start_z) - trgt_box->getEastNum();
 			if(touch_count < 0){ cout << "error! (error: 13)" << endl; exit(13); }
 			// コスト
-			int cost_ne = (find_ibox->nw) + ML + touch_count * penalty_T + turn_count * BT;
-			int cost_nw = (find_ibox->nw) + ML + touch_count * penalty_T + trgt_box->getNorthNum() * penalty_C + turn_count * BT;
-			int cost_se = (find_ibox->sw) + ML + touch_count * penalty_T + turn_count * BT;
-			int cost_sw = (find_ibox->sw) + ML + touch_count * penalty_T + trgt_box->getSouthNum() * penalty_C + turn_count * BT;
+			int cost_ne = (find_ibox->nw) + ML + touch_count * penalty_T;
+			int cost_nw = (find_ibox->nw) + ML + touch_count * penalty_T + trgt_box->getNorthNum() * penalty_C;
+			int cost_se = (find_ibox->sw) + ML + touch_count * penalty_T;
+			int cost_sw = (find_ibox->sw) + ML + touch_count * penalty_T + trgt_box->getSouthNum() * penalty_C;
 			// 北東マス
 			if(cost_ne < trgt_ibox->ne){
 				update = true;
@@ -327,22 +324,22 @@ bool routing(int trgt_line_id, bool debug_option){
 		
 		// 北方向
 		if(trgt.d!=NORTH && isInserted_1(trgt.x,trgt.y-1,start_z)){
-			Search next = {trgt.x,trgt.y-1,SOUTH,trgt.d};
+			Search next = {trgt.x,trgt.y-1,SOUTH};
 			qu.push(next);
 		}
 		// 東方向
 		if(trgt.d!=EAST && isInserted_1(trgt.x+1,trgt.y,start_z)){
-			Search next = {trgt.x+1,trgt.y,WEST,trgt.d};
+			Search next = {trgt.x+1,trgt.y,WEST};
 			qu.push(next);
 		}
 		// 南方向
 		if(trgt.d!=SOUTH && isInserted_1(trgt.x,trgt.y+1,start_z)){
-			Search next = {trgt.x,trgt.y+1,NORTH,trgt.d};
+			Search next = {trgt.x,trgt.y+1,NORTH};
 			qu.push(next);
 		}
 		// 西方向
 		if(trgt.d!=WEST && isInserted_1(trgt.x-1,trgt.y,start_z)){
-			Search next = {trgt.x-1,trgt.y,EAST,trgt.d};
+			Search next = {trgt.x-1,trgt.y,EAST};
 			qu.push(next);
 		}
 	}
@@ -351,16 +348,34 @@ bool routing(int trgt_line_id, bool debug_option){
 	/*** シンク層の判定 ***/
 
 	if(start_z != end_z){
+
+		int sp_via_id = trgt_line->getSpecifiedVia();
+		if(sp_via_id >= 1 && sp_via_id <= board->getViaNum()){
+			Via* sp_via = board->via(sp_via_id);
+			if(sp_via->getSourceZ()!=start_z || sp_via->getSinkZ()!=end_z){
+				cout << "error! (error: 20)" << endl;
+				exit(20);
+			}
+			int sp_x = sp_via->getSourceX();
+			int sp_y = sp_via->getSourceY();
+			if(my_board_1[sp_y][sp_x]->ne == INT_MAX || my_board_1[sp_y][sp_x]->nw == INT_MAX ||
+			my_board_1[sp_y][sp_x]->se == INT_MAX || my_board_1[sp_y][sp_x]->sw == INT_MAX){
+				cout << "error! (error: 21)" << endl;
+				exit(21);
+			}
+		}
+
 		for(int i=1;i<=board->getViaNum();i++){
 			Via* trgt_via = board->via(i);
 			if(trgt_via->getSourceZ()!=start_z || trgt_via->getSinkZ()!=end_z) continue;
+			if(sp_via_id > 0 && sp_via_id != i) continue;
 			start_x = trgt_via->getSourceX();
 			start_y = trgt_via->getSourceY();
 			start = my_board_2[start_y][start_x];
 
-            // ソース層にINT_MAXのコスト値が含まれている場合は引き継がない (issue #82)
-            if (my_board_1[start_y][start_x]->ne == INT_MAX || my_board_1[start_y][start_x]->nw == INT_MAX ||
-                my_board_1[start_y][start_x]->se == INT_MAX || my_board_1[start_y][start_x]->sw == INT_MAX) continue;
+			// ソース層にINT_MAXのコスト値が含まれている場合は引き継がない (issue #82)
+			if(my_board_1[start_y][start_x]->ne == INT_MAX || my_board_1[start_y][start_x]->nw == INT_MAX ||
+			my_board_1[start_y][start_x]->se == INT_MAX || my_board_1[start_y][start_x]->sw == INT_MAX) continue;
 
 			start->ne = my_board_1[start_y][start_x]->ne + trgt_via->getUsedLineNum() * penalty_V;
 			start->nw = my_board_1[start_y][start_x]->nw + trgt_via->getUsedLineNum() * penalty_V;
@@ -369,22 +384,22 @@ bool routing(int trgt_line_id, bool debug_option){
 
 			// 北方向を探索
 			if(isInserted_2(start_x,start_y-1,end_z)){
-				Search trgt = {start_x,start_y-1,SOUTH,NOT_USE};
+				Search trgt = {start_x,start_y-1,SOUTH};
 				qu.push(trgt);
 			}
 			// 東方向を探索
 			if(isInserted_2(start_x+1,start_y,end_z)){
-				Search trgt = {start_x+1,start_y,WEST,NOT_USE};
+				Search trgt = {start_x+1,start_y,WEST};
 				qu.push(trgt);
 			}
 			// 南方向を探索
 			if(isInserted_2(start_x,start_y+1,end_z)){
-				Search trgt = {start_x,start_y+1,NORTH,NOT_USE};
+				Search trgt = {start_x,start_y+1,NORTH};
 				qu.push(trgt);
 			}
 			// 西方向を探索
 			if(isInserted_2(start_x-1,start_y,end_z)){
-				Search trgt = {start_x-1,start_y,EAST,NOT_USE};
+				Search trgt = {start_x-1,start_y,EAST};
 				qu.push(trgt);
 			}
 		}
@@ -400,23 +415,20 @@ bool routing(int trgt_line_id, bool debug_option){
 		qu.pop();
 		
 		Box* trgt_box = board->box(trgt.x,trgt.y,end_z);
-		IntraBox* trgt_ibox = my_board_2[trgt.y][trgt.x];
-		bool update = false; // コストの更新があったか？
+		IntraBox_4* trgt_ibox = my_board_2[trgt.y][trgt.x];
 		
-		int turn_count = 0;
-		if(trgt.c != NOT_USE && trgt.c != trgt.d) turn_count++;
-	
+		bool update = false; // コストの更新があったか？
 		// コスト計算
 		if(trgt.d == SOUTH){ // 南から来た
-			IntraBox* find_ibox = my_board_2[trgt.y+1][trgt.x];
+			IntraBox_4* find_ibox = my_board_2[trgt.y+1][trgt.x];
 			// タッチ数
 			int touch_count = countLine(trgt.x,trgt.y,end_z) - trgt_box->getSouthNum();
 			if(touch_count < 0){ cout << "error! (error: 10)" << endl; exit(10); }
 			// コスト
-			int cost_se = (find_ibox->ne) + ML + touch_count * penalty_T + turn_count * BT;
-			int cost_ne = (find_ibox->ne) + ML + touch_count * penalty_T + trgt_box->getEastNum() * penalty_C + turn_count * BT;
-			int cost_sw = (find_ibox->nw) + ML + touch_count * penalty_T + turn_count * BT;
-			int cost_nw = (find_ibox->nw) + ML + touch_count * penalty_T + trgt_box->getWestNum() * penalty_C + turn_count * BT;
+			int cost_se = (find_ibox->ne) + ML + touch_count * penalty_T;
+			int cost_ne = (find_ibox->ne) + ML + touch_count * penalty_T + trgt_box->getEastNum() * penalty_C;
+			int cost_sw = (find_ibox->nw) + ML + touch_count * penalty_T;
+			int cost_nw = (find_ibox->nw) + ML + touch_count * penalty_T + trgt_box->getWestNum() * penalty_C;
 			// 南東マス
 			if(cost_se < trgt_ibox->se){
 				update = true;
@@ -467,15 +479,15 @@ bool routing(int trgt_line_id, bool debug_option){
 			}
 		}
 		if(trgt.d == WEST){ // 西から来た
-			IntraBox* find_ibox = my_board_2[trgt.y][trgt.x-1];
+			IntraBox_4* find_ibox = my_board_2[trgt.y][trgt.x-1];
 			// タッチ数
 			int touch_count = countLine(trgt.x,trgt.y,end_z) - trgt_box->getWestNum();
 			if(touch_count < 0){ cout << "error! (error: 11)" << endl; exit(11); }
 			// コスト
-			int cost_nw = (find_ibox->ne) + ML + touch_count * penalty_T + turn_count * BT;
-			int cost_ne = (find_ibox->ne) + ML + touch_count * penalty_T + trgt_box->getNorthNum() * penalty_C + turn_count * BT;
-			int cost_sw = (find_ibox->se) + ML + touch_count * penalty_T + turn_count * BT;
-			int cost_se = (find_ibox->se) + ML + touch_count * penalty_T + trgt_box->getSouthNum() * penalty_C + turn_count * BT;
+			int cost_nw = (find_ibox->ne) + ML + touch_count * penalty_T;
+			int cost_ne = (find_ibox->ne) + ML + touch_count * penalty_T + trgt_box->getNorthNum() * penalty_C;
+			int cost_sw = (find_ibox->se) + ML + touch_count * penalty_T;
+			int cost_se = (find_ibox->se) + ML + touch_count * penalty_T + trgt_box->getSouthNum() * penalty_C;
 			// 北西マス
 			if(cost_nw < trgt_ibox->nw){
 				update = true;
@@ -526,15 +538,15 @@ bool routing(int trgt_line_id, bool debug_option){
 			}
 		}
 		if(trgt.d == NORTH){ // 北から来た
-			IntraBox* find_ibox = my_board_2[trgt.y-1][trgt.x];
+			IntraBox_4* find_ibox = my_board_2[trgt.y-1][trgt.x];
 			// タッチ数
 			int touch_count = countLine(trgt.x,trgt.y,end_z) - trgt_box->getNorthNum();
 			if(touch_count < 0){ cout << "error! (error: 12)" << endl; exit(12); }
 			// コスト
-			int cost_ne = (find_ibox->se) + ML + touch_count * penalty_T + turn_count * BT;
-			int cost_se = (find_ibox->se) + ML + touch_count * penalty_T + trgt_box->getEastNum() * penalty_C + turn_count * BT;
-			int cost_nw = (find_ibox->sw) + ML + touch_count * penalty_T + turn_count * BT;
-			int cost_sw = (find_ibox->sw) + ML + touch_count * penalty_T + trgt_box->getWestNum() * penalty_C + turn_count * BT;
+			int cost_ne = (find_ibox->se) + ML + touch_count * penalty_T;
+			int cost_se = (find_ibox->se) + ML + touch_count * penalty_T + trgt_box->getEastNum() * penalty_C;
+			int cost_nw = (find_ibox->sw) + ML + touch_count * penalty_T;
+			int cost_sw = (find_ibox->sw) + ML + touch_count * penalty_T + trgt_box->getWestNum() * penalty_C;
 			// 北東マス
 			if(cost_ne < trgt_ibox->ne){
 				update = true;
@@ -585,15 +597,15 @@ bool routing(int trgt_line_id, bool debug_option){
 			}
 		}
 		if(trgt.d == EAST){ // 東から来た
-			IntraBox* find_ibox = my_board_2[trgt.y][trgt.x+1];
+			IntraBox_4* find_ibox = my_board_2[trgt.y][trgt.x+1];
 			// タッチ数
 			int touch_count = countLine(trgt.x,trgt.y,end_z) - trgt_box->getEastNum();
 			if(touch_count < 0){ cout << "error! (error: 13)" << endl; exit(13); }
 			// コスト
-			int cost_ne = (find_ibox->nw) + ML + touch_count * penalty_T + turn_count * BT;
-			int cost_nw = (find_ibox->nw) + ML + touch_count * penalty_T + trgt_box->getNorthNum() * penalty_C + turn_count * BT;
-			int cost_se = (find_ibox->sw) + ML + touch_count * penalty_T + turn_count * BT;
-			int cost_sw = (find_ibox->sw) + ML + touch_count * penalty_T + trgt_box->getSouthNum() * penalty_C + turn_count * BT;
+			int cost_ne = (find_ibox->nw) + ML + touch_count * penalty_T;
+			int cost_nw = (find_ibox->nw) + ML + touch_count * penalty_T + trgt_box->getNorthNum() * penalty_C;
+			int cost_se = (find_ibox->sw) + ML + touch_count * penalty_T;
+			int cost_sw = (find_ibox->sw) + ML + touch_count * penalty_T + trgt_box->getSouthNum() * penalty_C;
 			// 北東マス
 			if(cost_ne < trgt_ibox->ne){
 				update = true;
@@ -649,22 +661,22 @@ bool routing(int trgt_line_id, bool debug_option){
 		
 		// 北方向
 		if(trgt.d!=NORTH && isInserted_2(trgt.x,trgt.y-1,end_z)){
-			Search next = {trgt.x,trgt.y-1,SOUTH,trgt.d};
+			Search next = {trgt.x,trgt.y-1,SOUTH};
 			qu.push(next);
 		}
 		// 東方向
 		if(trgt.d!=EAST && isInserted_2(trgt.x+1,trgt.y,end_z)){
-			Search next = {trgt.x+1,trgt.y,WEST,trgt.d};
+			Search next = {trgt.x+1,trgt.y,WEST};
 			qu.push(next);
 		}
 		// 南方向
 		if(trgt.d!=SOUTH && isInserted_2(trgt.x,trgt.y+1,end_z)){
-			Search next = {trgt.x,trgt.y+1,NORTH,trgt.d};
+			Search next = {trgt.x,trgt.y+1,NORTH};
 			qu.push(next);
 		}
 		// 西方向
 		if(trgt.d!=WEST && isInserted_2(trgt.x-1,trgt.y,end_z)){
-			Search next = {trgt.x-1,trgt.y,EAST,trgt.d};
+			Search next = {trgt.x-1,trgt.y,EAST};
 			qu.push(next);
 		}
 	}
@@ -675,7 +687,7 @@ if (debug_option) { /*** デバッグ用*/
 	cout << "========" << endl;
 	for(int y=0;y<board->getSizeY();y++){
 		for(int x=0;x<board->getSizeX();x++){
-			IntraBox* trgt_box = my_board_1[y][x];
+			IntraBox_4* trgt_box = my_board_1[y][x];
 			if(trgt_box->nw > 10000){
 				cout << " +";
 			}
@@ -692,7 +704,7 @@ if (debug_option) { /*** デバッグ用*/
 		}
 		cout << endl;
 		for(int x=0;x<board->getSizeX();x++){
-			IntraBox* trgt_box = my_board_1[y][x];
+			IntraBox_4* trgt_box = my_board_1[y][x];
 			if(trgt_box->sw > 10000){
 				cout << " +";
 			}
@@ -713,7 +725,7 @@ if (debug_option) { /*** デバッグ用*/
 	cout << "========" << endl;
 	for(int y=0;y<board->getSizeY();y++){
 		for(int x=0;x<board->getSizeX();x++){
-			IntraBox* trgt_box = my_board_2[y][x];
+			IntraBox_4* trgt_box = my_board_2[y][x];
 			if(trgt_box->nw > 10000){
 				cout << " +";
 			}
@@ -730,7 +742,7 @@ if (debug_option) { /*** デバッグ用*/
 		}
 		cout << endl;
 		for(int x=0;x<board->getSizeX();x++){
-			IntraBox* trgt_box = my_board_2[y][x];
+			IntraBox_4* trgt_box = my_board_2[y][x];
 			if(trgt_box->sw > 10000){
 				cout << " +";
 			}
@@ -747,12 +759,11 @@ if (debug_option) { /*** デバッグ用*/
 		}
 		cout << endl;
 	}
-} /* ***/
+}
 
 	int now_x = trgt_line->getSinkX();
 	int now_y = trgt_line->getSinkY();
 	int intra_box = -1;
-//	int threshold_cost = 1000000000;
 	vector<int> next_direction_array;
 	int next_count, next_id;
 
@@ -766,7 +777,8 @@ if (debug_option) { /*** デバッグ用*/
 
 			Point p = {now_x, now_y, end_z};
 			trgt_line->pushPointToTrack(p);
-// デバッグ用			cout << "(" << now_x << "," << now_y << "," << end_z << ")";
+
+if( debug_option ) { cout << "(" << now_x << "," << now_y << "," << end_z << ")"; }
 
 			if(board->box(now_x,now_y,end_z)->isTypeVia()) break;
 
@@ -833,7 +845,8 @@ if (debug_option) { /*** デバッグ用*/
 
 		Point p = {now_x, now_y, start_z};
 		trgt_line->pushPointToTrack(p);
-// デバッグ用		cout << "(" << now_x << "," << now_y << "," << start_z << ")";
+
+if( debug_option ){ cout << "(" << now_x << "," << now_y << "," << start_z << ")"; }
 
 		if(now_x==trgt_line->getSourceX() && now_y==trgt_line->getSourceY()) break;
 
@@ -889,7 +902,8 @@ if (debug_option) { /*** デバッグ用*/
 			break;
 		}
 	}
-// デバッグ用	cout << endl;
+
+if( debug_option ) { cout << endl; }
 	
 
 	/*** ターゲットラインのトラックを整理 ***/
@@ -1133,3 +1147,582 @@ void deleteLine(int trgt_line_id){
 		old_box->decrementWestNum();
 	}
 }
+
+bool final_routing(int trgt_line_id, bool debug_option){
+
+	Line* trgt_line = board->line(trgt_line_id);
+	trgt_line->clearTrack();
+	
+	// ボードの初期化
+	vector<vector<IntraBox_1*> > my_board_1(board->getSizeY(), vector<IntraBox_1*>(board->getSizeX())); // ソース側のボード
+	vector<vector<IntraBox_1*> > my_board_2(board->getSizeY(), vector<IntraBox_1*>(board->getSizeX())); // シンク側のボード
+	IntraBox_1 init = { INT_MAX, {false,false,false,false,NOT_USE,NOT_USE,NOT_USE,NOT_USE} };
+	for(int y=0;y<board->getSizeY();y++){
+		for(int x=0;x<board->getSizeX();x++){
+			my_board_1[y][x] = new IntraBox_1;
+			*(my_board_1[y][x]) = init;
+			my_board_2[y][x] = new IntraBox_1;
+			*(my_board_2[y][x]) = init;
+		}
+	}
+	int start_x, start_y;
+	IntraBox_1* start;
+	queue<Search> qu;
+
+	int start_z = trgt_line->getSourceZ();
+	int end_z = trgt_line->getSinkZ();
+
+
+	/*** ソース層の探索 ***/
+
+	// スタート地点の設定
+	start_x = trgt_line->getSourceX();
+	start_y = trgt_line->getSourceY();
+	start = my_board_1[start_y][start_x];
+	start->cost = 0;
+	
+	// 北方向を探索
+	if(isInserted_3(start_x,start_y-1,start_z)){
+		Search trgt = {start_x,start_y-1,SOUTH};
+		qu.push(trgt);
+	}
+	// 東方向を探索
+	if(isInserted_3(start_x+1,start_y,start_z)){
+		Search trgt = {start_x+1,start_y,WEST};
+		qu.push(trgt);
+	}
+	// 南方向を探索
+	if(isInserted_3(start_x,start_y+1,start_z)){
+		Search trgt = {start_x,start_y+1,NORTH};
+		qu.push(trgt);
+	}
+	// 西方向を探索
+	if(isInserted_3(start_x-1,start_y,start_z)){
+		Search trgt = {start_x-1,start_y,EAST};
+		qu.push(trgt);
+	}
+	
+	while(!qu.empty()){
+		
+		Search trgt = qu.front();
+		qu.pop();
+		
+		Box* trgt_box = board->box(trgt.x,trgt.y,start_z);
+		IntraBox_1* trgt_ibox = my_board_1[trgt.y][trgt.x];
+
+		bool update = false; // コストの更新があったか？
+		// コスト計算
+		if(trgt.d == SOUTH){ // 南から来た
+			IntraBox_1* find_ibox = my_board_1[trgt.y+1][trgt.x];
+			// 折れ曲がりあり？
+			int turn_count = 0;
+			int previous = NOT_USE;
+			if((find_ibox->d).s){ previous = SOUTH; }
+			else if((find_ibox->d).e){ previous = EAST; turn_count++; }
+			else if((find_ibox->d).w){ previous = WEST; turn_count++; }
+			// コスト
+			int cost = (find_ibox->cost) + ML + turn_count * BT;
+			if(cost < trgt_ibox->cost){
+				update = true;
+				trgt_ibox->cost = cost;
+				(trgt_ibox->d).n = false;
+				(trgt_ibox->d).e = false;
+				(trgt_ibox->d).s = true;
+				(trgt_ibox->d).w = false;
+				(trgt_ibox->d).c_s = previous;
+			}
+			else if(cost == trgt_ibox->cost){
+				(trgt_ibox->d).s = true;
+				(trgt_ibox->d).c_s = previous;
+			}
+		}
+		if(trgt.d == WEST){ // 西から来た
+			IntraBox_1* find_ibox = my_board_1[trgt.y][trgt.x-1];
+			// 折れ曲がりあり？
+			int turn_count = 0;
+			int previous = NOT_USE;
+			if((find_ibox->d).w){ previous = WEST; }
+			else if((find_ibox->d).n){ previous = NORTH; turn_count++; }
+			else if((find_ibox->d).s){ previous = SOUTH; turn_count++; }
+			// コスト
+			int cost = (find_ibox->cost) + ML + turn_count * BT;
+			if(cost < trgt_ibox->cost){
+				update = true;
+				trgt_ibox->cost = cost;
+				(trgt_ibox->d).n = false;
+				(trgt_ibox->d).e = false;
+				(trgt_ibox->d).s = false;
+				(trgt_ibox->d).w = true;
+				(trgt_ibox->d).c_w = previous;
+			}
+			else if(cost == trgt_ibox->cost){
+				(trgt_ibox->d).w = true;
+				(trgt_ibox->d).c_w = previous;
+			}
+		}
+		if(trgt.d == NORTH){ // 北から来た
+			IntraBox_1* find_ibox = my_board_1[trgt.y-1][trgt.x];
+			// 折れ曲がりあり？
+			int turn_count = 0;
+			int previous = NOT_USE;
+			if((find_ibox->d).n){ previous = NORTH; }
+			else if((find_ibox->d).e){ previous = EAST; turn_count++; }
+			else if((find_ibox->d).w){ previous = WEST; turn_count++; }
+			// コスト
+			int cost = (find_ibox->cost) + ML + turn_count * BT;
+			if(cost < trgt_ibox->cost){
+				update = true;
+				trgt_ibox->cost = cost;
+				(trgt_ibox->d).n = true;
+				(trgt_ibox->d).e = false;
+				(trgt_ibox->d).s = false;
+				(trgt_ibox->d).w = false;
+				(trgt_ibox->d).c_n = previous;
+			}
+			else if(cost == trgt_ibox->cost){
+				(trgt_ibox->d).n = true;
+				(trgt_ibox->d).c_n = previous;
+			}
+		}
+		if(trgt.d == EAST){ // 東から来た
+			IntraBox_1* find_ibox = my_board_1[trgt.y][trgt.x+1];
+			// 折れ曲がりあり？
+			int turn_count = 0;
+			int previous = NOT_USE;
+			if((find_ibox->d).e){ previous = EAST; }
+			else if((find_ibox->d).n){ previous = NORTH; turn_count++; }
+			else if((find_ibox->d).s){ previous = SOUTH; turn_count++; }
+			// コスト
+			int cost = (find_ibox->cost) + ML + turn_count * BT;
+			if(cost < trgt_ibox->cost){
+				update = true;
+				trgt_ibox->cost = cost;
+				(trgt_ibox->d).n = false;
+				(trgt_ibox->d).e = true;
+				(trgt_ibox->d).s = false;
+				(trgt_ibox->d).w = false;
+				(trgt_ibox->d).c_e = previous;
+			}
+			else if(cost == trgt_ibox->cost){
+				(trgt_ibox->d).e = true;
+				(trgt_ibox->d).c_e = previous;
+			}
+		}
+		
+		if(!update) continue;
+		if(trgt_box->isTypeNumber() || trgt_box->isTypeVia()) continue;
+		
+		// 北方向
+		if(trgt.d!=NORTH && isInserted_3(trgt.x,trgt.y-1,start_z)){
+			Search next = {trgt.x,trgt.y-1,SOUTH};
+			qu.push(next);
+		}
+		// 東方向
+		if(trgt.d!=EAST && isInserted_3(trgt.x+1,trgt.y,start_z)){
+			Search next = {trgt.x+1,trgt.y,WEST};
+			qu.push(next);
+		}
+		// 南方向
+		if(trgt.d!=SOUTH && isInserted_3(trgt.x,trgt.y+1,start_z)){
+			Search next = {trgt.x,trgt.y+1,NORTH};
+			qu.push(next);
+		}
+		// 西方向
+		if(trgt.d!=WEST && isInserted_3(trgt.x-1,trgt.y,start_z)){
+			Search next = {trgt.x-1,trgt.y,EAST};
+			qu.push(next);
+		}
+	}
+
+
+	/*** シンク層の判定 ***/
+
+	if(start_z != end_z){
+		for(int i=1;i<=board->getViaNum();i++){
+			Via* trgt_via = board->via(i);
+			if(trgt_via->getSourceZ()!=start_z || trgt_via->getSinkZ()!=end_z) continue;
+			start_x = trgt_via->getSourceX();
+			start_y = trgt_via->getSourceY();
+			start = my_board_2[start_y][start_x];
+
+			if(my_board_1[start_y][start_x]->cost == INT_MAX) continue;
+			if(trgt_via->getUsedLineNum() > 0) continue;
+
+			start->cost = my_board_1[start_y][start_x]->cost;
+
+			// 北方向を探索
+			if(isInserted_4(start_x,start_y-1,end_z)){
+				Search trgt = {start_x,start_y-1,SOUTH};
+				qu.push(trgt);
+			}
+			// 東方向を探索
+			if(isInserted_4(start_x+1,start_y,end_z)){
+				Search trgt = {start_x+1,start_y,WEST};
+				qu.push(trgt);
+			}
+			// 南方向を探索
+			if(isInserted_4(start_x,start_y+1,end_z)){
+				Search trgt = {start_x,start_y+1,NORTH};
+				qu.push(trgt);
+			}
+			// 西方向を探索
+			if(isInserted_4(start_x-1,start_y,end_z)){
+				Search trgt = {start_x-1,start_y,EAST};
+				qu.push(trgt);
+			}
+		}
+
+	}
+
+
+	/*** シンク層の探索 ***/
+
+	while(!qu.empty()){
+		
+		Search trgt = qu.front();
+		qu.pop();
+		
+		Box* trgt_box = board->box(trgt.x,trgt.y,end_z);
+		IntraBox_1* trgt_ibox = my_board_2[trgt.y][trgt.x];
+
+		bool update = false; // コストの更新があったか？
+		// コスト計算
+		if(trgt.d == SOUTH){ // 南から来た
+			IntraBox_1* find_ibox = my_board_2[trgt.y+1][trgt.x];
+			// 折れ曲がりあり？
+			int turn_count = 0;
+			int previous = NOT_USE;
+			if((find_ibox->d).s){ previous = SOUTH; }
+			else if((find_ibox->d).e){ previous = EAST; turn_count++; }
+			else if((find_ibox->d).w){ previous = WEST; turn_count++; }
+			// コスト
+			int cost = (find_ibox->cost) + ML + turn_count * BT;
+			if(cost < trgt_ibox->cost){
+				update = true;
+				trgt_ibox->cost = cost;
+				(trgt_ibox->d).n = false;
+				(trgt_ibox->d).e = false;
+				(trgt_ibox->d).s = true;
+				(trgt_ibox->d).w = false;
+				(trgt_ibox->d).c_s = previous;
+			}
+			else if(cost == trgt_ibox->cost){
+				(trgt_ibox->d).s = true;
+				(trgt_ibox->d).c_s = previous;
+			}
+		}
+		if(trgt.d == WEST){ // 西から来た
+			IntraBox_1* find_ibox = my_board_2[trgt.y][trgt.x-1];
+			// 折れ曲がりあり？
+			int turn_count = 0;
+			int previous = NOT_USE;
+			if((find_ibox->d).w){ previous = WEST; }
+			else if((find_ibox->d).n){ previous = NORTH; turn_count++; }
+			else if((find_ibox->d).s){ previous = SOUTH; turn_count++; }
+			// コスト
+			int cost = (find_ibox->cost) + ML + turn_count * BT;
+			if(cost < trgt_ibox->cost){
+				update = true;
+				trgt_ibox->cost = cost;
+				(trgt_ibox->d).n = false;
+				(trgt_ibox->d).e = false;
+				(trgt_ibox->d).s = false;
+				(trgt_ibox->d).w = true;
+				(trgt_ibox->d).c_w = previous;
+			}
+			else if(cost == trgt_ibox->cost){
+				(trgt_ibox->d).w = true;
+				(trgt_ibox->d).c_w = previous;
+			}
+		}
+		if(trgt.d == NORTH){ // 北から来た
+			IntraBox_1* find_ibox = my_board_2[trgt.y-1][trgt.x];
+			// 折れ曲がりあり？
+			int turn_count = 0;
+			int previous = NOT_USE;
+			if((find_ibox->d).n){ previous = NORTH; }
+			else if((find_ibox->d).e){ previous = EAST; turn_count++; }
+			else if((find_ibox->d).w){ previous = WEST; turn_count++; }
+			// コスト
+			int cost = (find_ibox->cost) + ML + turn_count * BT;
+			if(cost < trgt_ibox->cost){
+				update = true;
+				trgt_ibox->cost = cost;
+				(trgt_ibox->d).n = true;
+				(trgt_ibox->d).e = false;
+				(trgt_ibox->d).s = false;
+				(trgt_ibox->d).w = false;
+				(trgt_ibox->d).c_n = previous;
+			}
+			else if(cost == trgt_ibox->cost){
+				(trgt_ibox->d).n = true;
+				(trgt_ibox->d).c_n = previous;
+			}
+		}
+		if(trgt.d == EAST){ // 東から来た
+			IntraBox_1* find_ibox = my_board_2[trgt.y][trgt.x+1];
+			// 折れ曲がりあり？
+			int turn_count = 0;
+			int previous = NOT_USE;
+			if((find_ibox->d).e){ previous = EAST; }
+			else if((find_ibox->d).n){ previous = NORTH; turn_count++; }
+			else if((find_ibox->d).s){ previous = SOUTH; turn_count++; }
+			// コスト
+			int cost = (find_ibox->cost) + ML + turn_count * BT;
+			if(cost < trgt_ibox->cost){
+				update = true;
+				trgt_ibox->cost = cost;
+				(trgt_ibox->d).n = false;
+				(trgt_ibox->d).e = true;
+				(trgt_ibox->d).s = false;
+				(trgt_ibox->d).w = false;
+				(trgt_ibox->d).c_e = previous;
+			}
+			else if(cost == trgt_ibox->cost){
+				(trgt_ibox->d).e = true;
+				(trgt_ibox->d).c_e = previous;
+			}
+		}
+		
+		if(!update) continue;
+		if(trgt_box->isTypeNumber()) continue;
+		
+		// 北方向
+		if(trgt.d!=NORTH && isInserted_4(trgt.x,trgt.y-1,end_z)){
+			Search next = {trgt.x,trgt.y-1,SOUTH};
+			qu.push(next);
+		}
+		// 東方向
+		if(trgt.d!=EAST && isInserted_4(trgt.x+1,trgt.y,end_z)){
+			Search next = {trgt.x+1,trgt.y,WEST};
+			qu.push(next);
+		}
+		// 南方向
+		if(trgt.d!=SOUTH && isInserted_4(trgt.x,trgt.y+1,end_z)){
+			Search next = {trgt.x,trgt.y+1,NORTH};
+			qu.push(next);
+		}
+		// 西方向
+		if(trgt.d!=WEST && isInserted_4(trgt.x-1,trgt.y,end_z)){
+			Search next = {trgt.x-1,trgt.y,EAST};
+			qu.push(next);
+		}
+	}
+
+if (debug_option) { /*** デバッグ用*/
+	cout << endl;
+	cout << "LAYER So (line_id: " << trgt_line_id << ") (z: " << (start_z + 1) << ")" << endl;
+	cout << "========" << endl;
+	for(int y=0;y<board->getSizeY();y++){
+		for(int x=0;x<board->getSizeX();x++){
+			IntraBox_1* trgt_box = my_board_1[y][x];
+			if(trgt_box->cost > 10000){
+				cout << " +";
+			}
+			else{
+				cout << setw(2) << trgt_box->cost;
+			}
+			cout << " ";
+		}
+		cout << endl;
+	}
+	cout << "LAYER Si (line_id: " << trgt_line_id << ") (z: " << (end_z + 1) << ")" << endl;
+	cout << "========" << endl;
+	for(int y=0;y<board->getSizeY();y++){
+		for(int x=0;x<board->getSizeX();x++){
+			IntraBox_1* trgt_box = my_board_2[y][x];
+			if(trgt_box->cost > 10000){
+				cout << " +";
+			}
+			else{
+				cout << setw(2) << trgt_box->cost;
+			}
+			cout << " ";
+		}
+		cout << endl;
+	}
+}
+
+	int now_x = trgt_line->getSinkX();
+	int now_y = trgt_line->getSinkY();
+	vector<int> next_direction_array;
+	int next_count, next_id;
+
+	Direction_R trgt_d;
+
+	/*** シンク層のバックトレース ***/
+
+	if(start_z != end_z){
+
+		Point p_s = {now_x, now_y, end_z};
+		trgt_line->pushPointToTrack(p_s);
+
+if (debug_option) { cout << "(" << now_x << "," << now_y << "," << end_z << ")"; }
+
+		trgt_d = my_board_2[now_y][now_x]->d;
+		next_direction_array.clear();
+		if(trgt_d.n) next_direction_array.push_back(NORTH);
+		if(trgt_d.e) next_direction_array.push_back(EAST);
+		if(trgt_d.s) next_direction_array.push_back(SOUTH);
+		if(trgt_d.w) next_direction_array.push_back(WEST);
+		next_count = (int)mt_genrand_int32(0, (int)(next_direction_array.size()) - 1);
+		next_id = next_direction_array[next_count];
+		switch(next_id){
+			case NORTH: // 北へ
+			now_y = now_y - 1; next_id = trgt_d.c_n; break;
+			case EAST:  // 東へ
+			now_x = now_x + 1; next_id = trgt_d.c_e; break;
+			case SOUTH: // 南へ
+			now_y = now_y + 1; next_id = trgt_d.c_s; break;
+			case WEST:  // 西へ
+			now_x = now_x - 1; next_id = trgt_d.c_w; break;
+		}
+
+		while(1){
+
+			Point p = {now_x, now_y, end_z};
+			trgt_line->pushPointToTrack(p);
+
+if (debug_option) { cout << "(" << now_x << "," << now_y << "," << end_z << ")"; }
+
+			if(board->box(now_x,now_y,end_z)->isTypeVia()) break;
+
+			trgt_d = my_board_2[now_y][now_x]->d;
+
+			switch(next_id){
+				case NORTH:
+				if(!trgt_d.n) next_id = -1;
+				break;
+				case EAST:
+				if(!trgt_d.e) next_id = -1;
+				break;
+				case SOUTH:
+				if(!trgt_d.s) next_id = -1;
+				break;
+				case WEST:
+				if(!trgt_d.w) next_id = -1;
+				break;
+			}
+
+			if(next_id < 0){ cout << "error! (error: 51)" << endl; exit(51); }
+
+			switch(next_id){
+				case NORTH: // 北へ
+				now_y = now_y - 1; next_id = trgt_d.c_n; break;
+				case EAST:  // 東へ
+				now_x = now_x + 1; next_id = trgt_d.c_e; break;
+				case SOUTH: // 南へ
+				now_y = now_y + 1; next_id = trgt_d.c_s; break;
+				case WEST:  // 西へ
+				now_x = now_x - 1; next_id = trgt_d.c_w; break;
+			}
+		}
+	}
+
+
+	/*** ソース層のバックトレース ***/
+
+	Point p_v = {now_x, now_y, start_z};
+	trgt_line->pushPointToTrack(p_v);
+
+if (debug_option) { cout << "(" << now_x << "," << now_y << "," << start_z << ")"; }
+
+	trgt_d = my_board_1[now_y][now_x]->d;
+	next_direction_array.clear();
+	if(trgt_d.n) next_direction_array.push_back(NORTH);
+	if(trgt_d.e) next_direction_array.push_back(EAST);
+	if(trgt_d.s) next_direction_array.push_back(SOUTH);
+	if(trgt_d.w) next_direction_array.push_back(WEST);
+	next_count = (int)mt_genrand_int32(0, (int)(next_direction_array.size()) - 1);
+	next_id = next_direction_array[next_count];
+	switch(next_id){
+		case NORTH: // 北へ
+		now_y = now_y - 1; next_id = trgt_d.c_n; break;
+		case EAST:  // 東へ
+		now_x = now_x + 1; next_id = trgt_d.c_e; break;
+		case SOUTH: // 南へ
+		now_y = now_y + 1; next_id = trgt_d.c_s; break;
+		case WEST:  // 西へ
+		now_x = now_x - 1; next_id = trgt_d.c_w; break;
+	}
+
+	while(1){
+
+		Point p = {now_x, now_y, start_z};
+		trgt_line->pushPointToTrack(p);
+
+if (debug_option) { cout << "(" << now_x << "," << now_y << "," << start_z << ")"; }
+
+		if(now_x==trgt_line->getSourceX() && now_y==trgt_line->getSourceY()) break;
+
+		trgt_d = my_board_1[now_y][now_x]->d;
+
+		switch(next_id){
+			case NORTH:
+			if(!trgt_d.n) next_id = -1;
+			break;
+			case EAST:
+			if(!trgt_d.e) next_id = -1;
+			break;
+			case SOUTH:
+			if(!trgt_d.s) next_id = -1;
+			break;
+			case WEST:
+			if(!trgt_d.w) next_id = -1;
+			break;
+		}
+
+		if(next_id < 0){ cout << "error! (error: 52)" << endl; exit(52); }
+
+		switch(next_id){
+			case NORTH: // 北へ
+			now_y = now_y - 1; next_id = trgt_d.c_n; break;
+			case EAST:  // 東へ
+			now_x = now_x + 1; next_id = trgt_d.c_e; break;
+			case SOUTH: // 南へ
+			now_y = now_y + 1; next_id = trgt_d.c_s; break;
+			case WEST:  // 西へ
+			now_x = now_x - 1; next_id = trgt_d.c_w; break;
+		}
+	}
+
+if( debug_option ) { cout << endl; }
+	
+	for(int y=0;y<board->getSizeY();y++){
+		for(int x=0;x<board->getSizeX();x++){
+			delete my_board_1[y][x];
+			delete my_board_2[y][x];
+		}
+	}
+	
+	return true;
+}
+
+bool isInserted_3(int x,int y,int z){ // ソース層用
+
+	// 盤面の端
+	if(x<0 || x>(board->getSizeX()-1)) return false;
+	if(y<0 || y>(board->getSizeY()-1)) return false;
+	
+	Box* trgt_box = board->box(x,y,z);
+	
+	if(trgt_box->isTypeInterVia()) return false;
+	if(countLine(x,y,z) > 0) return false; // ラインがあるマスは探索しない
+	
+	return true;
+}
+
+bool isInserted_4(int x,int y,int z){ // シンク層用
+
+	// 盤面の端
+	if(x<0 || x>(board->getSizeX()-1)) return false;
+	if(y<0 || y>(board->getSizeY()-1)) return false;
+	
+	Box* trgt_box = board->box(x,y,z);
+	
+	if(trgt_box->isTypeInterVia() || trgt_box->isTypeVia()) return false;
+	if(countLine(x,y,z) > 0) return false; // ラインがあるマスは探索しない
+	
+	return true;
+}
+

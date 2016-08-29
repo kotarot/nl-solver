@@ -58,17 +58,17 @@ struct Search{
 	int x;
 	int y;
 	int d; // 方向
-	int c; // ひとつ前の方向
 };
 
 struct Direction{
-	bool n; // 北
-	bool s; // 南
-	bool e; // 東
-	bool w; // 西
+	// 方向
+	bool n;	// 北
+	bool s;	// 南
+	bool e;	// 東
+	bool w;	// 西
 };
 
-struct IntraBox{
+struct IntraBox_4{
 	int ne;
 	int nw;
 	int se;
@@ -77,6 +77,24 @@ struct IntraBox{
 	Direction d_nw;
 	Direction d_se;
 	Direction d_sw;
+};
+
+struct Direction_R{
+	// 方向
+	bool n;	// 北
+	bool s;	// 南
+	bool e;	// 東
+	bool w;	// 西
+	// ひとつ前の方向
+	int c_n;
+	int c_s;
+	int c_e;
+	int c_w;
+};
+
+struct IntraBox_1{
+	int cost;
+	Direction_R d;
 };
 
 

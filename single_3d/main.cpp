@@ -28,18 +28,20 @@ int main(int argc, char *argv[]){
 	char *out_filename = NULL; // 出力解答ファイル名
 	int outer_loops = O_LOOP;  // 外ループ回数
 	bool debug_option = false; // デバッグ出力 (ルーティング)
+	bool print_option = false; // デバッグ出力 (問題＆解答)
 
 	// Options 取得
 	struct option longopts[] = {
 		{"loop",     required_argument, NULL, 'l'},
 		{"output",   required_argument, NULL, 'o'},
 		{"debug",    no_argument,       NULL, 'd'},
+		{"print",    no_argument,       NULL, 'p'},
 		{"version",  no_argument,       NULL, 'v'},
 		{"help",     no_argument,       NULL, 'h'},
 		{0, 0, 0, 0}
 	};
 	int opt, optidx;
-	while ((opt = getopt_long(argc, argv, "l:o:dvh", longopts, &optidx)) != -1) {
+	while ((opt = getopt_long(argc, argv, "l:o:dpvh", longopts, &optidx)) != -1) {
 		switch (opt) {
 			case 'l':
 				outer_loops = atoi(optarg);
@@ -49,6 +51,9 @@ int main(int argc, char *argv[]){
 				break;
 			case 'd':
 				debug_option = true;
+				break;
+			case 'p':
+				print_option = true;
 				break;
 			case 'v':
 				version();
@@ -69,7 +74,8 @@ int main(int argc, char *argv[]){
 	start_time = clock();
 
 	initialize(in_filename); // 問題盤の生成
-	printBoard(); // 問題盤の表示
+
+if( print_option ) { printBoard(); }
 
 	// 乱数の初期化
 	mt_init_genrand((unsigned long)time(NULL));
@@ -121,6 +127,12 @@ int main(int argc, char *argv[]){
 			penalty_C = (int)(NC * (mt_genrand_int32(0, m - 1)));
 			penalty_V = (int)(NV * (mt_genrand_int32(0, m - 1)));
 
+			// ビア指定
+			// int via_idx = 1; // ビア番号
+			// board->line(id)->setSpecifiedVia(via_idx);
+			// ビア指定解除
+			// board->line(id)->setSpecifiedVia(NOT_USE);
+
 			// 経路の探索
 			if ( !routing(id, debug_option) ) {
 				cerr << "Cannot solve!! (error: 2)" << endl; // 失敗したらプログラム終了
@@ -131,9 +143,28 @@ int main(int argc, char *argv[]){
 
 			// 終了判定（解導出できた場合，正解を出力）
 			if(isFinished()){
+
+				// 最終ルーティング
+				for(int i=1;i<=board->getLineNum();i++){
+					// 数字が隣接する場合スキップ
+					if(board->line(i)->getHasLine() == false) continue;
+		
+					// 経路の削除
+					deleteLine(i);
+
+					if( !final_routing(i, debug_option) ){
+						cerr << "Cannot solve!! (error: 3)" << endl;
+						exit(3);
+					}
+
+					// 経路の記録
+					recordLine(i);
+				}
+	
 				finish_time = clock();
 
-				printSolution();
+if( print_option ) { printSolution(); }
+
 				if (out_filename != NULL) {
 					printSolutionToFile(out_filename);
 					cout << "--> Saved to " << out_filename << endl << endl;
@@ -158,10 +189,25 @@ int main(int argc, char *argv[]){
 	
 	// 解導出できなかった場合
 	if(!isFinished()){
+		finish_time = clock();
+		
 // 現状の結果を出力
-//		for(int i=1;i<=board->getLineNum();i++){
-//			printLine(i);
-//		}
+if( print_option ) {
+	for(int i=1;i<=board->getLineNum();i++){
+		printLine(i);
+	}
+	cout << endl;
+}
+
+		cout << "SUMMARY" << endl;
+		cout << "-------" << endl;
+		cout << " - filename:   " << in_filename << endl;
+		cout << " - size:       " << board->getSizeX() << " x " << board->getSizeY() << " x " << board->getSizeZ() << endl;
+		cout << " - iterations: " << outer_loops << endl;
+		cout << " - CPU time:   "
+		     << ((double)(finish_time - start_time) / (double)CLOCKS_PER_SEC)
+		     << " sec" << endl;
+
 		cerr << "Cannot solve!! (error: 4)" << endl;
 		exit(4);
 	}

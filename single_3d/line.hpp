@@ -10,7 +10,7 @@ class Line{
 public:
 //	static const int NOT_USE = -1;
 
-	Line(int _index):x_0(NOT_USE),y_0(NOT_USE),z_0(NOT_USE),x_1(NOT_USE),y_1(NOT_USE),z_1(NOT_USE){index=_index;track.clear();}
+	Line(int _index):x_0(NOT_USE),y_0(NOT_USE),z_0(NOT_USE),x_1(NOT_USE),y_1(NOT_USE),z_1(NOT_USE),via_specified(NOT_USE){index=_index;track.clear();}
 	~Line();
 
 	int getIndex(){return index;}
@@ -28,6 +28,10 @@ public:
 	// スタートとゴールが隣接していないか？
 	void setHasLine(bool _has_line){has_line = _has_line;}
 	bool getHasLine(){return has_line;}
+
+	// 指定ビア(任意)
+	void setSpecifiedVia(int _via_specified){via_specified = _via_specified;}
+	int getSpecifiedVia(){return via_specified;}
 	
 	void changePort(){ // ソースとシンクの交換
 		int tmp_x = x_0;
@@ -53,6 +57,7 @@ private:
 	int x_1, y_1, z_1; // シンクポート
 
 	bool has_line; // スタートとゴールが隣接していないか？
+	int via_specified; // 指定ビア(任意)
 	vector<Point> track;
 };
 
