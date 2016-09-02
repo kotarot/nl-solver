@@ -4,9 +4,11 @@
  * for Vivado HLS
  */
 
-//#include <stdio.h>
-//#include <string.h>
-//#include <ap_int.h>
+#ifndef SOFTWARE
+#include <stdio.h>
+#include <string.h>
+#include <ap_int.h>
+#endif
 
 #include "main.hpp"
 
@@ -32,7 +34,7 @@ void initialize_test(){
 	//map<int,int> vx_0, vy_0, vz_0, vx_1, vy_1, vz_1;
 	//map<int,bool> adjacents; // 初期状態で数字が隣接している
 
-	board = new Board(5, 5, 1, 1, 0);
+	board = new Board(5, 6, 1, 1, 0);
 
 	Box* trgt_box_0 = board->box(0, 0, 0);
 	Box* trgt_box_1 = board->box(3, 3, 0);
