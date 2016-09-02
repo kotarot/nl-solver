@@ -221,7 +221,9 @@ class Board:
 	"""
 	単層形式で出力
 	"""
-	def output_boards(self, fpath="./problem"):
+	def output_boards(self, fpath="./problem", mode="single"):
+
+		assert(mode in ['single', 'multi'])
 
 		lines = [{} for z in range(0, len(self.board))]
 
@@ -229,36 +231,61 @@ class Board:
 		y_num = len(self.board[0]) - self.n_dims_half*2
 		x_num = len(self.board[0][0]) - self.n_dims_half*2
 
-		for z in range(0, len(self.board)):
-			for k, _lines in self.lines.items():
-				for _line in _lines:
-					if _line[2] == z+1:
-						if k in lines[z]:
-							lines[z][k].append(_line)
-						else:
-							lines[z][k] = [_line]
+		if mode == 'single':
+			for z in range(0, len(self.board)):
+				for k, _lines in self.lines.items():
+					for _line in _lines:
+						if _line[2] == z+1:
+							if k in lines[z]:
+								lines[z][k].append(_line)
+							else:
+								lines[z][k] = [_line]
 
-			for k, _vias in self.vias.items():
-				for _via in _vias:
-					if _via[2] == z+1:
-						_key = self.via_to_line[k]
-						if _key in lines[z]:
-							lines[z][_key].append(_via)
-						else:
-							lines[z][_key] = [_via]
+				for k, _vias in self.vias.items():
+					for _via in _vias:
+						if _via[2] == z+1:
+							_key = self.via_to_line[k]
+							if _key in lines[z]:
+								lines[z][_key].append(_via)
+							else:
+								lines[z][_key] = [_via]
 
-		for z, zv in enumerate(lines):
+			for z, zv in enumerate(lines):
+				stxt = []
+				stxt.append("SIZE {}X{}\n".format(x_num, y_num))
+				stxt.append("LINE_NUM {}\n".format(len(zv)))
+				for k, v in zv.items():
+					print k, v
+					stxt.append("LINE#{0} ({1[0][0]},{1[0][1]})-({1[1][0]},{1[1][1]})\n".format(k, v))
+
+				fn = "{}_L{}.txt".format(fpath, z+1)
+				fp = open(fn, "w")
+				fp.writelines(stxt)
+				fp.close()
+
+		elif mode == 'multi':
 			stxt = []
-			stxt.append("SIZE {}X{}\n".format(x_num, y_num))
-			stxt.append("LINE_NUM {}\n".format(len(zv)))
-			for k, v in zv.items():
-				print k, v
-				stxt.append("LINE#{0} ({1[0][0]},{1[0][1]})-({1[1][0]},{1[1][1]})\n".format(k, v))
+			stxt.append("SIZE {}X{}X{}".format(x_num, y_num, z_num))
+			stxt.append("LINE_NUM {}".format(len(self.lines)))
+			for k, _lines in self.lines.items():
+				txt = "LINE#{0} ({1[0][0]},{1[0][1]},{1[0][2]}) ({1[1][0]},{1[1][1]},{1[1][2]})".format(k, _lines)
+				for k2, v2 in self.via_to_line.items():
+					if v2 == k:
+						txt = "{} {}".format(txt, k)
+				stxt.append(txt)
+			for k, _vias in self.vias.items():
+				txt = "VIA#{}".format(k)
+				for v in _vias:
+					txt += " ({0[0]},{0[1]},{0[2]})".format(v)
+				stxt.append(txt)
+			stxt = map(lambda x: x+"\n", stxt)
 
-			fn = "{}_L{}.txt".format(fpath, z+1)
-			fp = open(fn, "w")
+			fn = "{}_{}.txt".format(fpath, "3D")
+			fp = open(fn, 'w')
 			fp.writelines(stxt)
 			fp.close()
+
+
 
 	@staticmethod
 	def mdist(l1, l2):
