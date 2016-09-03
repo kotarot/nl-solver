@@ -256,9 +256,6 @@ void printSolutionToFile(char *filename) {
 			}
 			ofs << endl;
 		}
-		if(z!=(board->getSizeZ()-1)){
-			ofs << endl;
-		}
 	}
 }
 
