@@ -13,7 +13,7 @@ int penalty_C; // penalty of "cross"
 int penalty_V; // penalty of "via duplication"
 
 void usage() {
-	cerr << "Usage: solver [--loop <loop-number>] [--output <output-file>] input-file" << endl;
+	cerr << "Usage: solver [--loop <loop-number>] [--output <output-file>] [--debug] [--print] input-file" << endl;
 	exit(-1);
 }
 
