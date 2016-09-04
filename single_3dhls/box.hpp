@@ -11,10 +11,11 @@
 #ifndef __BOX_HPP__
 #define __BOX_HPP__
 
+enum BoxType {TYPE_NULL,TYPE_NUMBER,TYPE_VIA,TYPE_INTERVIA,TYPE_BLANK};
+
 // マスクラス
 class Box{
 public:
-	enum BoxType {TYPE_NULL,TYPE_NUMBER,TYPE_VIA,TYPE_INTERVIA,TYPE_BLANK};
 //	static const int NOT_USE = -1;
 
 	Box():type(TYPE_NULL),index(NOT_USE),north(0),south(0),east(0),west(0){ x = y = z = -1; }
