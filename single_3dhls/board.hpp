@@ -30,9 +30,6 @@ public:
 		for(int z=0;z<size_z;z++){
 			for(int y=0;y<size_y;y++){
 				for(int x=0;x<size_x;x++){
-					/*Box* box;
-					box = new Box(x,y,z);
-					boxes[z][y][x] = box;*/
 					boxes[z][y][x].setX(x);
 					boxes[z][y][x].setY(y);
 					boxes[z][y][x].setZ(z);
@@ -40,15 +37,9 @@ public:
 			}
 		}
 		for(int i=1;i<=line_num;i++){
-			/*Line* line;
-			line = new Line(i);
-			lines[i] = line;*/
 			lines[i].setIndex(i);
 		}
 		for(int v=1;v<=via_num;v++){
-			/*Via* via;
-			via = new Via(v);
-			vias[v] = via;*/
 			vias[v].setIndex(v);
 		}
 	}
@@ -66,9 +57,6 @@ public:
 		for(int z=0;z<size_z;z++){
 			for(int y=0;y<size_y;y++){
 				for(int x=0;x<size_x;x++){
-					/*Box* box;
-					box = new Box(x,y,z);
-					boxes[z][y][x] = box;*/
 					boxes[z][y][x].setX(x);
 					boxes[z][y][x].setY(y);
 					boxes[z][y][x].setZ(z);
@@ -76,15 +64,9 @@ public:
 			}
 		}
 		for(int i=1;i<=line_num;i++){
-			/*Line* line;
-			line = new Line(i);
-			lines[i] = line;*/
 			lines[i].setIndex(i);
 		}
 		for(int v=1;v<=via_num;v++){
-			/*Via* via;
-			via = new Via(v);
-			vias[v] = via;*/
 			vias[v].setIndex(v);
 		}
 	}
@@ -105,9 +87,6 @@ private:
 	int size_z;   // Z方向サイズ
 	int line_num; // ライン数
 	int via_num;  // ビア数
-	//Box* boxes[MAX_LAYER][MAX_BOXES][MAX_BOXES]; // マスの集合
-	//Line* lines[MAX_LINES];                      // ラインの集合
-	//Via* vias[MAX_LINES];                        // ビアの集合
 	Box boxes[MAX_LAYER][MAX_BOXES][MAX_BOXES]; // マスの集合
 	Line lines[MAX_LINES + 1];                  // ラインの集合
 	Via vias[MAX_LINES + 1];                    // ビアの集合

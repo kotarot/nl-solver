@@ -20,9 +20,9 @@ public:
 //	static const int NOT_USE = -1;
 
 	Line():x_0(NOT_USE),y_0(NOT_USE),z_0(NOT_USE),x_1(NOT_USE),y_1(NOT_USE),z_1(NOT_USE),via_specified(NOT_USE){
-		index = -1; track_index = 0; /*track.clear();*/ }
+		index = -1; track_index = 0; }
 	Line(int _index):x_0(NOT_USE),y_0(NOT_USE),z_0(NOT_USE),x_1(NOT_USE),y_1(NOT_USE),z_1(NOT_USE),via_specified(NOT_USE){
-		index=_index; track_index = 0; /*track.clear();*/ }
+		index=_index; track_index = 0; }
 	~Line() { ; }
 
 	int getIndex(){return index;}
@@ -58,12 +58,8 @@ public:
 		z_1 = tmp_z;
 	}
 
-	//int getLineLength(){return track.size();}
 	int getLineLength(){return track_index;}
 
-	//vector<Point>* getTrack(){return &track;}
-	//void pushPointToTrack(Point p){track.push_back(p);}
-	//void clearTrack(){track.clear();}
 	Point track[MAX_TRACKS];
 	int track_index;
 
@@ -74,7 +70,6 @@ private:
 
 	bool has_line; // スタートとゴールが隣接していないか？
 	int via_specified; // 指定ビア(任意)
-	//vector<Point> track;
 };
 
 #endif

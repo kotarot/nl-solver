@@ -63,7 +63,6 @@ void initialize_test(Board *board, int size_x, int size_y, int size_z){
 }
 
 void printSolution(Board *board){
-	//map<int,map<int,map<int,int> > > for_print;
 	int for_print[MAX_LAYER][MAX_BOXES][MAX_BOXES];
 	for(int z=0;z<board->getSizeZ();z++){
 		for(int y=0;y<board->getSizeY();y++){
@@ -79,13 +78,9 @@ void printSolution(Board *board){
 			for_print[trgt_line->getSinkZ()][trgt_line->getSinkY()][trgt_line->getSinkX()] = i;
 			continue;
 		}
-		//vector<Point>* trgt_track = trgt_line->getTrack();
 		Point *trgt_track = trgt_line->track;
 		for(int j=0;j<trgt_line->track_index;j++){
 			Point *p = trgt_track + j;
-			//int point_x = p->x;
-			//int point_y = p->y;
-			//int point_z = p->z;
 			for_print[p->z][p->y][p->x] = i;
 		}
 	}
@@ -132,15 +127,14 @@ void printSolution(Board *board){
 void recordLine(int trgt_line_id, Board *board){
 
 	Line* trgt_line = board->line(trgt_line_id);
-	//vector<Point>* trgt_track = trgt_line->getTrack();
 	Point *trgt_track = trgt_line->track;
 
 	int old_x = trgt_line->getSinkX();
 	int old_y = trgt_line->getSinkY();
 	int old_z = trgt_line->getSinkZ();
-	int new_x = (trgt_track + 1)->x; //int new_x = (*(trgt_track + 1)).x;
-	int new_y = (trgt_track + 1)->y; //int new_y = (*(trgt_track + 1)).y;
-	int new_z = (trgt_track + 1)->z; //int new_z = (*(trgt_track + 1)).z;
+	int new_x = (trgt_track + 1)->x;
+	int new_y = (trgt_track + 1)->y;
+	int new_z = (trgt_track + 1)->z;
 	Box* old_box = board->box(old_x,old_y,old_z);
 	Box* new_box = board->box(new_x,new_y,new_z);
 
@@ -162,9 +156,9 @@ void recordLine(int trgt_line_id, Board *board){
 	old_box = new_box;
 
 	for(int i=2;i < (trgt_line->track_index) -1 ;i++){
-		new_x = (trgt_track + i)->x; //new_x = (*(trgt_track + i)).x;
-		new_y = (trgt_track + i)->y; //new_y = (*(trgt_track + i)).y;
-		new_z = (trgt_track + i)->z; //new_z = (*(trgt_track + i)).z;
+		new_x = (trgt_track + i)->x;
+		new_y = (trgt_track + i)->y;
+		new_z = (trgt_track + i)->z;
 		new_box = board->box(new_x,new_y,new_z);
 
 		if(new_box->isTypeVia() && old_box->isTypeVia()){

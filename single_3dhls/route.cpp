@@ -39,16 +39,14 @@ unsigned long mt_genrand_int32(int a, int b) {
 //int penalty_C; // penalty of "cross"
 //int penalty_V; // penalty of "via duplication"
 
-bool routing(int trgt_line_id/*, bool debug_option*/, int penalty_T, int penalty_C, int penalty_V, Board *board, int *output){
+bool routing(int trgt_line_id, int penalty_T, int penalty_C, int penalty_V, Board *board, int *output){
 
 	Line* trgt_line = board->line(trgt_line_id);
-	trgt_line->track_index = 0; //trgt_line->clearTrack();
+	trgt_line->track_index = 0;
 
 	// ボードの初期化
-	//vector<vector<IntraBox_4*> > my_board_1(board->getSizeY(), vector<IntraBox_4*>(board->getSizeX())); // ソース側のボード
-	//vector<vector<IntraBox_4*> > my_board_2(board->getSizeY(), vector<IntraBox_4*>(board->getSizeX())); // シンク側のボード
-	IntraBox_4 my_board_1[MAX_BOXES][MAX_BOXES];
-	IntraBox_4 my_board_2[MAX_BOXES][MAX_BOXES];
+	IntraBox_4 my_board_1[MAX_BOXES][MAX_BOXES]; // ソース側のボード
+	IntraBox_4 my_board_2[MAX_BOXES][MAX_BOXES]; // シンク側のボード
 	IntraBox_4 init = {
 		INT_MAX,INT_MAX,INT_MAX,INT_MAX,
 		{false,false,false,false},
@@ -84,28 +82,26 @@ bool routing(int trgt_line_id/*, bool debug_option*/, int penalty_T, int penalty
 	// 北方向を探索
 	if(isInserted_1(start_x,start_y-1,start_z, board)){
 		Search trgt = {start_x,start_y-1,SOUTH};
-		qu[qu_tail] = trgt; qu_tail++; //qu.push(trgt);
+		qu[qu_tail] = trgt; qu_tail++;
 	}
 	// 東方向を探索
 	if(isInserted_1(start_x+1,start_y,start_z, board)){
 		Search trgt = {start_x+1,start_y,WEST};
-		qu[qu_tail] = trgt; qu_tail++; //qu.push(trgt);
+		qu[qu_tail] = trgt; qu_tail++;
 	}
 	// 南方向を探索
 	if(isInserted_1(start_x,start_y+1,start_z, board)){
 		Search trgt = {start_x,start_y+1,NORTH};
-		qu[qu_tail] = trgt; qu_tail++; //qu.push(trgt);
+		qu[qu_tail] = trgt; qu_tail++;
 	}
 	// 西方向を探索
 	if(isInserted_1(start_x-1,start_y,start_z, board)){
 		Search trgt = {start_x-1,start_y,EAST};
-		qu[qu_tail] = trgt; qu_tail++; //qu.push(trgt);
+		qu[qu_tail] = trgt; qu_tail++;
 	}
 
-	while (qu_head != qu_tail) { //while(!qu.empty()){
+	while (qu_head != qu_tail) {
 
-		//Search trgt = qu.front();
-		//qu.pop();
 		Search trgt = qu[qu_head];
 		qu_head++;
 
@@ -357,22 +353,22 @@ bool routing(int trgt_line_id/*, bool debug_option*/, int penalty_T, int penalty
 		// 北方向
 		if(trgt.d!=NORTH && isInserted_1(trgt.x,trgt.y-1,start_z, board)){
 			Search next = {trgt.x,trgt.y-1,SOUTH};
-			qu[qu_tail] = next; qu_tail++; //qu.push(next);
+			qu[qu_tail] = next; qu_tail++;
 		}
 		// 東方向
 		if(trgt.d!=EAST && isInserted_1(trgt.x+1,trgt.y,start_z, board)){
 			Search next = {trgt.x+1,trgt.y,WEST};
-			qu[qu_tail] = next; qu_tail++; //qu.push(next);
+			qu[qu_tail] = next; qu_tail++;
 		}
 		// 南方向
 		if(trgt.d!=SOUTH && isInserted_1(trgt.x,trgt.y+1,start_z, board)){
 			Search next = {trgt.x,trgt.y+1,NORTH};
-			qu[qu_tail] = next; qu_tail++; //qu.push(next);
+			qu[qu_tail] = next; qu_tail++;
 		}
 		// 西方向
 		if(trgt.d!=WEST && isInserted_1(trgt.x-1,trgt.y,start_z, board)){
 			Search next = {trgt.x-1,trgt.y,EAST};
-			qu[qu_tail] = next; qu_tail++; //qu.push(next);
+			qu[qu_tail] = next; qu_tail++;
 		}
 	}
 
@@ -419,22 +415,22 @@ bool routing(int trgt_line_id/*, bool debug_option*/, int penalty_T, int penalty
 			// 北方向を探索
 			if(isInserted_2(start_x,start_y-1,end_z, board)){
 				Search trgt = {start_x,start_y-1,SOUTH};
-				qu[qu_tail] = trgt; qu_tail++; //qu.push(trgt);
+				qu[qu_tail] = trgt; qu_tail++;
 			}
 			// 東方向を探索
 			if(isInserted_2(start_x+1,start_y,end_z, board)){
 				Search trgt = {start_x+1,start_y,WEST};
-				qu[qu_tail] = trgt; qu_tail++; //qu.push(trgt);
+				qu[qu_tail] = trgt; qu_tail++;
 			}
 			// 南方向を探索
 			if(isInserted_2(start_x,start_y+1,end_z, board)){
 				Search trgt = {start_x,start_y+1,NORTH};
-				qu[qu_tail] = trgt; qu_tail++; //qu.push(trgt);
+				qu[qu_tail] = trgt; qu_tail++;
 			}
 			// 西方向を探索
 			if(isInserted_2(start_x-1,start_y,end_z, board)){
 				Search trgt = {start_x-1,start_y,EAST};
-				qu[qu_tail] = trgt; qu_tail++; //qu.push(trgt);
+				qu[qu_tail] = trgt; qu_tail++;
 			}
 		}
 
@@ -443,10 +439,8 @@ bool routing(int trgt_line_id/*, bool debug_option*/, int penalty_T, int penalty
 
 	/*** シンク層の探索 ***/
 
-	while (qu_head != qu_tail) { //while(!qu.empty()){
+	while (qu_head != qu_tail) {
 
-		//Search trgt = qu.front();
-		//qu.pop();
 		Search trgt = qu[qu_head];
 		qu_head++;
 
@@ -698,22 +692,22 @@ bool routing(int trgt_line_id/*, bool debug_option*/, int penalty_T, int penalty
 		// 北方向
 		if(trgt.d!=NORTH && isInserted_2(trgt.x,trgt.y-1,end_z, board)){
 			Search next = {trgt.x,trgt.y-1,SOUTH};
-			qu[qu_tail] = next; qu_tail++; //qu.push(next);
+			qu[qu_tail] = next; qu_tail++;
 		}
 		// 東方向
 		if(trgt.d!=EAST && isInserted_2(trgt.x+1,trgt.y,end_z, board)){
 			Search next = {trgt.x+1,trgt.y,WEST};
-			qu[qu_tail] = next; qu_tail++; //qu.push(next);
+			qu[qu_tail] = next; qu_tail++;
 		}
 		// 南方向
 		if(trgt.d!=SOUTH && isInserted_2(trgt.x,trgt.y+1,end_z, board)){
 			Search next = {trgt.x,trgt.y+1,NORTH};
-			qu[qu_tail] = next; qu_tail++; //qu.push(next);
+			qu[qu_tail] = next; qu_tail++;
 		}
 		// 西方向
 		if(trgt.d!=WEST && isInserted_2(trgt.x-1,trgt.y,end_z, board)){
 			Search next = {trgt.x-1,trgt.y,EAST};
-			qu[qu_tail] = next; qu_tail++; //qu.push(next);
+			qu[qu_tail] = next; qu_tail++;
 		}
 	}
 
@@ -802,7 +796,6 @@ if (debug_option) { /*** デバッグ用*/
 	int now_x = trgt_line->getSinkX();
 	int now_y = trgt_line->getSinkY();
 	int intra_box = -1;
-	//vector<int> next_direction_array;
 	int next_direction_array[4];
 	int next_direction_array_index = 0;
 	int next_count, next_id;
@@ -815,7 +808,7 @@ if (debug_option) { /*** デバッグ用*/
 		for (int loop_count = 0; loop_count <= MAX_TRACKS; loop_count++) {
 
 			Point p = {now_x, now_y, end_z};
-			trgt_line->track[trgt_line->track_index] = p; (trgt_line->track_index)++; //trgt_line->pushPointToTrack(p);
+			trgt_line->track[trgt_line->track_index] = p; (trgt_line->track_index)++;
 
 #if 0
 if( debug_option ) { cout << "(" << now_x << "," << now_y << "," << end_z << ")"; }
@@ -841,12 +834,12 @@ if( debug_option ) { cout << "(" << now_x << "," << now_y << "," << end_z << ")"
 				;//assert(!"Undefined Intra-Box"); break;
 			}
 
-			next_direction_array_index = 0; //next_direction_array.clear();
-			if(trgt_d.n) { next_direction_array[next_direction_array_index] = NORTH; next_direction_array_index++; /* next_direction_array.push_back(NORTH); */ }
-			if(trgt_d.e) { next_direction_array[next_direction_array_index] = EAST; next_direction_array_index++; /* next_direction_array.push_back(EAST); */ }
-			if(trgt_d.s) { next_direction_array[next_direction_array_index] = SOUTH; next_direction_array_index++; /* next_direction_array.push_back(SOUTH); */ }
-			if(trgt_d.w) { next_direction_array[next_direction_array_index] = WEST; next_direction_array_index++; /* next_direction_array.push_back(WEST); */ }
-			next_count = (int)mt_genrand_int32(0, next_direction_array_index - 1); //next_count = (int)mt_genrand_int32(0, (int)(next_direction_array.size()) - 1);
+			next_direction_array_index = 0;
+			if(trgt_d.n) { next_direction_array[next_direction_array_index] = NORTH; next_direction_array_index++; }
+			if(trgt_d.e) { next_direction_array[next_direction_array_index] = EAST; next_direction_array_index++; }
+			if(trgt_d.s) { next_direction_array[next_direction_array_index] = SOUTH; next_direction_array_index++; }
+			if(trgt_d.w) { next_direction_array[next_direction_array_index] = WEST; next_direction_array_index++; }
+			next_count = (int)mt_genrand_int32(0, next_direction_array_index - 1);
 			next_id = next_direction_array[next_count];
 
 			switch(next_id){
@@ -884,7 +877,7 @@ if( debug_option ) { cout << "(" << now_x << "," << now_y << "," << end_z << ")"
 	for (int loop_count = 0; loop_count <= MAX_TRACKS; loop_count++) {
 
 		Point p = {now_x, now_y, start_z};
-		trgt_line->track[trgt_line->track_index] = p; (trgt_line->track_index)++; //trgt_line->pushPointToTrack(p);
+		trgt_line->track[trgt_line->track_index] = p; (trgt_line->track_index)++;
 
 #if 0
 if( debug_option ){ cout << "(" << now_x << "," << now_y << "," << start_z << ")"; }
@@ -910,12 +903,12 @@ if( debug_option ){ cout << "(" << now_x << "," << now_y << "," << start_z << ")
 			;//assert(!"Undefined Intra-Box"); break;
 		}
 
-		next_direction_array_index = 0; //next_direction_array.clear();
-		if(trgt_d.n) { next_direction_array[next_direction_array_index] = NORTH; next_direction_array_index++; /* next_direction_array.push_back(NORTH); */ }
-		if(trgt_d.e) { next_direction_array[next_direction_array_index] = EAST; next_direction_array_index++; /* next_direction_array.push_back(EAST); */ }
-		if(trgt_d.s) { next_direction_array[next_direction_array_index] = SOUTH; next_direction_array_index++; /* next_direction_array.push_back(SOUTH); */ }
-		if(trgt_d.w) { next_direction_array[next_direction_array_index] = WEST; next_direction_array_index++; /* next_direction_array.push_back(WEST); */ }
-		next_count = (int)mt_genrand_int32(0, next_direction_array_index - 1); //next_count = (int)mt_genrand_int32(0, (int)(next_direction_array.size()) - 1);
+		next_direction_array_index = 0;
+		if(trgt_d.n) { next_direction_array[next_direction_array_index] = NORTH; next_direction_array_index++; }
+		if(trgt_d.e) { next_direction_array[next_direction_array_index] = EAST; next_direction_array_index++; }
+		if(trgt_d.s) { next_direction_array[next_direction_array_index] = SOUTH; next_direction_array_index++; }
+		if(trgt_d.w) { next_direction_array[next_direction_array_index] = WEST; next_direction_array_index++; }
+		next_count = (int)mt_genrand_int32(0, next_direction_array_index - 1);
 		next_id = next_direction_array[next_count];
 
 		switch(next_id){
@@ -952,26 +945,22 @@ if( debug_option ) { cout << endl; }
 
 	/*** ターゲットラインのトラックを整理 ***/
 
-	//vector<Point>* trgt_track = trgt_line->getTrack();
 	bool retry = true;
 	while(retry){
 		retry = false;
 
 		// トラックを一時退避
-		//vector<Point> tmp_track;
 		Point tmp_track[MAX_TRACKS];
 		int tmp_track_index = 0;
-		for (int i = 0; i < trgt_line->track_index/*(int)(trgt_track->size())*/; i++) {
-			//tmp_track.push_back((*trgt_track)[i]);
+		for (int i = 0; i < trgt_line->track_index; i++) {
 			tmp_track[tmp_track_index] = trgt_line->track[i];
 			tmp_track_index++;
 		}
 
 		// 冗長部分を排除してトラックを整理
-		trgt_line->track_index = 0; //trgt_track->clear();
-		for (int i = 0; i < tmp_track_index/*(int)(tmp_track.size())*/; i++) {
-			if (tmp_track_index/*(int)(tmp_track.size())*/ - 2 <= i) {
-				//trgt_track->push_back(tmp_track[i]);
+		trgt_line->track_index = 0;
+		for (int i = 0; i < tmp_track_index; i++) {
+			if (tmp_track_index - 2 <= i) {
 				trgt_line->track[trgt_line->track_index] = tmp_track[i];
 				(trgt_line->track_index)++;
 				continue;
@@ -981,7 +970,6 @@ if( debug_option ) { cout << endl; }
 				i++;
 				continue;
 			}
-			//trgt_track->push_back(tmp_track[i]);
 			trgt_line->track[trgt_line->track_index] = tmp_track[i];
 			(trgt_line->track_index)++;
 		}
