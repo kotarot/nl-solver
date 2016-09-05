@@ -315,7 +315,6 @@ void initialize(char* filename){
 			if(via_to_line.count(s) > 0){
 				int lid = via_to_line[s];
 				line_to_viaid[lid] = i;
-				cout << i << endl;
 			}
 
 			while(!is.eof()){

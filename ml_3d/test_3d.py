@@ -243,7 +243,7 @@ random.shuffle(not_assigned_via)
 
 for k, v in sorted(confirmed_vias.items(), key=lambda x: x[1]['prob'], reverse=True):
     print k, v
-    if mode == 'single' or v['prob']>5:
+    if mode == 'single' or v['prob']>10:
         b.set_via_to_line(k, v['line'])
 
 if mode == 'single':

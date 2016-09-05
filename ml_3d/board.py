@@ -271,7 +271,7 @@ class Board:
 				txt = "LINE#{0} ({1[0][0]},{1[0][1]},{1[0][2]}) ({1[1][0]},{1[1][1]},{1[1][2]})".format(k, _lines)
 				for k2, v2 in self.via_to_line.items():
 					if v2 == k:
-						txt = "{} {}".format(txt, k)
+						txt = "{} {}".format(txt, k2)
 				stxt.append(txt)
 			for k, _vias in self.vias.items():
 				txt = "VIA#{}".format(k)
