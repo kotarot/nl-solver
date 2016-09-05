@@ -10,6 +10,12 @@
 #include <ap_int.h>
 #endif
 
+#ifdef SOFTWARE
+#include "ap_int.h"
+#else
+#include <ap_int.h>
+#endif
+
 #include "./main.hpp"
 #include "./route.hpp"
 //#include "./utils.hpp"
@@ -39,7 +45,14 @@ unsigned long mt_genrand_int32(int a, int b) {
 //int penalty_C; // penalty of "cross"
 //int penalty_V; // penalty of "via duplication"
 
-bool routing(int trgt_line_id, int penalty_T, int penalty_C, int penalty_V, Board *board, int *output){
+bool routing(ap_uint<7> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_C, ap_uint<4> penalty_V, Board *board, ap_int<4> *output){
+#pragma HLS INTERFACE s_axilite port=trgt_line_id bundle=AXI4LS
+#pragma HLS INTERFACE s_axilite port=penalty_T bundle=AXI4LS
+#pragma HLS INTERFACE s_axilite port=penalty_C bundle=AXI4LS
+#pragma HLS INTERFACE s_axilite port=penalty_V bundle=AXI4LS
+#pragma HLS INTERFACE s_axilite port=board bundle=AXI4LS
+#pragma HLS INTERFACE s_axilite port=output bundle=AXI4LS
+#pragma HLS INTERFACE s_axilite port=return bundle=AXI4LS
 
 	Line* trgt_line = board->line(trgt_line_id);
 	trgt_line->track_index = 0;

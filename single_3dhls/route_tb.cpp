@@ -10,6 +10,12 @@
 #include <ap_int.h>
 #endif
 
+#ifdef SOFTWARE
+#include "ap_int.h"
+#else
+#include <ap_int.h>
+#endif
+
 #include "main.hpp"
 
 //Board* board; // 対象ボード
@@ -18,7 +24,7 @@
 //int penalty_C; // penalty of "cross"
 //int penalty_V; // penalty of "via duplication"
 
-bool routing(int trgt_line_id, int penalty_T, int penalty_C, int penalty_V, Board *board, int *output);
+bool routing(ap_uint<7> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_C, ap_uint<4> penalty_V, Board *board, ap_int<4> *output);
 
 /**
  * 問題盤の初期化 (テスト用)
@@ -216,7 +222,7 @@ int main() {
 	Board *board = new Board(size_x, size_y, size_z, line_num, via_num);
 	initialize_test(board, size_x, size_y, size_z);
 
-	int status;
+	ap_int<4> status;
 	bool result = routing(1, 0, 0, 0, board, &status);
 	recordLine(1, board);
 	cout << "result = " << result << endl;
