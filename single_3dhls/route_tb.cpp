@@ -17,6 +17,7 @@
 #endif
 
 #include "main.hpp"
+#include "route.hpp"
 
 //Board* board; // 対象ボード
 
@@ -24,8 +25,9 @@
 //int penalty_C; // penalty of "cross"
 //int penalty_V; // penalty of "via duplication"
 
-bool routing(ap_uint<7> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_C, ap_uint<4> penalty_V, Board *board, ap_int<4> *output);
+//bool routing(ap_uint<7> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_C, ap_uint<4> penalty_V, Board *board, ap_int<4> *output);
 
+#if 0
 /**
  * 問題盤の初期化 (テスト用)
  */
@@ -211,24 +213,32 @@ void recordLine(int trgt_line_id, Board *board){
 		old_box->incrementWestNum();
 	}
 }
+#endif
 
 int main() {
 	using namespace std;
 
+#if 0
 	int size_x = 5, size_y = 6, size_z = 2;
 	int line_num = 1;
 	int via_num = 1;
 
 	Board *board = new Board(size_x, size_y, size_z, line_num, via_num);
 	initialize_test(board, size_x, size_y, size_z);
+#endif
 
 	ap_int<4> status;
-	bool result = routing(1, 0, 0, 0, board, &status);
-	recordLine(1, board);
-	cout << "result = " << result << endl;
+	bool result = routing(1, 0, 0, 0, /*board,*/ &status);
+	//recordLine(1, board);
+	if (result)
+		cout << "Test Passed!" << endl;
+	else
+		cout << "Test Failed!" << endl;
 	cout << "status = " << status << endl;
 
+#if 0
 	printSolution(board);
+#endif
 
 	return 0;
 }

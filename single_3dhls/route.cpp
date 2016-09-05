@@ -45,14 +45,73 @@ unsigned long mt_genrand_int32(int a, int b) {
 //int penalty_C; // penalty of "cross"
 //int penalty_V; // penalty of "via duplication"
 
-bool routing(ap_uint<7> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_C, ap_uint<4> penalty_V, Board *board, ap_int<4> *output){
+/**
+ * 問題盤の初期化 (テスト用)
+ */
+void initialize_test(Board *board, int size_x, int size_y, int size_z){
+
+	{
+		Box* trgt_box_0 = board->box(0, 0, 0);
+		Box* trgt_box_1 = board->box(4, 4, 1);
+		trgt_box_0->setTypeNumber();
+		trgt_box_1->setTypeNumber();
+		trgt_box_0->setIndex(1);
+		trgt_box_1->setIndex(1);
+		Line* trgt_line = board->line(1);
+		trgt_line->setSourcePort(0, 0, 0);
+		trgt_line->setSinkPort(4, 4, 1);
+		trgt_line->setHasLine(true);
+	}
+
+	{
+		Box* trgt_box_0 = board->box(2, 2, 0);
+		Box* trgt_box_1 = board->box(2, 2, 1);
+		trgt_box_0->setTypeVia();
+		trgt_box_1->setTypeVia();
+		trgt_box_0->setIndex(1);
+		trgt_box_1->setIndex(1);
+		Via* trgt_via = board->via(1);
+		trgt_via->setSourcePort(2, 2, 0);
+		trgt_via->setSinkPort(2, 2, 1);
+	}
+
+	for(int z=0;z<size_z;z++){
+		for(int y=0;y<size_y;y++){
+			for(int x=0;x<size_x;x++){
+				Box* trgt_box = board->box(x,y,z);
+				if(!(trgt_box->isTypeNumber() || trgt_box->isTypeVia() || trgt_box->isTypeInterVia()))
+					trgt_box->setTypeBlank();
+			}
+		}
+	}
+
+}
+
+bool routing(ap_uint<7> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_C, ap_uint<4> penalty_V, /*Board *board,*/ ap_int<4> *output) {
 #pragma HLS INTERFACE s_axilite port=trgt_line_id bundle=AXI4LS
 #pragma HLS INTERFACE s_axilite port=penalty_T bundle=AXI4LS
 #pragma HLS INTERFACE s_axilite port=penalty_C bundle=AXI4LS
 #pragma HLS INTERFACE s_axilite port=penalty_V bundle=AXI4LS
-#pragma HLS INTERFACE s_axilite port=board bundle=AXI4LS
+//#pragma HLS INTERFACE s_axilite port=board bundle=AXI4LS
 #pragma HLS INTERFACE s_axilite port=output bundle=AXI4LS
 #pragma HLS INTERFACE s_axilite port=return bundle=AXI4LS
+
+	Board boardobj;
+	int size_x = 5, size_y = 6, size_z = 2;
+	int line_num = 1;
+	int via_num = 1;
+
+	boardobj.init(size_x, size_y, size_z, line_num, via_num);
+	//Board *board = new Board(size_x, size_y, size_z, line_num, via_num);
+	initialize_test(&boardobj, size_x, size_y, size_z);
+
+	bool ret = _routing(trgt_line_id, penalty_T, penalty_C, penalty_V, &boardobj, output);
+	recordLine(trgt_line_id, &boardobj);
+
+	return ret;
+}
+
+bool _routing(ap_uint<7> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_C, ap_uint<4> penalty_V, Board *board, ap_int<4> *output){
 
 	Line* trgt_line = board->line(trgt_line_id);
 	trgt_line->track_index = 0;
@@ -1040,18 +1099,17 @@ int countLine(int x,int y,int z, Board *board){
 	return count/2;
 }
 
-#if 0
-void recordLine(int trgt_line_id){
+void recordLine(ap_uint<7> trgt_line_id, Board *board){
 
 	Line* trgt_line = board->line(trgt_line_id);
-	vector<Point>* trgt_track = trgt_line->getTrack();
+	Point *trgt_track = trgt_line->track;
 
 	int old_x = trgt_line->getSinkX();
 	int old_y = trgt_line->getSinkY();
 	int old_z = trgt_line->getSinkZ();
-	int new_x = (*trgt_track)[1].x;
-	int new_y = (*trgt_track)[1].y;
-	int new_z = (*trgt_track)[1].z;
+	int new_x = (trgt_track[1]).x; //int new_x = (trgt_track + 1)->x;
+	int new_y = (trgt_track[1]).y; //int new_y = (trgt_track + 1)->y;
+	int new_z = (trgt_track[1]).z; //int new_z = (trgt_track + 1)->z;
 	Box* old_box = board->box(old_x,old_y,old_z);
 	Box* new_box = board->box(new_x,new_y,new_z);
 
@@ -1072,10 +1130,10 @@ void recordLine(int trgt_line_id){
 	old_x = new_x; old_y = new_y; old_z = new_z;
 	old_box = new_box;
 
-	for(int i=2;i<(int)(trgt_track->size()-1);i++){
-		new_x = (*trgt_track)[i].x;
-		new_y = (*trgt_track)[i].y;
-		new_z = (*trgt_track)[i].z;
+	for(int i=2;i < (trgt_line->track_index) -1 ;i++){
+		new_x = (trgt_track[i]).x; //new_x = (trgt_track + i)->x;
+		new_y = (trgt_track[i]).y; //new_y = (trgt_track + i)->y;
+		new_z = (trgt_track[i]).z; //new_z = (trgt_track + i)->z;
 		new_box = board->box(new_x,new_y,new_z);
 
 		if(new_box->isTypeVia() && old_box->isTypeVia()){
@@ -1123,6 +1181,7 @@ void recordLine(int trgt_line_id){
 	}
 }
 
+#if 0
 void deleteLine(int trgt_line_id){
 
 	Line* trgt_line = board->line(trgt_line_id);
