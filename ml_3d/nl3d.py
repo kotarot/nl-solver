@@ -108,6 +108,7 @@ def read_probfile(filename, n_dims):
     n_dims_half = n_dims / 2
 
     _boards = None
+    via_cnt = 1;
     for line in open(filename, 'r'):
         # 1行目
         if 'SIZE'in line:
@@ -137,8 +138,9 @@ def read_probfile(filename, n_dims):
             via_id = line_tokens[1]
             src = tokens[1].split(',')
             snk = tokens[2].split(',')
-            _boards[int(src[2]) - 1][int(src[1])][int(src[0])] = {'data': via_id, 'type': 'via', 'shape': 0}
-            _boards[int(snk[2]) - 1][int(snk[1])][int(snk[0])] = {'data': via_id, 'type': 'via', 'shape': 0}
+            _boards[int(src[2]) - 1][int(src[1])][int(src[0])] = {'data': via_id, 'type': 'via', 'shape': via_cnt}
+            _boards[int(snk[2]) - 1][int(snk[1])][int(snk[0])] = {'data': via_id, 'type': 'via', 'shape': via_cnt}
+            via_cnt += 1
 
     # 左右の番兵
     for z in range(0, board_z):

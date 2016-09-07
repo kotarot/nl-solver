@@ -7,8 +7,7 @@
 /*******************************************************/
 
 Board* board; // 対象ボード
-map<string, int> via_to_line;
-map<int, int> line_to_viaid;
+int line_to_viaid[100];
 
 int penalty_T; // penalty of "touch"
 int penalty_C; // penalty of "cross"
@@ -136,7 +135,7 @@ if( print_option ) { printBoard(); }
 			// board->line(id)->setSpecifiedVia(NOT_USE);
 
 			// Via指定
-			if(line_to_viaid.count(id) > 0){
+			if(line_to_viaid[id] != 0){
 				board->line(id)->setSpecifiedVia(line_to_viaid[id]);
 			}
 
@@ -236,6 +235,9 @@ void initialize(char* filename){
 		cerr << "Problem file does not exist." << endl;
 		exit(-1);
 	}
+
+	// line_to_viaの初期化
+	for(int i=0; i<100; i++) line_to_viaid[i] = 0;
 	
 	int size_x, size_y, size_z;
 	int line_num;
@@ -277,9 +279,9 @@ void initialize(char* filename){
 
 			// ViaIDが割り当てられている場合は辞書に追加
 			if(!is.eof()){
-				string s;
-				is >> s;
-				via_to_line[s] = i;
+				int vid;
+				is >> vid;
+				line_to_viaid[i] = vid;
 			}
 
 			// 初期状態で数字が隣接しているか判断
@@ -310,12 +312,6 @@ void initialize(char* filename){
 			i = via_num;
 			istringstream is(str);
 			is >> s	>> a >> b >> c >> d >> e >> f;
-
-			// ViaとLine割り当てがある場合，辞書更新
-			if(via_to_line.count(s) > 0){
-				int lid = via_to_line[s];
-				line_to_viaid[lid] = i;
-			}
 
 			while(!is.eof()){
 				is >> d >> e >> f;

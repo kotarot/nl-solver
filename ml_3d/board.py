@@ -7,6 +7,7 @@ class Board:
 		self.lines = {}
 		self.vias = {}
 		self.via_to_line = {}
+		self.via_internal_id = {}
 		self.n_dims = n_dims
 		self.n_dims_half = n_dims / 2
 
@@ -24,6 +25,8 @@ class Board:
 						if not _key in self.vias:
 							self.vias[_key] = []
 						self.vias[_key].append((x-ndh, y-ndh, z+1))
+						if not _key in self.via_internal_id:
+							self.via_internal_id[_key] = xl["shape"]
 
 	def __call__(self):
 		return self.board
@@ -150,6 +153,8 @@ class Board:
 		return self.vias.keys()
 	def get_lines_key(self):
 		return self.lines.keys()
+	def get_via_internal_id(self, _key):
+		return self.via_internal_id[_key]
 
 	"""
 	周囲+/-distマスの状況を返す．
@@ -271,7 +276,8 @@ class Board:
 				txt = "LINE#{0} ({1[0][0]},{1[0][1]},{1[0][2]}) ({1[1][0]},{1[1][1]},{1[1][2]})".format(k, _lines)
 				for k2, v2 in self.via_to_line.items():
 					if v2 == k:
-						txt = "{} {}".format(txt, k2)
+						_line_to_via = self.get_via_internal_id(k2)
+						txt = "{} {}".format(txt, _line_to_via)
 				stxt.append(txt)
 			for k, _vias in self.vias.items():
 				txt = "VIA#{}".format(k)
