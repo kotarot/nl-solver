@@ -32,12 +32,15 @@ parser.add_argument('--pickle', '-p', default=None, type=str,
 #                    help='Set on to switch to answer-input mode (default: False)')
 #parser.add_argument('--output', '-o', default=None, type=str,
 #                    help='Path to output fix-file')
+parser.add_argument('--mode', '-m', default='single', type=str,
+                    help='Output mode : *single, multi (* is default)')
 args = parser.parse_args()
 print args
 
 input_problem = args.input
 input_pickle  = args.pickle
 #output_fix    = args.output
+mode = args.mode
 
 # (1) pickle ファイル名から dims を読み取る
 # (2) pickle ファイル名から method を読み取る
@@ -240,9 +243,11 @@ random.shuffle(not_assigned_via)
 
 for k, v in sorted(confirmed_vias.items(), key=lambda x: x[1]['prob'], reverse=True):
     print k, v
-    b.set_via_to_line(k, v['line'])
+    if mode == 'single' or v['prob']>10:
+        b.set_via_to_line(k, v['line'])
 
-for k, v in enumerate(not_assigned_via):
-    b.set_via_to_line(v, not_assigned_line[k])
+if mode == 'single':
+    for k, v in enumerate(not_assigned_via):
+        b.set_via_to_line(v, not_assigned_line[k])
 
-b.output_boards()
+b.output_boards(mode=mode)

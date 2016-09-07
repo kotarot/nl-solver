@@ -7,6 +7,8 @@
 /*******************************************************/
 
 Board* board; // 対象ボード
+map<string, int> via_to_line;
+map<int, int> line_to_viaid;
 
 int penalty_T; // penalty of "touch"
 int penalty_C; // penalty of "cross"
@@ -132,6 +134,11 @@ if( print_option ) { printBoard(); }
 			// board->line(id)->setSpecifiedVia(via_idx);
 			// ビア指定解除
 			// board->line(id)->setSpecifiedVia(NOT_USE);
+
+			// Via指定
+			if(line_to_viaid.count(id) > 0){
+				board->line(id)->setSpecifiedVia(line_to_viaid[id]);
+			}
 
 			// 経路の探索
 			if ( !routing(id, debug_option) ) {
@@ -267,7 +274,14 @@ void initialize(char* filename){
 			istringstream is(str);
 			is >> i >> a >> b >> c >> d >> e >> f;
 			lx_0[i] = a; ly_0[i] = b; lz_0[i] = c-1; lx_1[i] = d; ly_1[i] = e; lz_1[i] = f-1;
-			
+
+			// ViaIDが割り当てられている場合は辞書に追加
+			if(!is.eof()){
+				string s;
+				is >> s;
+				via_to_line[s] = i;
+			}
+
 			// 初期状態で数字が隣接しているか判断
 			int dx = lx_0[i] - lx_1[i];
 			int dy = ly_0[i] - ly_1[i];
@@ -296,6 +310,13 @@ void initialize(char* filename){
 			i = via_num;
 			istringstream is(str);
 			is >> s	>> a >> b >> c >> d >> e >> f;
+
+			// ViaとLine割り当てがある場合，辞書更新
+			if(via_to_line.count(s) > 0){
+				int lid = via_to_line[s];
+				line_to_viaid[lid] = i;
+			}
+
 			while(!is.eof()){
 				is >> d >> e >> f;
 			}
