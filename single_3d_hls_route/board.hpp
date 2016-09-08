@@ -30,6 +30,7 @@ public:
 		for(ap_int<5> z=0;z<size_z;z++){
 			for(ap_int<7> y=0;y<size_y;y++){
 				for(ap_int<7> x=0;x<size_x;x++){
+#pragma HLS PIPELINE
 					boxes[z][y][x].setX(x);
 					boxes[z][y][x].setY(y);
 					boxes[z][y][x].setZ(z);
@@ -37,9 +38,11 @@ public:
 			}
 		}
 		for(ap_int<8> i=1;i<=line_num;i++){
+#pragma HLS PIPELINE
 			lines[i].setIndex(i);
 		}
 		for(ap_int<8> v=1;v<=via_num;v++){
+#pragma HLS PIPELINE
 			vias[v].setIndex(v);
 		}
 	}
@@ -57,6 +60,7 @@ public:
 		for(ap_int<5> z=0;z<size_z;z++){
 			for(ap_int<7> y=0;y<size_y;y++){
 				for(ap_int<7> x=0;x<size_x;x++){
+#pragma HLS PIPELINE
 					boxes[z][y][x].setX(x);
 					boxes[z][y][x].setY(y);
 					boxes[z][y][x].setZ(z);
@@ -64,9 +68,11 @@ public:
 			}
 		}
 		for(ap_int<8> i=1;i<=line_num;i++){
+#pragma HLS PIPELINE
 			lines[i].setIndex(i);
 		}
 		for(ap_int<8> v=1;v<=via_num;v++){
+#pragma HLS PIPELINE
 			vias[v].setIndex(v);
 		}
 	}

@@ -105,22 +105,22 @@ bool routing(ap_int<8> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_C,
 	//Board *board = new Board(size_x, size_y, size_z, line_num, via_num);
 	initialize_test(&boardobj, size_x, size_y, size_z);
 
-	bool ret = routing_main(trgt_line_id, penalty_T, penalty_C, penalty_V, &boardobj, output);
+	bool ret = routing_proc(trgt_line_id, penalty_T, penalty_C, penalty_V, &boardobj, output);
 	recordLine(trgt_line_id, &boardobj);
 
 	return ret;
 }
 
-bool routing_main(ap_int<8> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_C, ap_uint<4> penalty_V, Board *board, ap_int<8> *output){
+bool routing_proc(ap_int<8> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_C, ap_uint<4> penalty_V, Board *board, ap_int<8> *output){
 
 	Line* trgt_line = board->line(trgt_line_id);
 	trgt_line->track_index = 0;
 
 	// ボードの初期化
 	IntraBox_4 my_board_1[MAX_BOXES][MAX_BOXES]; // ソース側のボード
-#pragma HLS ARRAY_PARTITION variable=my_board_1 dim=0 complete
+//#pragma HLS ARRAY_PARTITION variable=my_board_1 dim=1 complete
 	IntraBox_4 my_board_2[MAX_BOXES][MAX_BOXES]; // シンク側のボード
-#pragma HLS ARRAY_PARTITION variable=my_board_2 dim=0 complete
+//#pragma HLS ARRAY_PARTITION variable=my_board_2 dim=1 complete
 	IntraBox_4 init = {
 		32767, 32767, 32767, 32767, //INT_MAX,INT_MAX,INT_MAX,INT_MAX,
 		{false,false,false,false},
@@ -129,6 +129,7 @@ bool routing_main(ap_int<8> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penal
 		{false,false,false,false}};
 	for (ap_int<7> y = 0; y < board->getSizeY(); y++) {
 		for (ap_int<7> x = 0; x < board->getSizeX(); x++) {
+#pragma HLS PIPELINE
 			my_board_1[y][x] = init;
 			my_board_2[y][x] = init;
 		}
@@ -136,7 +137,7 @@ bool routing_main(ap_int<8> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penal
 	ap_int<7> start_x, start_y;
 	IntraBox_4* start;
 	Search qu[MAX_SEARCH];
-#pragma HLS ARRAY_PARTITION variable=qu dim=0 complete
+//#pragma HLS ARRAY_PARTITION variable=qu dim=0 complete
 	ap_int<32> qu_head = 0;
 	ap_int<32> qu_tail = 0;
 
@@ -178,6 +179,7 @@ bool routing_main(ap_int<8> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penal
 
 	while (qu_head != qu_tail) {
 #pragma HLS LOOP_TRIPCOUNT min=100 max=100 avg=100
+//#pragma HLS PIPELINE
 
 		Search trgt = qu[qu_head];
 		qu_head++;
@@ -475,6 +477,7 @@ bool routing_main(ap_int<8> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penal
 		}
 
 		for(ap_int<8> i=1;i<=board->getViaNum();i++){
+#pragma HLS PIPELINE
 			Via* trgt_via = board->via(i);
 			if(trgt_via->getSourceZ()!=start_z || trgt_via->getSinkZ()!=end_z) continue;
 			if(sp_via_id > 0 && sp_via_id != i) continue;
@@ -522,6 +525,7 @@ bool routing_main(ap_int<8> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penal
 
 	while (qu_head != qu_tail) {
 #pragma HLS LOOP_TRIPCOUNT min=100 max=100 avg=100
+//#pragma HLS PIPELINE
 
 		Search trgt = qu[qu_head];
 		qu_head++;
@@ -879,6 +883,7 @@ if (debug_option) { /*** デバッグ用*/
 	ap_int<7> now_y = trgt_line->getSinkY();
 	ap_int<8> intra_box = -1;
 	ap_int<8> next_direction_array[4];
+//#pragma HLS ARRAY_PARTITION variable=next_direction_array dim=0 complete
 	ap_int<8> next_direction_array_index = 0;
 	ap_int<8> next_count, next_id;
 
@@ -891,6 +896,7 @@ if (debug_option) { /*** デバッグ用*/
 
 		intra_box = NE;
 		for (ap_int<16> loop_count = 0; loop_count <= MAX_TRACKS; loop_count++) {
+//#pragma HLS PIPELINE II=10000
 
 			Point p = {now_x, now_y, end_z};
 			trgt_line->track[trgt_line->track_index] = p; (trgt_line->track_index)++;
@@ -962,6 +968,7 @@ if( debug_option ) { cout << "(" << now_x << "," << now_y << "," << end_z << ")"
 
 	intra_box = NE;
 	for (ap_int<16> loop_count = 0; loop_count <= MAX_TRACKS; loop_count++) {
+//#pragma HLS PIPELINE II=10000
 
 		Point p = {now_x, now_y, start_z};
 		trgt_line->track[trgt_line->track_index] = p; (trgt_line->track_index)++;
@@ -1034,6 +1041,23 @@ if( debug_option ) { cout << endl; }
  * Phase 4: ターゲットラインのトラックを整理
  ******************************** */
 
+	routing_arrange(trgt_line);
+
+	// delete は高位合成できないから放置。
+	/*for(int y=0;y<board->getSizeY();y++){
+		for(int x=0;x<board->getSizeX();x++){
+			delete my_board_1[y][x];
+			delete my_board_2[y][x];
+		}
+	}*/
+
+	*output = 0;
+	return true;
+}
+
+void routing_arrange(Line *trgt_line) {
+#pragma HLS INLINE
+
 	bool retry = true;
 	while(retry){
 #pragma HLS LOOP_TRIPCOUNT min=10 max=10 avg=10
@@ -1042,9 +1066,12 @@ if( debug_option ) { cout << endl; }
 
 		// トラックを一時退避
 		Point tmp_track[MAX_TRACKS];
-#pragma HLS ARRAY_PARTITION variable=tmp_track dim=0 complete
+//#pragma HLS ARRAY_PARTITION variable=tmp_track cyclic factor=8 dim=1 partition
 		int tmp_track_index = 0;
 		for (ap_int<16> i = 0; i < trgt_line->track_index; i++) {
+//#pragma HLS PIPELINE rewind
+//#pragma HLS UNROLL factor=8
+#pragma HLS PIPELINE
 			tmp_track[tmp_track_index] = trgt_line->track[i];
 			tmp_track_index++;
 		}
@@ -1053,6 +1080,7 @@ if( debug_option ) { cout << endl; }
 		trgt_line->track_index = 0;
 		for (ap_int<16> i = 0; i < tmp_track_index; i++) {
 #pragma HLS LOOP_TRIPCOUNT min=10 max=80 avg=20
+#pragma HLS PIPELINE
 			if (tmp_track_index - 2 <= i) {
 				trgt_line->track[trgt_line->track_index] = tmp_track[i];
 				(trgt_line->track_index)++;
@@ -1067,20 +1095,10 @@ if( debug_option ) { cout << endl; }
 			(trgt_line->track_index)++;
 		}
 	}
-
-	// delete は高位合成できないから放置。
-	/*for(int y=0;y<board->getSizeY();y++){
-		for(int x=0;x<board->getSizeX();x++){
-			delete my_board_1[y][x];
-			delete my_board_2[y][x];
-		}
-	}*/
-
-	*output = 0;
-	return true;
 }
 
 bool isInserted_1(ap_int<7> x, ap_int<7> y, ap_int<5> z, Board *board){ // ソース層用
+//#pragma HLS INLINE
 
 	// 盤面の端
 	if(x<0 || x>(board->getSizeX()-1)) return false;
@@ -1094,6 +1112,7 @@ bool isInserted_1(ap_int<7> x, ap_int<7> y, ap_int<5> z, Board *board){ // ソ�
 }
 
 bool isInserted_2(ap_int<7> x, ap_int<7> y, ap_int<5> z, Board *board){ // シンク層用
+//#pragma HLS INLINE
 
 	// 盤面の端
 	if(x<0 || x>(board->getSizeX()-1)) return false;
@@ -1107,6 +1126,7 @@ bool isInserted_2(ap_int<7> x, ap_int<7> y, ap_int<5> z, Board *board){ // シ�
 }
 
 int countLine(ap_int<7> x, ap_int<7> y, ap_int<5> z, Board *board){
+//#pragma HLS INLINE
 
 	Box* trgt_box = board->box(x,y,z);
 
