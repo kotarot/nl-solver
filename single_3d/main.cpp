@@ -103,21 +103,21 @@ if( print_option ) { printBoard(); }
 		
 		recordLine(i);
 	}
-
-	via_priority = 0;
 	
+	via_priority = 0;
+
 	// 探索スタート!!
 	// 外ループ
 	for (int m = 2; m <= outer_loops + 1; m++) {
 	
 		// 解導出フラグ
 		bool complete = false;
-
+		
 		if (m / 10 > via_priority){
 			via_priority++;
 if( print_option ) cout << "Via priority is " << via_priority << endl;
 		}
-		
+
 		// 内ループ
 		for (int n = 1; n <= I_LOOP; n++) { // 内ループ
 
@@ -293,8 +293,10 @@ void initialize(char* filename){
 			if(!is.eof()){
 				int vid, vp;
 				is >> vid >> vp;
-				line_to_viaid[i] = vid;
-				line_to_via_priority[i] = vp;
+				if(vid>=0 && vid<100){
+					line_to_viaid[i] = vid;
+					line_to_via_priority[i] = vp;
+				}
 			}
 
 			// 初期状態で数字が隣接しているか判断
