@@ -59,7 +59,6 @@ using namespace std;
 #define MAX_TRACKS 80
 #define MAX_SEARCH 1000
 
-
 struct Point{
 	ap_int<7> x;
 	ap_int<7> y;

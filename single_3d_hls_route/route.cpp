@@ -105,13 +105,13 @@ bool routing(ap_int<8> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_C,
 	//Board *board = new Board(size_x, size_y, size_z, line_num, via_num);
 	initialize_test(&boardobj, size_x, size_y, size_z);
 
-	bool ret = _routing(trgt_line_id, penalty_T, penalty_C, penalty_V, &boardobj, output);
+	bool ret = routing_main(trgt_line_id, penalty_T, penalty_C, penalty_V, &boardobj, output);
 	recordLine(trgt_line_id, &boardobj);
 
 	return ret;
 }
 
-bool _routing(ap_int<8> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_C, ap_uint<4> penalty_V, Board *board, ap_int<8> *output){
+bool routing_main(ap_int<8> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_C, ap_uint<4> penalty_V, Board *board, ap_int<8> *output){
 
 	Line* trgt_line = board->line(trgt_line_id);
 	trgt_line->track_index = 0;
@@ -142,7 +142,9 @@ bool _routing(ap_int<8> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_C
 	ap_int<7> end_z = trgt_line->getSinkZ();
 
 
-	/*** ソース層の探索 ***/
+/* ********************************
+ * Phase 1: ソース層の探索
+ ******************************** */
 
 	// スタート地点の設定
 	start_x = trgt_line->getSourceX();
@@ -173,6 +175,7 @@ bool _routing(ap_int<8> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_C
 	}
 
 	while (qu_head != qu_tail) {
+#pragma HLS LOOP_TRIPCOUNT min=100 max=100 avg=100
 
 		Search trgt = qu[qu_head];
 		qu_head++;
@@ -445,7 +448,9 @@ bool _routing(ap_int<8> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_C
 	}
 
 
-	/*** シンク層の判定 ***/
+/* ********************************
+ * Phase 2-1: シンク層の判定
+ ******************************** */
 
 	if(start_z != end_z){
 
@@ -509,9 +514,12 @@ bool _routing(ap_int<8> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_C
 	}
 
 
-	/*** シンク層の探索 ***/
+/* ********************************
+ * Phase 2-2: シンク層の探索
+ ******************************** */
 
 	while (qu_head != qu_tail) {
+#pragma HLS LOOP_TRIPCOUNT min=100 max=100 avg=100
 
 		Search trgt = qu[qu_head];
 		qu_head++;
@@ -872,7 +880,10 @@ if (debug_option) { /*** デバッグ用*/
 	ap_int<8> next_direction_array_index = 0;
 	ap_int<8> next_count, next_id;
 
-	/*** シンク層のバックトレース ***/
+
+/* ********************************
+ * Phase 3-1: シンク層のバックトレース
+ ******************************** */
 
 	if(start_z != end_z){
 
@@ -943,7 +954,9 @@ if( debug_option ) { cout << "(" << now_x << "," << now_y << "," << end_z << ")"
 	}
 
 
-	/*** ソース層のバックトレース ***/
+/* ********************************
+ * Phase 3-2: ソース層のバックトレース
+ ******************************** */
 
 	intra_box = NE;
 	for (ap_int<16> loop_count = 0; loop_count <= MAX_TRACKS; loop_count++) {
@@ -1015,10 +1028,14 @@ if( debug_option ) { cout << endl; }
 #endif
 
 
-	/*** ターゲットラインのトラックを整理 ***/
+/* ********************************
+ * Phase 4: ターゲットラインのトラックを整理
+ ******************************** */
 
 	bool retry = true;
 	while(retry){
+#pragma HLS LOOP_TRIPCOUNT min=10 max=10 avg=10
+
 		retry = false;
 
 		// トラックを一時退避
@@ -1032,6 +1049,7 @@ if( debug_option ) { cout << endl; }
 		// 冗長部分を排除してトラックを整理
 		trgt_line->track_index = 0;
 		for (ap_int<16> i = 0; i < tmp_track_index; i++) {
+#pragma HLS LOOP_TRIPCOUNT min=10 max=80 avg=20
 			if (tmp_track_index - 2 <= i) {
 				trgt_line->track[trgt_line->track_index] = tmp_track[i];
 				(trgt_line->track_index)++;
@@ -1104,12 +1122,12 @@ void recordLine(ap_int<8> trgt_line_id, Board *board){
 	Line* trgt_line = board->line(trgt_line_id);
 	Point *trgt_track = trgt_line->track;
 
-	int old_x = trgt_line->getSinkX();
-	int old_y = trgt_line->getSinkY();
-	int old_z = trgt_line->getSinkZ();
-	int new_x = (trgt_track[1]).x; //int new_x = (trgt_track + 1)->x;
-	int new_y = (trgt_track[1]).y; //int new_y = (trgt_track + 1)->y;
-	int new_z = (trgt_track[1]).z; //int new_z = (trgt_track + 1)->z;
+	ap_int<7> old_x = trgt_line->getSinkX();
+	ap_int<7> old_y = trgt_line->getSinkY();
+	ap_int<5> old_z = trgt_line->getSinkZ();
+	ap_int<7> new_x = (trgt_track[1]).x; //int new_x = (trgt_track + 1)->x;
+	ap_int<7> new_y = (trgt_track[1]).y; //int new_y = (trgt_track + 1)->y;
+	ap_int<5> new_z = (trgt_track[1]).z; //int new_z = (trgt_track + 1)->z;
 	Box* old_box = board->box(old_x,old_y,old_z);
 	Box* new_box = board->box(new_x,new_y,new_z);
 
@@ -1130,7 +1148,9 @@ void recordLine(ap_int<8> trgt_line_id, Board *board){
 	old_x = new_x; old_y = new_y; old_z = new_z;
 	old_box = new_box;
 
-	for(int i=2;i < (trgt_line->track_index) -1 ;i++){
+	for (ap_int<16> i = 2; i < (trgt_line->track_index) - 1; i++) {
+#pragma HLS LOOP_TRIPCOUNT min=2 max=160 avg=40
+
 		new_x = (trgt_track[i]).x; //new_x = (trgt_track + i)->x;
 		new_y = (trgt_track[i]).y; //new_y = (trgt_track + i)->y;
 		new_z = (trgt_track[i]).z; //new_z = (trgt_track + i)->z;

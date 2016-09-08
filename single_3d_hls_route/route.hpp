@@ -15,7 +15,7 @@
 
 // ルーティング
 bool routing(ap_int<8> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_C, ap_uint<4> penalty_V, /*Board *board,*/ ap_int<8> *output);
-bool _routing(ap_int<8> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_C, ap_uint<4> penalty_V, Board *board, ap_int<8> *output);
+bool routing_main(ap_int<8> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_C, ap_uint<4> penalty_V, Board *board, ap_int<8> *output);
 bool isInserted_1(ap_int<7> x, ap_int<7> y, ap_int<5> z, Board *board);
 bool isInserted_2(ap_int<7> x, ap_int<7> y, ap_int<5> z, Board *board);
 int countLine(ap_int<7> x, ap_int<7> y, ap_int<5> z, Board *board);
