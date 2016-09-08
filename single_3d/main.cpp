@@ -7,7 +7,9 @@
 /*******************************************************/
 
 Board* board; // 対象ボード
-int line_to_viaid[100];
+int line_to_viaid[100];			// Lineと対応するViaの内部ID対応
+int line_to_via_priority[100];	// Lineに対応するViaの優先度(*数字が高いほど重要！)
+int via_priority;				// 採用するViaの優先度
 
 int penalty_T; // penalty of "touch"
 int penalty_C; // penalty of "cross"
@@ -101,6 +103,8 @@ if( print_option ) { printBoard(); }
 		
 		recordLine(i);
 	}
+
+	via_priority = 0;
 	
 	// 探索スタート!!
 	// 外ループ
@@ -108,6 +112,11 @@ if( print_option ) { printBoard(); }
 	
 		// 解導出フラグ
 		bool complete = false;
+
+		if (m / 10 > via_priority){
+			via_priority++;
+if( print_option ) cout << "Via priority is " << via_priority << endl;
+		}
 		
 		// 内ループ
 		for (int n = 1; n <= I_LOOP; n++) { // 内ループ
@@ -136,7 +145,10 @@ if( print_option ) { printBoard(); }
 
 			// Via指定
 			if(line_to_viaid[id] != 0){
-				board->line(id)->setSpecifiedVia(line_to_viaid[id]);
+				if(line_to_via_priority[id] >= via_priority)
+					board->line(id)->setSpecifiedVia(line_to_viaid[id]);
+				else
+					board->line(id)->setSpecifiedVia(NOT_USE);
 			}
 
 			// 経路の探索
@@ -279,9 +291,10 @@ void initialize(char* filename){
 
 			// ViaIDが割り当てられている場合は辞書に追加
 			if(!is.eof()){
-				int vid;
-				is >> vid;
+				int vid, vp;
+				is >> vid >> vp;
 				line_to_viaid[i] = vid;
+				line_to_via_priority[i] = vp;
 			}
 
 			// 初期状態で数字が隣接しているか判断
