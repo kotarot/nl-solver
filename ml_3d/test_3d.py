@@ -30,8 +30,8 @@ parser.add_argument('--pickle', '-p', default=None, type=str,
 #                    help='Limit level of coverage expansion (default: 2)')
 #parser.add_argument('--answer', '-a', default=False, action='store_true',
 #                    help='Set on to switch to answer-input mode (default: False)')
-#parser.add_argument('--output', '-o', default=None, type=str,
-#                    help='Path to output fix-file')
+parser.add_argument('--output', '-o', default=None, type=str,
+                    help='Path to output fix-file')
 parser.add_argument('--mode', '-m', default='multi', type=str,
                     help='Output mode : single, *multi (* is default)')
 parser.add_argument('--debug', '-d', default=False, action="store_true",
@@ -40,7 +40,7 @@ args = parser.parse_args()
 
 input_problem = args.input
 input_pickle  = args.pickle
-#output_fix    = args.output
+output_path   = args.output
 mode = args.mode
 debug = args.debug
 
@@ -263,4 +263,4 @@ if mode == 'single':
     for k, v in enumerate(not_assigned_via):
         b.set_via_to_line(v, not_assigned_line[k])
 
-b.output_boards(mode=mode)
+b.output_boards(mode=mode, fpath=outpu_path)

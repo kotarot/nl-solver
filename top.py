@@ -35,7 +35,8 @@ args = parser.parse_args()
 #print args
 
 # 学習データ
-PICKLE = './ml/dump/s{}_u200_e2000_dwindowxb_tnone.pkl'.format(args.size)
+# PICKLE = './ml/dump/s{}_u200_e2000_dwindowxb_tnone.pkl'.format(args.size)
+PICKLE = './ml_3d/dump/s{}_u200_e1000_mddv8_tT01A06.pkl'.format(args.size)
 
 
 def worker_2014():
@@ -85,7 +86,41 @@ def worker_2015(level):
     print 'Worker 2015 [1]:', cmd
     subprocess.call(cmd.strip().split(' '))
 
-    print 'Worker 2014 (fix-flag) Exiting :', p.name, p.pid
+    print 'Worker 2015 (fix-flag) Exiting :', p.name, p.pid
+    sys.stdout.flush()
+
+    return
+
+def worker_2016():
+    """ 2016手法: タッチアンドクロス3D """
+    p = multiprocessing.current_process()
+    print 'Worker 2016 Starting:', p.name, p.pid
+    sys.stdout.flush()
+
+    cmd = './single_3d/solver --loop 500 --output A{}.txt {}.txt'.format(args.input, args.input)
+    print 'Worker 2016 [1]:', cmd
+    subprocess.call(cmd.strip().split(' '))
+
+    print 'Worker 2016 Exiting :', p.name, p.pid
+    sys.stdout.flush()
+
+    return
+
+def worker_2016_ml():
+    """ 2016手法: 機械学習3D＋タッチアンドクロス3D """
+    p = multiprocessing.current_process()
+    print 'Worker 2016 (with ml) Starting:', p.name, p.pid
+    sys.stdout.flush()
+
+    cmd = 'python ./ml_3d/test_3d.py --pickle {} --output {}_ml.txt {}.txt'.format(PICKLE, args.input, args.input)
+    print 'Worker 2016 (with ml) [0]:', cmd
+    subprocess.call(cmd.strip().split(' '))
+
+    cmd = './single_3d/solver --loop 500 --output A{}.txt {}_ml.txt'.format(args.input, args.input)
+    print 'Worker 2016 (with ml) [1]:', cmd
+    subprocess.call(cmd.strip().split(' '))
+
+    print 'Worker 2016 (with ml) Exiting :', p.name, p.pid
     sys.stdout.flush()
 
     return
@@ -94,23 +129,16 @@ def worker_2015(level):
 if __name__ == '__main__':
     jobs = []
 
-    # 2014手法: タッチアンドクロス
-    for i in range(0, 2):
-        p = multiprocessing.Process(name='a-2014', target=worker_2014)
-        #p.daemon = True
-        jobs.append(p)
-        p.start()
-
-    # 2014手法: タッチアンドクロス (fix-flag)
-    for i in range(0, 2):
-        p = multiprocessing.Process(name='a-2014-fix', target=worker_2014fix)
-        #p.daemon = True
-        jobs.append(p)
-        p.start()
-
-    # 2015手法: 機械学習＋タッチアンドクロス (level 0 ~ 3)
+    # 2016手法: タッチアンドクロス3D
     for i in range(0, 4):
-        p = multiprocessing.Process(name='a-2015-l{}'.format(i), target=worker_2015, args=(i,))
+        p = multiprocessing.Process(name='a-2016-{}'.format(i), target=worker_2016)
+        #p.daemon = True
+        jobs.append(p)
+        p.start()
+
+    # 2016手法: 機械学習3D＋タッチアンドクロス3D
+    for i in range(0, 4):
+        p = multiprocessing.Process(name='a-2016-ml-{}'.format(i), target=worker_2016_ml)
         #p.daemon = True
         jobs.append(p)
         p.start()
