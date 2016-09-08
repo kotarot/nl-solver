@@ -17,43 +17,43 @@ public:
 //	static const int NOT_USE = -1;
 
 	Via():x_0(NOT_USE),y_0(NOT_USE),z_0(NOT_USE),x_1(NOT_USE),y_1(NOT_USE),z_1(NOT_USE),used_line_num(0){ index = -1; }
-	Via(int _index):x_0(NOT_USE),y_0(NOT_USE),z_0(NOT_USE),x_1(NOT_USE),y_1(NOT_USE),z_1(NOT_USE),used_line_num(0){index=_index;}
+	Via(ap_uint<7> _index):x_0(NOT_USE),y_0(NOT_USE),z_0(NOT_USE),x_1(NOT_USE),y_1(NOT_USE),z_1(NOT_USE),used_line_num(0){index=_index;}
 	~Via() { ; }
 
-	int getIndex(){return index;}
-	void setIndex(int _index) { index = _index; }
+	ap_int<8> getIndex(){return index;}
+	void setIndex(ap_int<8> _index) { index = _index; }
 
-	void setSourcePort(int x,int y,int z){x_0=x;y_0=y;z_0=z;}
-	int getSourceX(){return x_0;}
-	int getSourceY(){return y_0;}
-	int getSourceZ(){return z_0;}
+	void setSourcePort(ap_int<7> x, ap_int<7> y, ap_int<5> z){x_0=x;y_0=y;z_0=z;}
+	ap_int<7> getSourceX(){return x_0;}
+	ap_int<7> getSourceY(){return y_0;}
+	ap_int<5> getSourceZ(){return z_0;}
 
-	void setSinkPort(int x,int y,int z){x_1=x;y_1=y;z_1=z;}
-	int getSinkX(){return x_1;}
-	int getSinkY(){return y_1;}
-	int getSinkZ(){return z_1;}
+	void setSinkPort(ap_int<7> x, ap_int<7> y, ap_int<5> z){x_1=x;y_1=y;z_1=z;}
+	ap_uint<7> getSinkX(){return x_1;}
+	ap_uint<7> getSinkY(){return y_1;}
+	ap_uint<5> getSinkZ(){return z_1;}
 
 	void changePort(){ // ソースとシンクの交換
-		int tmp_x = x_0;
+		ap_int<7> tmp_x = x_0;
 		x_0 = x_1;
 		x_1 = tmp_x;
-		int tmp_y = y_0;
+		ap_int<7> tmp_y = y_0;
 		y_0 = y_1;
 		y_1 = tmp_y;
-		int tmp_z = z_0;
+		ap_int<7> tmp_z = z_0;
 		z_0 = z_1;
 		z_1 = tmp_z;
 	}
 
 	void incrementUsedLineNum(){used_line_num++;}
 	void decrementUsedLineNum(){used_line_num--;}
-	int getUsedLineNum(){return used_line_num;}
+	ap_int<8> getUsedLineNum(){return used_line_num;}
 
 private:
-	int index;         // ビア番号
-	int x_0, y_0, z_0; // ソースポート
-	int x_1, y_1, z_1; // シンクポート
-	int used_line_num; // 使用数
+	ap_int<8> index;         // ビア番号
+	ap_int<7> x_0, y_0; ap_uint<5> z_0; // ソースポート
+	ap_int<7> x_1, y_1; ap_uint<5> z_1; // シンクポート
+	ap_int<8> used_line_num; // 使用数
 };
 
 #endif

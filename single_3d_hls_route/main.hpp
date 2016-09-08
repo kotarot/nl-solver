@@ -61,9 +61,9 @@ using namespace std;
 
 
 struct Point{
-	int x;
-	int y;
-	int z;
+	ap_int<7> x;
+	ap_int<7> y;
+	ap_int<5> z;
 };
 
 #include "board.hpp"
@@ -72,9 +72,9 @@ struct Point{
 #include "via.hpp"
 
 struct Search{
-	int x;
-	int y;
-	int d; // 方向
+	ap_int<7> x;
+	ap_int<7> y;
+	ap_int<8> d; // 方向
 };
 
 struct Direction{
@@ -86,10 +86,10 @@ struct Direction{
 };
 
 struct IntraBox_4{
-	int ne;
-	int nw;
-	int se;
-	int sw;
+	ap_int<32> ne;
+	ap_int<32> nw;
+	ap_int<32> se;
+	ap_int<32> sw;
 	Direction d_ne;
 	Direction d_nw;
 	Direction d_se;
@@ -103,14 +103,14 @@ struct Direction_R{
 	bool e;	// 東
 	bool w;	// 西
 	// ひとつ前の方向
-	int c_n;
-	int c_s;
-	int c_e;
-	int c_w;
+	ap_int<8> c_n;
+	ap_int<8> c_s;
+	ap_int<8> c_e;
+	ap_int<8> c_w;
 };
 
 struct IntraBox_1{
-	int cost;
+	ap_int<32> cost;
 	Direction_R d;
 };
 

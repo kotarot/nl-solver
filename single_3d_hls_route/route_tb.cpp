@@ -227,7 +227,7 @@ int main() {
 	initialize_test(board, size_x, size_y, size_z);
 #endif
 
-	ap_int<4> status;
+	ap_int<8> status;
 	bool result = routing(1, 0, 0, 0, /*board,*/ &status);
 	//recordLine(1, board);
 	if (result)

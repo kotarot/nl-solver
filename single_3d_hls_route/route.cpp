@@ -48,7 +48,7 @@ unsigned long mt_genrand_int32(int a, int b) {
 /**
  * 問題盤の初期化 (テスト用)
  */
-void initialize_test(Board *board, int size_x, int size_y, int size_z){
+void initialize_test(Board *board, ap_int<7> size_x, ap_int<7> size_y, ap_int<5> size_z){
 
 	{
 		Box* trgt_box_0 = board->box(0, 0, 0);
@@ -75,9 +75,9 @@ void initialize_test(Board *board, int size_x, int size_y, int size_z){
 		trgt_via->setSinkPort(2, 2, 1);
 	}
 
-	for(int z=0;z<size_z;z++){
-		for(int y=0;y<size_y;y++){
-			for(int x=0;x<size_x;x++){
+	for(ap_int<5> z=0;z<size_z;z++){
+		for(ap_int<7> y=0;y<size_y;y++){
+			for(ap_int<7> x=0;x<size_x;x++){
 				Box* trgt_box = board->box(x,y,z);
 				if(!(trgt_box->isTypeNumber() || trgt_box->isTypeVia() || trgt_box->isTypeInterVia()))
 					trgt_box->setTypeBlank();
@@ -87,7 +87,7 @@ void initialize_test(Board *board, int size_x, int size_y, int size_z){
 
 }
 
-bool routing(ap_uint<7> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_C, ap_uint<4> penalty_V, /*Board *board,*/ ap_int<4> *output) {
+bool routing(ap_int<8> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_C, ap_uint<4> penalty_V, /*Board *board,*/ ap_int<8> *output) {
 #pragma HLS INTERFACE s_axilite port=trgt_line_id bundle=AXI4LS
 #pragma HLS INTERFACE s_axilite port=penalty_T bundle=AXI4LS
 #pragma HLS INTERFACE s_axilite port=penalty_C bundle=AXI4LS
@@ -97,9 +97,9 @@ bool routing(ap_uint<7> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_C
 #pragma HLS INTERFACE s_axilite port=return bundle=AXI4LS
 
 	Board boardobj;
-	int size_x = 5, size_y = 6, size_z = 2;
-	int line_num = 1;
-	int via_num = 1;
+	ap_int<7> size_x = 5, size_y = 6; ap_int<5> size_z = 2;
+	ap_int<8> line_num = 1;
+	ap_int<8> via_num = 1;
 
 	boardobj.init(size_x, size_y, size_z, line_num, via_num);
 	//Board *board = new Board(size_x, size_y, size_z, line_num, via_num);
@@ -111,7 +111,7 @@ bool routing(ap_uint<7> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_C
 	return ret;
 }
 
-bool _routing(ap_uint<7> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_C, ap_uint<4> penalty_V, Board *board, ap_int<4> *output){
+bool _routing(ap_int<8> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_C, ap_uint<4> penalty_V, Board *board, ap_int<8> *output){
 
 	Line* trgt_line = board->line(trgt_line_id);
 	trgt_line->track_index = 0;
@@ -125,21 +125,21 @@ bool _routing(ap_uint<7> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_
 		{false,false,false,false},
 		{false,false,false,false},
 		{false,false,false,false}};
-	for (int y = 0; y < board->getSizeY(); y++) {
-		for (int x = 0; x < board->getSizeX(); x++) {
+	for (ap_int<7> y = 0; y < board->getSizeY(); y++) {
+		for (ap_int<7> x = 0; x < board->getSizeX(); x++) {
 			my_board_1[y][x] = init;
 			my_board_2[y][x] = init;
 		}
 	}
-	int start_x, start_y;
+	ap_int<7> start_x, start_y;
 	IntraBox_4* start;
 	//queue<Search> qu;
 	Search qu[MAX_SEARCH];
-	int qu_head = 0;
-	int qu_tail = 0;
+	ap_int<32> qu_head = 0;
+	ap_int<32> qu_tail = 0;
 
-	int start_z = trgt_line->getSourceZ();
-	int end_z = trgt_line->getSinkZ();
+	ap_int<7> start_z = trgt_line->getSourceZ();
+	ap_int<7> end_z = trgt_line->getSinkZ();
 
 
 	/*** ソース層の探索 ***/
@@ -185,13 +185,13 @@ bool _routing(ap_uint<7> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_
 		if(trgt.d == SOUTH){ // 南から来た
 			IntraBox_4* find_ibox = &(my_board_1[trgt.y+1][trgt.x]);
 			// タッチ数
-			int touch_count = countLine(trgt.x,trgt.y,start_z, board) - trgt_box->getSouthNum();
+			ap_int<8> touch_count = countLine(trgt.x,trgt.y,start_z, board) - trgt_box->getSouthNum();
 			if(touch_count < 0){ *output = 10; return false; /*cout << "error! (error: 10)" << endl; exit(10);*/ }
 			// コスト
-			int cost_se = (find_ibox->ne) + ML + touch_count * penalty_T;
-			int cost_ne = (find_ibox->ne) + ML + touch_count * penalty_T + trgt_box->getEastNum() * penalty_C;
-			int cost_sw = (find_ibox->nw) + ML + touch_count * penalty_T;
-			int cost_nw = (find_ibox->nw) + ML + touch_count * penalty_T + trgt_box->getWestNum() * penalty_C;
+			ap_int<32> cost_se = (find_ibox->ne) + ML + touch_count * penalty_T;
+			ap_int<32> cost_ne = (find_ibox->ne) + ML + touch_count * penalty_T + trgt_box->getEastNum() * penalty_C;
+			ap_int<32> cost_sw = (find_ibox->nw) + ML + touch_count * penalty_T;
+			ap_int<32> cost_nw = (find_ibox->nw) + ML + touch_count * penalty_T + trgt_box->getWestNum() * penalty_C;
 			// 南東マス
 			if(cost_se < trgt_ibox->se){
 				update = true;
@@ -244,13 +244,13 @@ bool _routing(ap_uint<7> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_
 		if(trgt.d == WEST){ // 西から来た
 			IntraBox_4* find_ibox = &(my_board_1[trgt.y][trgt.x-1]);
 			// タッチ数
-			int touch_count = countLine(trgt.x,trgt.y,start_z, board) - trgt_box->getWestNum();
+			ap_int<8> touch_count = countLine(trgt.x,trgt.y,start_z, board) - trgt_box->getWestNum();
 			if(touch_count < 0){ *output = 11; return false; /*cout << "error! (error: 11)" << endl; exit(11);*/ }
 			// コスト
-			int cost_nw = (find_ibox->ne) + ML + touch_count * penalty_T;
-			int cost_ne = (find_ibox->ne) + ML + touch_count * penalty_T + trgt_box->getNorthNum() * penalty_C;
-			int cost_sw = (find_ibox->se) + ML + touch_count * penalty_T;
-			int cost_se = (find_ibox->se) + ML + touch_count * penalty_T + trgt_box->getSouthNum() * penalty_C;
+			ap_int<32> cost_nw = (find_ibox->ne) + ML + touch_count * penalty_T;
+			ap_int<32> cost_ne = (find_ibox->ne) + ML + touch_count * penalty_T + trgt_box->getNorthNum() * penalty_C;
+			ap_int<32> cost_sw = (find_ibox->se) + ML + touch_count * penalty_T;
+			ap_int<32> cost_se = (find_ibox->se) + ML + touch_count * penalty_T + trgt_box->getSouthNum() * penalty_C;
 			// 北西マス
 			if(cost_nw < trgt_ibox->nw){
 				update = true;
@@ -303,13 +303,13 @@ bool _routing(ap_uint<7> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_
 		if(trgt.d == NORTH){ // 北から来た
 			IntraBox_4* find_ibox = &(my_board_1[trgt.y-1][trgt.x]);
 			// タッチ数
-			int touch_count = countLine(trgt.x,trgt.y,start_z, board) - trgt_box->getNorthNum();
+			ap_int<8> touch_count = countLine(trgt.x,trgt.y,start_z, board) - trgt_box->getNorthNum();
 			if(touch_count < 0){ *output = 12; return false; /*cout << "error! (error: 12)" << endl; exit(12);*/ }
 			// コスト
-			int cost_ne = (find_ibox->se) + ML + touch_count * penalty_T;
-			int cost_se = (find_ibox->se) + ML + touch_count * penalty_T + trgt_box->getEastNum() * penalty_C;
-			int cost_nw = (find_ibox->sw) + ML + touch_count * penalty_T;
-			int cost_sw = (find_ibox->sw) + ML + touch_count * penalty_T + trgt_box->getWestNum() * penalty_C;
+			ap_int<32> cost_ne = (find_ibox->se) + ML + touch_count * penalty_T;
+			ap_int<32> cost_se = (find_ibox->se) + ML + touch_count * penalty_T + trgt_box->getEastNum() * penalty_C;
+			ap_int<32> cost_nw = (find_ibox->sw) + ML + touch_count * penalty_T;
+			ap_int<32> cost_sw = (find_ibox->sw) + ML + touch_count * penalty_T + trgt_box->getWestNum() * penalty_C;
 			// 北東マス
 			if(cost_ne < trgt_ibox->ne){
 				update = true;
@@ -362,13 +362,13 @@ bool _routing(ap_uint<7> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_
 		if(trgt.d == EAST){ // 東から来た
 			IntraBox_4* find_ibox = &(my_board_1[trgt.y][trgt.x+1]);
 			// タッチ数
-			int touch_count = countLine(trgt.x,trgt.y,start_z, board) - trgt_box->getEastNum();
+			ap_int<8> touch_count = countLine(trgt.x,trgt.y,start_z, board) - trgt_box->getEastNum();
 			if(touch_count < 0){ *output = 13; return false; /*cout << "error! (error: 13)" << endl; exit(13);*/ }
 			// コスト
-			int cost_ne = (find_ibox->nw) + ML + touch_count * penalty_T;
-			int cost_nw = (find_ibox->nw) + ML + touch_count * penalty_T + trgt_box->getNorthNum() * penalty_C;
-			int cost_se = (find_ibox->sw) + ML + touch_count * penalty_T;
-			int cost_sw = (find_ibox->sw) + ML + touch_count * penalty_T + trgt_box->getSouthNum() * penalty_C;
+			ap_int<32> cost_ne = (find_ibox->nw) + ML + touch_count * penalty_T;
+			ap_int<32> cost_nw = (find_ibox->nw) + ML + touch_count * penalty_T + trgt_box->getNorthNum() * penalty_C;
+			ap_int<32> cost_se = (find_ibox->sw) + ML + touch_count * penalty_T;
+			ap_int<32> cost_sw = (find_ibox->sw) + ML + touch_count * penalty_T + trgt_box->getSouthNum() * penalty_C;
 			// 北東マス
 			if(cost_ne < trgt_ibox->ne){
 				update = true;
@@ -449,7 +449,7 @@ bool _routing(ap_uint<7> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_
 
 	if(start_z != end_z){
 
-		int sp_via_id = trgt_line->getSpecifiedVia();
+		ap_int<8> sp_via_id = trgt_line->getSpecifiedVia();
 		if(sp_via_id >= 1 && sp_via_id <= board->getViaNum()){
 			Via* sp_via = board->via(sp_via_id);
 			if(sp_via->getSourceZ()!=start_z || sp_via->getSinkZ()!=end_z){
@@ -457,8 +457,8 @@ bool _routing(ap_uint<7> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_
 				/*cout << "error! (error: 20)" << endl;
 				exit(20);*/
 			}
-			int sp_x = sp_via->getSourceX();
-			int sp_y = sp_via->getSourceY();
+			ap_int<7> sp_x = sp_via->getSourceX();
+			ap_int<7> sp_y = sp_via->getSourceY();
 			if(my_board_1[sp_y][sp_x].ne == INT_MAX || my_board_1[sp_y][sp_x].nw == INT_MAX ||
 			my_board_1[sp_y][sp_x].se == INT_MAX || my_board_1[sp_y][sp_x].sw == INT_MAX){
 				*output = 21; return false;
@@ -467,7 +467,7 @@ bool _routing(ap_uint<7> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_
 			}
 		}
 
-		for(int i=1;i<=board->getViaNum();i++){
+		for(ap_int<8> i=1;i<=board->getViaNum();i++){
 			Via* trgt_via = board->via(i);
 			if(trgt_via->getSourceZ()!=start_z || trgt_via->getSinkZ()!=end_z) continue;
 			if(sp_via_id > 0 && sp_via_id != i) continue;
@@ -524,13 +524,13 @@ bool _routing(ap_uint<7> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_
 		if(trgt.d == SOUTH){ // 南から来た
 			IntraBox_4* find_ibox = &(my_board_2[trgt.y+1][trgt.x]);
 			// タッチ数
-			int touch_count = countLine(trgt.x,trgt.y,end_z, board) - trgt_box->getSouthNum();
+			ap_int<8> touch_count = countLine(trgt.x,trgt.y,end_z, board) - trgt_box->getSouthNum();
 			if(touch_count < 0){ *output = 10; return false; /*cout << "error! (error: 10)" << endl; exit(10);*/ }
 			// コスト
-			int cost_se = (find_ibox->ne) + ML + touch_count * penalty_T;
-			int cost_ne = (find_ibox->ne) + ML + touch_count * penalty_T + trgt_box->getEastNum() * penalty_C;
-			int cost_sw = (find_ibox->nw) + ML + touch_count * penalty_T;
-			int cost_nw = (find_ibox->nw) + ML + touch_count * penalty_T + trgt_box->getWestNum() * penalty_C;
+			ap_int<32> cost_se = (find_ibox->ne) + ML + touch_count * penalty_T;
+			ap_int<32> cost_ne = (find_ibox->ne) + ML + touch_count * penalty_T + trgt_box->getEastNum() * penalty_C;
+			ap_int<32> cost_sw = (find_ibox->nw) + ML + touch_count * penalty_T;
+			ap_int<32> cost_nw = (find_ibox->nw) + ML + touch_count * penalty_T + trgt_box->getWestNum() * penalty_C;
 			// 南東マス
 			if(cost_se < trgt_ibox->se){
 				update = true;
@@ -583,13 +583,13 @@ bool _routing(ap_uint<7> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_
 		if(trgt.d == WEST){ // 西から来た
 			IntraBox_4* find_ibox = &(my_board_2[trgt.y][trgt.x-1]);
 			// タッチ数
-			int touch_count = countLine(trgt.x,trgt.y,end_z, board) - trgt_box->getWestNum();
+			ap_int<8> touch_count = countLine(trgt.x,trgt.y,end_z, board) - trgt_box->getWestNum();
 			if(touch_count < 0){ *output = 11; return false; /*cout << "error! (error: 11)" << endl; exit(11);*/ }
 			// コスト
-			int cost_nw = (find_ibox->ne) + ML + touch_count * penalty_T;
-			int cost_ne = (find_ibox->ne) + ML + touch_count * penalty_T + trgt_box->getNorthNum() * penalty_C;
-			int cost_sw = (find_ibox->se) + ML + touch_count * penalty_T;
-			int cost_se = (find_ibox->se) + ML + touch_count * penalty_T + trgt_box->getSouthNum() * penalty_C;
+			ap_int<32> cost_nw = (find_ibox->ne) + ML + touch_count * penalty_T;
+			ap_int<32> cost_ne = (find_ibox->ne) + ML + touch_count * penalty_T + trgt_box->getNorthNum() * penalty_C;
+			ap_int<32> cost_sw = (find_ibox->se) + ML + touch_count * penalty_T;
+			ap_int<32> cost_se = (find_ibox->se) + ML + touch_count * penalty_T + trgt_box->getSouthNum() * penalty_C;
 			// 北西マス
 			if(cost_nw < trgt_ibox->nw){
 				update = true;
@@ -642,13 +642,13 @@ bool _routing(ap_uint<7> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_
 		if(trgt.d == NORTH){ // 北から来た
 			IntraBox_4* find_ibox = &(my_board_2[trgt.y-1][trgt.x]);
 			// タッチ数
-			int touch_count = countLine(trgt.x,trgt.y,end_z, board) - trgt_box->getNorthNum();
+			ap_int<8> touch_count = countLine(trgt.x,trgt.y,end_z, board) - trgt_box->getNorthNum();
 			if(touch_count < 0){ *output = 12; return false; /*cout << "error! (error: 12)" << endl; exit(12);*/ }
 			// コスト
-			int cost_ne = (find_ibox->se) + ML + touch_count * penalty_T;
-			int cost_se = (find_ibox->se) + ML + touch_count * penalty_T + trgt_box->getEastNum() * penalty_C;
-			int cost_nw = (find_ibox->sw) + ML + touch_count * penalty_T;
-			int cost_sw = (find_ibox->sw) + ML + touch_count * penalty_T + trgt_box->getWestNum() * penalty_C;
+			ap_int<32> cost_ne = (find_ibox->se) + ML + touch_count * penalty_T;
+			ap_int<32> cost_se = (find_ibox->se) + ML + touch_count * penalty_T + trgt_box->getEastNum() * penalty_C;
+			ap_int<32> cost_nw = (find_ibox->sw) + ML + touch_count * penalty_T;
+			ap_int<32> cost_sw = (find_ibox->sw) + ML + touch_count * penalty_T + trgt_box->getWestNum() * penalty_C;
 			// 北東マス
 			if(cost_ne < trgt_ibox->ne){
 				update = true;
@@ -701,13 +701,13 @@ bool _routing(ap_uint<7> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_
 		if(trgt.d == EAST){ // 東から来た
 			IntraBox_4* find_ibox = &(my_board_2[trgt.y][trgt.x+1]);
 			// タッチ数
-			int touch_count = countLine(trgt.x,trgt.y,end_z, board) - trgt_box->getEastNum();
+			ap_int<8> touch_count = countLine(trgt.x,trgt.y,end_z, board) - trgt_box->getEastNum();
 			if(touch_count < 0){ *output = 13; return false; /*cout << "error! (error: 13)" << endl; exit(13);*/ }
 			// コスト
-			int cost_ne = (find_ibox->nw) + ML + touch_count * penalty_T;
-			int cost_nw = (find_ibox->nw) + ML + touch_count * penalty_T + trgt_box->getNorthNum() * penalty_C;
-			int cost_se = (find_ibox->sw) + ML + touch_count * penalty_T;
-			int cost_sw = (find_ibox->sw) + ML + touch_count * penalty_T + trgt_box->getSouthNum() * penalty_C;
+			ap_int<32> cost_ne = (find_ibox->nw) + ML + touch_count * penalty_T;
+			ap_int<32> cost_nw = (find_ibox->nw) + ML + touch_count * penalty_T + trgt_box->getNorthNum() * penalty_C;
+			ap_int<32> cost_se = (find_ibox->sw) + ML + touch_count * penalty_T;
+			ap_int<32> cost_sw = (find_ibox->sw) + ML + touch_count * penalty_T + trgt_box->getSouthNum() * penalty_C;
 			// 北東マス
 			if(cost_ne < trgt_ibox->ne){
 				update = true;
@@ -865,19 +865,19 @@ if (debug_option) { /*** デバッグ用*/
 }
 #endif
 
-	int now_x = trgt_line->getSinkX();
-	int now_y = trgt_line->getSinkY();
-	int intra_box = -1;
-	int next_direction_array[4];
-	int next_direction_array_index = 0;
-	int next_count, next_id;
+	ap_int<7> now_x = trgt_line->getSinkX();
+	ap_int<7> now_y = trgt_line->getSinkY();
+	ap_int<8> intra_box = -1;
+	ap_int<8> next_direction_array[4];
+	ap_int<8> next_direction_array_index = 0;
+	ap_int<8> next_count, next_id;
 
 	/*** シンク層のバックトレース ***/
 
 	if(start_z != end_z){
 
 		intra_box = NE;
-		for (int loop_count = 0; loop_count <= MAX_TRACKS; loop_count++) {
+		for (ap_int<16> loop_count = 0; loop_count <= MAX_TRACKS; loop_count++) {
 
 			Point p = {now_x, now_y, end_z};
 			trgt_line->track[trgt_line->track_index] = p; (trgt_line->track_index)++;
@@ -946,7 +946,7 @@ if( debug_option ) { cout << "(" << now_x << "," << now_y << "," << end_z << ")"
 	/*** ソース層のバックトレース ***/
 
 	intra_box = NE;
-	for (int loop_count = 0; loop_count <= MAX_TRACKS; loop_count++) {
+	for (ap_int<16> loop_count = 0; loop_count <= MAX_TRACKS; loop_count++) {
 
 		Point p = {now_x, now_y, start_z};
 		trgt_line->track[trgt_line->track_index] = p; (trgt_line->track_index)++;
@@ -1024,14 +1024,14 @@ if( debug_option ) { cout << endl; }
 		// トラックを一時退避
 		Point tmp_track[MAX_TRACKS];
 		int tmp_track_index = 0;
-		for (int i = 0; i < trgt_line->track_index; i++) {
+		for (ap_int<16> i = 0; i < trgt_line->track_index; i++) {
 			tmp_track[tmp_track_index] = trgt_line->track[i];
 			tmp_track_index++;
 		}
 
 		// 冗長部分を排除してトラックを整理
 		trgt_line->track_index = 0;
-		for (int i = 0; i < tmp_track_index; i++) {
+		for (ap_int<16> i = 0; i < tmp_track_index; i++) {
 			if (tmp_track_index - 2 <= i) {
 				trgt_line->track[trgt_line->track_index] = tmp_track[i];
 				(trgt_line->track_index)++;
@@ -1059,7 +1059,7 @@ if( debug_option ) { cout << endl; }
 	return true;
 }
 
-bool isInserted_1(int x,int y,int z, Board *board){ // ソース層用
+bool isInserted_1(ap_int<7> x, ap_int<7> y, ap_int<5> z, Board *board){ // ソース層用
 
 	// 盤面の端
 	if(x<0 || x>(board->getSizeX()-1)) return false;
@@ -1072,7 +1072,7 @@ bool isInserted_1(int x,int y,int z, Board *board){ // ソース層用
 	return true;
 }
 
-bool isInserted_2(int x,int y,int z, Board *board){ // シンク層用
+bool isInserted_2(ap_int<7> x, ap_int<7> y, ap_int<5> z, Board *board){ // シンク層用
 
 	// 盤面の端
 	if(x<0 || x>(board->getSizeX()-1)) return false;
@@ -1085,11 +1085,11 @@ bool isInserted_2(int x,int y,int z, Board *board){ // シンク層用
 	return true;
 }
 
-int countLine(int x,int y,int z, Board *board){
+int countLine(ap_int<7> x, ap_int<7> y, ap_int<5> z, Board *board){
 
 	Box* trgt_box = board->box(x,y,z);
 
-	int count = 0;
+	ap_int<8> count = 0;
 	count += trgt_box->getNorthNum();
 	count += trgt_box->getEastNum();
 	count += trgt_box->getSouthNum();
@@ -1099,7 +1099,7 @@ int countLine(int x,int y,int z, Board *board){
 	return count/2;
 }
 
-void recordLine(ap_uint<7> trgt_line_id, Board *board){
+void recordLine(ap_int<8> trgt_line_id, Board *board){
 
 	Line* trgt_line = board->line(trgt_line_id);
 	Point *trgt_track = trgt_line->track;

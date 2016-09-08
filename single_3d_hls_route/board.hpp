@@ -20,26 +20,26 @@
 class Board{
 public:
 	Board(){;}
-	Board(int _x,int _y,int _z,int _ln,int _vi){
+	Board(ap_int<7> _x, ap_int<7> _y, ap_int<6> _z, ap_int<8> _ln, ap_int<8> _vi){
 		size_x = _x;
 		size_y = _y;
 		size_z = _z;
 		line_num = _ln;
 		via_num = _vi;
 
-		for(int z=0;z<size_z;z++){
-			for(int y=0;y<size_y;y++){
-				for(int x=0;x<size_x;x++){
+		for(ap_int<5> z=0;z<size_z;z++){
+			for(ap_int<7> y=0;y<size_y;y++){
+				for(ap_int<7> x=0;x<size_x;x++){
 					boxes[z][y][x].setX(x);
 					boxes[z][y][x].setY(y);
 					boxes[z][y][x].setZ(z);
 				}
 			}
 		}
-		for(int i=1;i<=line_num;i++){
+		for(ap_int<8> i=1;i<=line_num;i++){
 			lines[i].setIndex(i);
 		}
-		for(int v=1;v<=via_num;v++){
+		for(ap_int<8> v=1;v<=via_num;v++){
 			vias[v].setIndex(v);
 		}
 	}
@@ -47,46 +47,46 @@ public:
 		; // デストラクタ（要メモリ解放）
 	}
 
-	void init(int _x,int _y,int _z,int _ln,int _vi){
+	void init(ap_int<7> _x, ap_int<7> _y, ap_int<5> _z, ap_int<8> _ln, ap_int<8> _vi){
 		size_x = _x;
 		size_y = _y;
 		size_z = _z;
 		line_num = _ln;
 		via_num = _vi;
 
-		for(int z=0;z<size_z;z++){
-			for(int y=0;y<size_y;y++){
-				for(int x=0;x<size_x;x++){
+		for(ap_int<5> z=0;z<size_z;z++){
+			for(ap_int<7> y=0;y<size_y;y++){
+				for(ap_int<7> x=0;x<size_x;x++){
 					boxes[z][y][x].setX(x);
 					boxes[z][y][x].setY(y);
 					boxes[z][y][x].setZ(z);
 				}
 			}
 		}
-		for(int i=1;i<=line_num;i++){
+		for(ap_int<8> i=1;i<=line_num;i++){
 			lines[i].setIndex(i);
 		}
-		for(int v=1;v<=via_num;v++){
+		for(ap_int<8> v=1;v<=via_num;v++){
 			vias[v].setIndex(v);
 		}
 	}
 
-	int getSizeX(){return size_x;}
-	int getSizeY(){return size_y;}
-	int getSizeZ(){return size_z;}
-	int getLineNum(){return line_num;}
-	int getViaNum(){return via_num;}
+	ap_int<7> getSizeX(){return size_x;}
+	ap_int<7> getSizeY(){return size_y;}
+	ap_int<5> getSizeZ(){return size_z;}
+	ap_int<8> getLineNum(){return line_num;}
+	ap_int<8> getViaNum(){return via_num;}
 
-	Box* box(int x,int y,int z){return &(boxes[z][y][x]);} // マスの取得
-	Line* line(int idx){return &(lines[idx]);}             // ラインの取得
-	Via* via(int idx){return &(vias[idx]);}                // ビアの取得
+	Box* box(ap_int<7> x, ap_int<7> y, ap_int<5> z){return &(boxes[z][y][x]);} // マスの取得
+	Line* line(ap_int<8> idx){return &(lines[idx]);}             // ラインの取得
+	Via* via(ap_int<8> idx){return &(vias[idx]);}                // ビアの取得
 
 private:
-	int size_x;   // X方向サイズ
-	int size_y;   // Y方向サイズ
-	int size_z;   // Z方向サイズ
-	int line_num; // ライン数
-	int via_num;  // ビア数
+	ap_int<7> size_x;   // X方向サイズ
+	ap_int<7> size_y;   // Y方向サイズ
+	ap_int<5> size_z;   // Z方向サイズ
+	ap_int<8> line_num; // ライン数
+	ap_int<8> via_num;  // ビア数
 	Box boxes[MAX_LAYER][MAX_BOXES][MAX_BOXES]; // マスの集合
 	Line lines[MAX_LINES + 1];                  // ラインの集合
 	Via vias[MAX_LINES + 1];                    // ビアの集合
