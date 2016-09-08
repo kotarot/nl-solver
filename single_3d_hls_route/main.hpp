@@ -50,10 +50,13 @@ using namespace std;
 #define I_LOOP 2000 // 内ループ回数
 
 // 各種設定値
-#define MAX_BOXES 40
-#define MAX_LAYER 8
+//#define MAX_BOXES 40
+#define MAX_BOXES 20
+//#define MAX_LAYER 8
+#define MAX_LAYER 2
 #define MAX_LINES 100
-#define MAX_TRACKS 160
+//#define MAX_TRACKS 160
+#define MAX_TRACKS 80
 #define MAX_SEARCH 1000
 
 
