@@ -12,10 +12,6 @@
 #include <fstream>
 #include <sstream>
 
-//#include <map>
-//#include <vector>
-//#include <queue>
-
 #include <assert.h>
 #include <getopt.h>
 #include <limits.h>
