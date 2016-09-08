@@ -227,14 +227,14 @@ int main() {
 	initialize_test(board, size_x, size_y, size_z);
 #endif
 
-	ap_int<8> status;
-	bool result = routing(1, 0, 0, 0, /*board,*/ &status);
-	//recordLine(1, board);
+	//ap_int<8> status;
+	ap_int<8> rawboard[MAX_LAYER][MAX_BOXES][MAX_BOXES];
+	bool result = routing(1, 0, 0, 0, /*board, &status*/ rawboard);
 	if (result)
 		cout << "Test Passed!" << endl;
 	else
 		cout << "Test Failed!" << endl;
-	cout << "status = " << status << endl;
+	//cout << "status = " << status << endl;
 
 #if 0
 	printSolution(board);
