@@ -8,6 +8,7 @@ class Board:
 		self.vias = {}
 		self.via_to_line = {}
 		self.via_internal_id = {}
+		self.via_priority = {}
 		self.n_dims = n_dims
 		self.n_dims_half = n_dims / 2
 
@@ -137,15 +138,15 @@ class Board:
 
 		tvia = self.vias[name][0]
 
-		res = None
-
 		if z == maxz:
 			res = minz
 		elif z == minz:
 			res = maxz
+		else:
+			res = None
 
 		if not res is None:
-			return self.search_via(x=tvia[1][0], y=tvia[1][1], z=res)
+			return self.search_via(x=tvia[0], y=tvia[1], z=res)[0][1]
 		else:
 			return None
 
@@ -155,6 +156,11 @@ class Board:
 		return self.lines.keys()
 	def get_via_internal_id(self, _key):
 		return self.via_internal_id[_key]
+	def get_via_priority(self, _key):
+		if not _key in self.via_priority:
+			return None
+		else:
+			return self.via_priority[_key]
 
 	"""
 	周囲+/-distマスの状況を返す．
@@ -223,6 +229,13 @@ class Board:
 		else:
 			self.via_to_line[via] = line
 
+	def set_via_priority(self, via, priority):
+
+		if priority is None:
+			self.via_priority.pop(via)
+		else:
+			self.via_priority[via] = priority
+
 	"""
 	単層形式で出力
 	"""
@@ -277,7 +290,8 @@ class Board:
 				for k2, v2 in self.via_to_line.items():
 					if v2 == k:
 						_line_to_via = self.get_via_internal_id(k2)
-						txt = "{} {}".format(txt, _line_to_via)
+						_via_priority = self.get_via_priority(k2)
+						txt = "{} {} {}".format(txt, _line_to_via, _via_priority)
 				stxt.append(txt)
 			for k, _vias in self.vias.items():
 				txt = "VIA#{}".format(k)

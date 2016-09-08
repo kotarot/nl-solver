@@ -32,15 +32,17 @@ parser.add_argument('--pickle', '-p', default=None, type=str,
 #                    help='Set on to switch to answer-input mode (default: False)')
 #parser.add_argument('--output', '-o', default=None, type=str,
 #                    help='Path to output fix-file')
-parser.add_argument('--mode', '-m', default='single', type=str,
-                    help='Output mode : *single, multi (* is default)')
+parser.add_argument('--mode', '-m', default='multi', type=str,
+                    help='Output mode : single, *multi (* is default)')
+parser.add_argument('--debug', '-d', default=False, action="store_true",
+                    help='Debug option')
 args = parser.parse_args()
-print args
 
 input_problem = args.input
 input_pickle  = args.pickle
 #output_fix    = args.output
 mode = args.mode
+debug = args.debug
 
 # (1) pickle ファイル名から dims を読み取る
 # (2) pickle ファイル名から method を読み取る
@@ -127,8 +129,8 @@ via_candidates = []
 
 # 結果を見る
 for z in range(board_z):
-    print 'LAYER {}'.format(z + 1)
-    print 'Vias : {}'.format(b.search_via(z=z+1))
+    if debug : print 'LAYER {}'.format(z + 1)
+    if debug : print 'Vias : {}'.format(b.search_via(z=z+1))
     for k, d in enumerate(result[z].data):
 
         dlist = sorted(enumerate(d), key=lambda x: x[1], reverse=True)
@@ -136,7 +138,7 @@ for z in range(board_z):
         # dist = np.argmax(d)
         line = b.search_line(names[z][k], z=z+1)
         # print names[z][k], num_to_dd(dist), line
-        print names[z][k], num_to_dd(dlist[0][0]), line
+        if debug : print names[z][k], num_to_dd(dlist[0][0]), line
 
         vias = []
         _x, _y, _z = line
@@ -184,7 +186,6 @@ for z in range(board_z):
 
         # print "  Via candidates:"
         for i, v in enumerate(vias):
-            # print "    {}, {} ({})".format(i, v[0], v[1])
             via_candidates.append({'layer':z+1, 'line':names[z][k], 'candidates':v})
 
 via_candidates = sorted(via_candidates, key=lambda v: v['candidates'][1], reverse=True)
@@ -192,38 +193,49 @@ via_candidates = sorted(via_candidates, key=lambda v: v['candidates'][1], revers
 vias_key = b.get_vias_key()
 lines_key = b.get_lines_key()
 
-assigned_vias_key = {}
+queued_vias = {}
 assigend_lines = {}
-confirmed_vias = {}
+assigned_vias = {}
 
 # ここでvia割り当て作業
 for v in via_candidates:
     _key = v['candidates'][0][0]
     _layer = v['layer']
     _line = v['line']
-    # print _key, v
-    if not _key in assigned_vias_key:
+    # ビアと層が対応しないときは飛ばす
+    _via_z = v['candidates'][0][1][2]
+    _opposite_z = b.get_opposite_via(_key, _via_z)[2]
+    if not (_via_z == _layer or _opposite_z == _layer):
+        continue
+    # Viaがキューに並んでいないとき
+    if not _key in queued_vias:
+        # そのLineがすでに割り当てられているときはパス
         if _line in assigend_lines:
             pass
+        # _keyのViaのキューを作る
         else:
-            assigned_vias_key[_key] = []
-            assigned_vias_key[_key].append({'layer':_layer, 'line':_line, 'via':v['candidates'][0]})
-            print "assign: ", _key, v 
-    elif not _key in confirmed_vias:
+            queued_vias[_key] = []
+            queued_vias[_key].append({'layer':_layer, 'line':_line, 'via':v['candidates'][0]})
+            if debug : print "assign: ", _key, v
+    # 割り当てが済んでいないビアのとき
+    elif not _key in assigned_vias:
+        # そのLineの割り当てが済んでいないとき
         if not _line in assigend_lines:
             flag = True
-            for v2 in assigned_vias_key[_key]:
+            # キューの中に違う層で同じLineが並んでいないか確認
+            for v2 in queued_vias[_key]:
+                # 違う層で同じLineが既に並んでいたら，ViaをLineに割り当て
                 if v2['layer'] != _layer and v2['line'] == _line:
-                    assigned_vias_key[_key].append({'layer':_layer, 'line':_line, 'via':v['candidates'][0]})
+                    queued_vias[_key].append({'layer':_layer, 'line':_line, 'via':v['candidates'][0]})
                     assigend_lines[_line] = _key
-                    confirmed_vias[_key] = {'line':_line, 'via':v['candidates'][0][1], 'prob':v['candidates'][1]}
+                    assigned_vias[_key] = {'line':_line, 'via':v['candidates'][0][1], 'prob':v['candidates'][1]}
                     flag = False
-                    print "assign decide: ", _key, v 
+                    if debug : print "assign decide: ", _key, v 
                 else:
                     pass
             if flag:
-                assigned_vias_key[_key].append({'layer':_layer, 'line':_line, 'via':v['candidates'][0]})
-                print "assign: ", _key, v 
+                queued_vias[_key].append({'layer':_layer, 'line':_line, 'via':v['candidates'][0]})
+                if debug : print "assign: ", _key, v 
         else:
             pass
     else:
@@ -233,7 +245,7 @@ for v in via_candidates:
 not_assigned_via = []
 not_assigned_line = []
 for v in vias_key:
-    if not v in confirmed_vias:
+    if not v in assigned_vias:
         not_assigned_via.append(v)
 for v in lines_key:
     if not v in assigend_lines:
@@ -241,10 +253,11 @@ for v in lines_key:
 
 random.shuffle(not_assigned_via)
 
-for k, v in sorted(confirmed_vias.items(), key=lambda x: x[1]['prob'], reverse=True):
-    print k, v
-    if mode == 'single' or v['prob']>10:
+for idx, (k, v) in enumerate(sorted(assigned_vias.items(), key=lambda x: x[1]['prob'], reverse=True)):
+    if debug : print idx, k, v
+    if mode == 'single' or v['prob']>0:
         b.set_via_to_line(k, v['line'])
+        b.set_via_priority(k, idx)
 
 if mode == 'single':
     for k, v in enumerate(not_assigned_via):
