@@ -239,7 +239,7 @@ class Board:
 	"""
 	単層形式で出力
 	"""
-	def output_boards(self, fpath="./problem", mode="single"):
+	def output_boards(self, fpath="./problem_3D.txt", mode="single"):
 
 		assert(mode in ['single', 'multi'])
 
@@ -300,7 +300,7 @@ class Board:
 				stxt.append(txt)
 			stxt = map(lambda x: x+"\n", stxt)
 
-			fn = "{}_{}.txt".format(fpath, "3D")
+			fn = fpath
 			fp = open(fn, 'w')
 			fp.writelines(stxt)
 			fp.close()

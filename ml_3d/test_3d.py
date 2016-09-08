@@ -263,4 +263,4 @@ if mode == 'single':
     for k, v in enumerate(not_assigned_via):
         b.set_via_to_line(v, not_assigned_line[k])
 
-b.output_boards(mode=mode, fpath=outpu_path)
+b.output_boards(mode=mode, fpath=output_path)

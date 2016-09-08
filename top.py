@@ -116,7 +116,7 @@ def worker_2016_ml():
     print 'Worker 2016 (with ml) [0]:', cmd
     subprocess.call(cmd.strip().split(' '))
 
-    cmd = './single_3d/solver --loop 500 --output A{}.txt {}_ml.txt'.format(args.input, args.input)
+    cmd = './single_3d/solver --loop 500 --output A{}ml.txt {}_ml.txt'.format(args.input, args.input)
     print 'Worker 2016 (with ml) [1]:', cmd
     subprocess.call(cmd.strip().split(' '))
 
@@ -130,14 +130,14 @@ if __name__ == '__main__':
     jobs = []
 
     # 2016手法: タッチアンドクロス3D
-    for i in range(0, 4):
+    for i in range(0, 1):
         p = multiprocessing.Process(name='a-2016-{}'.format(i), target=worker_2016)
         #p.daemon = True
         jobs.append(p)
         p.start()
 
     # 2016手法: 機械学習3D＋タッチアンドクロス3D
-    for i in range(0, 4):
+    for i in range(0, 1):
         p = multiprocessing.Process(name='a-2016-ml-{}'.format(i), target=worker_2016_ml)
         #p.daemon = True
         jobs.append(p)
