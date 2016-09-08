@@ -86,10 +86,10 @@ struct Direction{
 };
 
 struct IntraBox_4{
-	ap_int<32> ne;
-	ap_int<32> nw;
-	ap_int<32> se;
-	ap_int<32> sw;
+	ap_int<16> ne;
+	ap_int<16> nw;
+	ap_int<16> se;
+	ap_int<16> sw;
 	Direction d_ne;
 	Direction d_nw;
 	Direction d_se;
@@ -110,7 +110,7 @@ struct Direction_R{
 };
 
 struct IntraBox_1{
-	ap_int<32> cost;
+	ap_int<16> cost;
 	Direction_R d;
 };
 

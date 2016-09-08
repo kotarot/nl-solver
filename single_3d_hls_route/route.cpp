@@ -120,7 +120,7 @@ bool _routing(ap_int<8> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_C
 	IntraBox_4 my_board_1[MAX_BOXES][MAX_BOXES]; // ソース側のボード
 	IntraBox_4 my_board_2[MAX_BOXES][MAX_BOXES]; // シンク側のボード
 	IntraBox_4 init = {
-		INT_MAX,INT_MAX,INT_MAX,INT_MAX,
+		32767, 32767, 32767, 32767, //INT_MAX,INT_MAX,INT_MAX,INT_MAX,
 		{false,false,false,false},
 		{false,false,false,false},
 		{false,false,false,false},
@@ -188,10 +188,10 @@ bool _routing(ap_int<8> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_C
 			ap_int<8> touch_count = countLine(trgt.x,trgt.y,start_z, board) - trgt_box->getSouthNum();
 			if(touch_count < 0){ *output = 10; return false; /*cout << "error! (error: 10)" << endl; exit(10);*/ }
 			// コスト
-			ap_int<32> cost_se = (find_ibox->ne) + ML + touch_count * penalty_T;
-			ap_int<32> cost_ne = (find_ibox->ne) + ML + touch_count * penalty_T + trgt_box->getEastNum() * penalty_C;
-			ap_int<32> cost_sw = (find_ibox->nw) + ML + touch_count * penalty_T;
-			ap_int<32> cost_nw = (find_ibox->nw) + ML + touch_count * penalty_T + trgt_box->getWestNum() * penalty_C;
+			ap_int<16> cost_se = (find_ibox->ne) + ML + touch_count * penalty_T;
+			ap_int<16> cost_ne = (find_ibox->ne) + ML + touch_count * penalty_T + trgt_box->getEastNum() * penalty_C;
+			ap_int<16> cost_sw = (find_ibox->nw) + ML + touch_count * penalty_T;
+			ap_int<16> cost_nw = (find_ibox->nw) + ML + touch_count * penalty_T + trgt_box->getWestNum() * penalty_C;
 			// 南東マス
 			if(cost_se < trgt_ibox->se){
 				update = true;
@@ -247,10 +247,10 @@ bool _routing(ap_int<8> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_C
 			ap_int<8> touch_count = countLine(trgt.x,trgt.y,start_z, board) - trgt_box->getWestNum();
 			if(touch_count < 0){ *output = 11; return false; /*cout << "error! (error: 11)" << endl; exit(11);*/ }
 			// コスト
-			ap_int<32> cost_nw = (find_ibox->ne) + ML + touch_count * penalty_T;
-			ap_int<32> cost_ne = (find_ibox->ne) + ML + touch_count * penalty_T + trgt_box->getNorthNum() * penalty_C;
-			ap_int<32> cost_sw = (find_ibox->se) + ML + touch_count * penalty_T;
-			ap_int<32> cost_se = (find_ibox->se) + ML + touch_count * penalty_T + trgt_box->getSouthNum() * penalty_C;
+			ap_int<16> cost_nw = (find_ibox->ne) + ML + touch_count * penalty_T;
+			ap_int<16> cost_ne = (find_ibox->ne) + ML + touch_count * penalty_T + trgt_box->getNorthNum() * penalty_C;
+			ap_int<16> cost_sw = (find_ibox->se) + ML + touch_count * penalty_T;
+			ap_int<16> cost_se = (find_ibox->se) + ML + touch_count * penalty_T + trgt_box->getSouthNum() * penalty_C;
 			// 北西マス
 			if(cost_nw < trgt_ibox->nw){
 				update = true;
@@ -306,10 +306,10 @@ bool _routing(ap_int<8> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_C
 			ap_int<8> touch_count = countLine(trgt.x,trgt.y,start_z, board) - trgt_box->getNorthNum();
 			if(touch_count < 0){ *output = 12; return false; /*cout << "error! (error: 12)" << endl; exit(12);*/ }
 			// コスト
-			ap_int<32> cost_ne = (find_ibox->se) + ML + touch_count * penalty_T;
-			ap_int<32> cost_se = (find_ibox->se) + ML + touch_count * penalty_T + trgt_box->getEastNum() * penalty_C;
-			ap_int<32> cost_nw = (find_ibox->sw) + ML + touch_count * penalty_T;
-			ap_int<32> cost_sw = (find_ibox->sw) + ML + touch_count * penalty_T + trgt_box->getWestNum() * penalty_C;
+			ap_int<16> cost_ne = (find_ibox->se) + ML + touch_count * penalty_T;
+			ap_int<16> cost_se = (find_ibox->se) + ML + touch_count * penalty_T + trgt_box->getEastNum() * penalty_C;
+			ap_int<16> cost_nw = (find_ibox->sw) + ML + touch_count * penalty_T;
+			ap_int<16> cost_sw = (find_ibox->sw) + ML + touch_count * penalty_T + trgt_box->getWestNum() * penalty_C;
 			// 北東マス
 			if(cost_ne < trgt_ibox->ne){
 				update = true;
@@ -365,10 +365,10 @@ bool _routing(ap_int<8> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_C
 			ap_int<8> touch_count = countLine(trgt.x,trgt.y,start_z, board) - trgt_box->getEastNum();
 			if(touch_count < 0){ *output = 13; return false; /*cout << "error! (error: 13)" << endl; exit(13);*/ }
 			// コスト
-			ap_int<32> cost_ne = (find_ibox->nw) + ML + touch_count * penalty_T;
-			ap_int<32> cost_nw = (find_ibox->nw) + ML + touch_count * penalty_T + trgt_box->getNorthNum() * penalty_C;
-			ap_int<32> cost_se = (find_ibox->sw) + ML + touch_count * penalty_T;
-			ap_int<32> cost_sw = (find_ibox->sw) + ML + touch_count * penalty_T + trgt_box->getSouthNum() * penalty_C;
+			ap_int<16> cost_ne = (find_ibox->nw) + ML + touch_count * penalty_T;
+			ap_int<16> cost_nw = (find_ibox->nw) + ML + touch_count * penalty_T + trgt_box->getNorthNum() * penalty_C;
+			ap_int<16> cost_se = (find_ibox->sw) + ML + touch_count * penalty_T;
+			ap_int<16> cost_sw = (find_ibox->sw) + ML + touch_count * penalty_T + trgt_box->getSouthNum() * penalty_C;
 			// 北東マス
 			if(cost_ne < trgt_ibox->ne){
 				update = true;
@@ -527,10 +527,10 @@ bool _routing(ap_int<8> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_C
 			ap_int<8> touch_count = countLine(trgt.x,trgt.y,end_z, board) - trgt_box->getSouthNum();
 			if(touch_count < 0){ *output = 10; return false; /*cout << "error! (error: 10)" << endl; exit(10);*/ }
 			// コスト
-			ap_int<32> cost_se = (find_ibox->ne) + ML + touch_count * penalty_T;
-			ap_int<32> cost_ne = (find_ibox->ne) + ML + touch_count * penalty_T + trgt_box->getEastNum() * penalty_C;
-			ap_int<32> cost_sw = (find_ibox->nw) + ML + touch_count * penalty_T;
-			ap_int<32> cost_nw = (find_ibox->nw) + ML + touch_count * penalty_T + trgt_box->getWestNum() * penalty_C;
+			ap_int<16> cost_se = (find_ibox->ne) + ML + touch_count * penalty_T;
+			ap_int<16> cost_ne = (find_ibox->ne) + ML + touch_count * penalty_T + trgt_box->getEastNum() * penalty_C;
+			ap_int<16> cost_sw = (find_ibox->nw) + ML + touch_count * penalty_T;
+			ap_int<16> cost_nw = (find_ibox->nw) + ML + touch_count * penalty_T + trgt_box->getWestNum() * penalty_C;
 			// 南東マス
 			if(cost_se < trgt_ibox->se){
 				update = true;
@@ -586,10 +586,10 @@ bool _routing(ap_int<8> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_C
 			ap_int<8> touch_count = countLine(trgt.x,trgt.y,end_z, board) - trgt_box->getWestNum();
 			if(touch_count < 0){ *output = 11; return false; /*cout << "error! (error: 11)" << endl; exit(11);*/ }
 			// コスト
-			ap_int<32> cost_nw = (find_ibox->ne) + ML + touch_count * penalty_T;
-			ap_int<32> cost_ne = (find_ibox->ne) + ML + touch_count * penalty_T + trgt_box->getNorthNum() * penalty_C;
-			ap_int<32> cost_sw = (find_ibox->se) + ML + touch_count * penalty_T;
-			ap_int<32> cost_se = (find_ibox->se) + ML + touch_count * penalty_T + trgt_box->getSouthNum() * penalty_C;
+			ap_int<16> cost_nw = (find_ibox->ne) + ML + touch_count * penalty_T;
+			ap_int<16> cost_ne = (find_ibox->ne) + ML + touch_count * penalty_T + trgt_box->getNorthNum() * penalty_C;
+			ap_int<16> cost_sw = (find_ibox->se) + ML + touch_count * penalty_T;
+			ap_int<16> cost_se = (find_ibox->se) + ML + touch_count * penalty_T + trgt_box->getSouthNum() * penalty_C;
 			// 北西マス
 			if(cost_nw < trgt_ibox->nw){
 				update = true;
@@ -645,10 +645,10 @@ bool _routing(ap_int<8> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_C
 			ap_int<8> touch_count = countLine(trgt.x,trgt.y,end_z, board) - trgt_box->getNorthNum();
 			if(touch_count < 0){ *output = 12; return false; /*cout << "error! (error: 12)" << endl; exit(12);*/ }
 			// コスト
-			ap_int<32> cost_ne = (find_ibox->se) + ML + touch_count * penalty_T;
-			ap_int<32> cost_se = (find_ibox->se) + ML + touch_count * penalty_T + trgt_box->getEastNum() * penalty_C;
-			ap_int<32> cost_nw = (find_ibox->sw) + ML + touch_count * penalty_T;
-			ap_int<32> cost_sw = (find_ibox->sw) + ML + touch_count * penalty_T + trgt_box->getWestNum() * penalty_C;
+			ap_int<16> cost_ne = (find_ibox->se) + ML + touch_count * penalty_T;
+			ap_int<16> cost_se = (find_ibox->se) + ML + touch_count * penalty_T + trgt_box->getEastNum() * penalty_C;
+			ap_int<16> cost_nw = (find_ibox->sw) + ML + touch_count * penalty_T;
+			ap_int<16> cost_sw = (find_ibox->sw) + ML + touch_count * penalty_T + trgt_box->getWestNum() * penalty_C;
 			// 北東マス
 			if(cost_ne < trgt_ibox->ne){
 				update = true;
@@ -704,10 +704,10 @@ bool _routing(ap_int<8> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penalty_C
 			ap_int<8> touch_count = countLine(trgt.x,trgt.y,end_z, board) - trgt_box->getEastNum();
 			if(touch_count < 0){ *output = 13; return false; /*cout << "error! (error: 13)" << endl; exit(13);*/ }
 			// コスト
-			ap_int<32> cost_ne = (find_ibox->nw) + ML + touch_count * penalty_T;
-			ap_int<32> cost_nw = (find_ibox->nw) + ML + touch_count * penalty_T + trgt_box->getNorthNum() * penalty_C;
-			ap_int<32> cost_se = (find_ibox->sw) + ML + touch_count * penalty_T;
-			ap_int<32> cost_sw = (find_ibox->sw) + ML + touch_count * penalty_T + trgt_box->getSouthNum() * penalty_C;
+			ap_int<16> cost_ne = (find_ibox->nw) + ML + touch_count * penalty_T;
+			ap_int<16> cost_nw = (find_ibox->nw) + ML + touch_count * penalty_T + trgt_box->getNorthNum() * penalty_C;
+			ap_int<16> cost_se = (find_ibox->sw) + ML + touch_count * penalty_T;
+			ap_int<16> cost_sw = (find_ibox->sw) + ML + touch_count * penalty_T + trgt_box->getSouthNum() * penalty_C;
 			// 北東マス
 			if(cost_ne < trgt_ibox->ne){
 				update = true;
