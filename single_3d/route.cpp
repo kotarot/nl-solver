@@ -1148,6 +1148,7 @@ void deleteLine(int trgt_line_id){
 	}
 }
 
+#if 0
 bool final_routing(int trgt_line_id, bool debug_option){
 
 	Line* trgt_line = board->line(trgt_line_id);
@@ -1725,4 +1726,5 @@ bool isInserted_4(int x,int y,int z){ // シンク層用
 	
 	return true;
 }
+#endif
 

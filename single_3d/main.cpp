@@ -162,6 +162,7 @@ if( print_option ) cout << "Via priority is " << via_priority << endl;
 			// 終了判定（解導出できた場合，正解を出力）
 			if(isFinished()){
 
+#if 0
 				// 最終ルーティング
 				for(int i=1;i<=board->getLineNum();i++){
 					// 数字が隣接する場合スキップ
@@ -178,7 +179,8 @@ if( print_option ) cout << "Via priority is " << via_priority << endl;
 					// 経路の記録
 					recordLine(i);
 				}
-	
+#endif
+
 				finish_time = clock();
 
 if( print_option ) { printSolution(); }
