@@ -118,7 +118,9 @@ bool routing_main(ap_int<8> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penal
 
 	// ボードの初期化
 	IntraBox_4 my_board_1[MAX_BOXES][MAX_BOXES]; // ソース側のボード
+#pragma HLS ARRAY_PARTITION variable=my_board_1 dim=0 complete
 	IntraBox_4 my_board_2[MAX_BOXES][MAX_BOXES]; // シンク側のボード
+#pragma HLS ARRAY_PARTITION variable=my_board_2 dim=0 complete
 	IntraBox_4 init = {
 		32767, 32767, 32767, 32767, //INT_MAX,INT_MAX,INT_MAX,INT_MAX,
 		{false,false,false,false},
@@ -133,8 +135,8 @@ bool routing_main(ap_int<8> trgt_line_id, ap_uint<4> penalty_T, ap_uint<4> penal
 	}
 	ap_int<7> start_x, start_y;
 	IntraBox_4* start;
-	//queue<Search> qu;
 	Search qu[MAX_SEARCH];
+#pragma HLS ARRAY_PARTITION variable=qu dim=0 complete
 	ap_int<32> qu_head = 0;
 	ap_int<32> qu_tail = 0;
 
@@ -1040,6 +1042,7 @@ if( debug_option ) { cout << endl; }
 
 		// トラックを一時退避
 		Point tmp_track[MAX_TRACKS];
+#pragma HLS ARRAY_PARTITION variable=tmp_track dim=0 complete
 		int tmp_track_index = 0;
 		for (ap_int<16> i = 0; i < trgt_line->track_index; i++) {
 			tmp_track[tmp_track_index] = trgt_line->track[i];
