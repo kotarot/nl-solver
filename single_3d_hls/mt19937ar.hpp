@@ -59,9 +59,11 @@ static int mti=N+1; /* mti==N+1 means mt[N] is not initialized */
 /* initializes mt[N] with a seed */
 void init_genrand(unsigned long s)
 {
+#pragma HLS INLINE
     mt[0]= s & 0xffffffffUL;
     for (mti=1; mti<N; mti++) {
-        mt[mti] = 
+//#pragma HLS PIPELINE
+	        mt[mti] = 
 	    (1812433253UL * (mt[mti-1] ^ (mt[mti-1] >> 30)) + mti); 
         /* See Knuth TAOCP Vol2. 3rd Ed. P.106 for multiplier. */
         /* In the previous versions, MSBs of the seed affect   */
@@ -106,9 +108,11 @@ void init_by_array(unsigned long init_key[], int key_length)
 /* generates a random number on [0,0xffffffff]-interval */
 unsigned long genrand_int32(void)
 {
+#pragma HLS INLINE
     unsigned long y;
     static unsigned long mag01[2]={0x0UL, MATRIX_A};
-    /* mag01[x] = x * MATRIX_A  for x=0,1 */
+#pragma HLS ARRAY_PARTITION variable=mag01 complete dim=0
+	    /* mag01[x] = x * MATRIX_A  for x=0,1 */
 
     if (mti >= N) { /* generate N words at one time */
         int kk;
@@ -117,10 +121,12 @@ unsigned long genrand_int32(void)
             init_genrand(5489UL); /* a default initial seed is used */
 
         for (kk=0;kk<N-M;kk++) {
+#pragma HLS PIPELINE
             y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
             mt[kk] = mt[kk+M] ^ (y >> 1) ^ mag01[y & 0x1UL];
         }
         for (;kk<N-1;kk++) {
+#pragma HLS PIPELINE
             y = (mt[kk]&UPPER_MASK)|(mt[kk+1]&LOWER_MASK);
             mt[kk] = mt[kk+(M-N)] ^ (y >> 1) ^ mag01[y & 0x1UL];
         }

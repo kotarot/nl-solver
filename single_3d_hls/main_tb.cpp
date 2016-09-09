@@ -24,7 +24,7 @@ int main() {
 	using namespace std;
 
 	int size_x = 8, size_y = 5, size_z = 2;
-	//int line_num = 2;
+	//int line_num = 3;
 	//int via_num = 1;
 
 	// テストデータ (マトリックス形式)
@@ -41,8 +41,10 @@ int main() {
 	boardmat[0][0][0] = 1; boardmat[0][4][7] = 1;
 	// Line#2 (x=0, y=4, z=0) -- (x=7, y=0, z=1)
 	boardmat[0][4][0] = 2; boardmat[1][0][7] = 2;
-	// Via#a (x=3, y=2, z=0-1)
-	boardmat[0][2][3] = 100; boardmat[1][2][3] = 100;
+	// Line#3 (x=1, y=2, z=0) -- (x=2, y=2, z=0)
+	//boardmat[0][2][1] = 3; boardmat[0][2][2] = 3;
+	// Via#a (x=4, y=2, z=0-1)
+	boardmat[0][2][4] = 100; boardmat[1][2][4] = 100;
 
 #if 0
 	// テストデータ (文字列形式)

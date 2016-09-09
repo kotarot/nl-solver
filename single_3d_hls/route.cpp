@@ -27,9 +27,9 @@ bool routing(const ap_int<8> trgt_line_id, const ap_uint<16> penalty_T, const ap
 
 	// ボードの初期化
 	IntraBox_4 my_board_1[MAX_BOXES][MAX_BOXES]; // ソース側のボード
-//#pragma HLS ARRAY_PARTITION variable=my_board_1 dim=1 complete
+//#pragma HLS ARRAY_PARTITION cyclic factor=10 variable=my_board_1 dim=2
 	IntraBox_4 my_board_2[MAX_BOXES][MAX_BOXES]; // シンク側のボード
-//#pragma HLS ARRAY_PARTITION variable=my_board_2 dim=1 complete
+//#pragma HLS ARRAY_PARTITION cyclic factor=10 variable=my_board_2 dim=2
 	IntraBox_4 init = {
 		COST_MAX,COST_MAX,COST_MAX,COST_MAX,
 		{false,false,false,false},
@@ -48,7 +48,7 @@ bool routing(const ap_int<8> trgt_line_id, const ap_uint<16> penalty_T, const ap
 	ap_int<7> start_x, start_y;
 	IntraBox_4* start;
 	Search qu[MAX_SEARCH];
-//#pragma HLS ARRAY_PARTITION variable=qu dim=0 complete
+//#pragma HLS ARRAY_PARTITION variable=qu cyclic factor=10 dim=0
 	ap_int<32> qu_head = 0;
 	ap_int<32> qu_tail = 0;
 
@@ -90,7 +90,7 @@ bool routing(const ap_int<8> trgt_line_id, const ap_uint<16> penalty_T, const ap
 
 	while (qu_head != qu_tail) {
 #pragma HLS LOOP_TRIPCOUNT min=100 max=100 avg=100
-//#pragma HLS PIPELINE
+//#pragma HLS PIPELINE // これONにするとメモリ使用率100%になる
 
 		Search trgt = qu[qu_head];
 		qu_head++;
@@ -437,7 +437,7 @@ bool routing(const ap_int<8> trgt_line_id, const ap_uint<16> penalty_T, const ap
 
 	while (qu_head != qu_tail) {
 #pragma HLS LOOP_TRIPCOUNT min=100 max=100 avg=100
-//#pragma HLS PIPELINE
+//#pragma HLS PIPELINE // これONにするとメモリ使用率100%になる
 
 		Search trgt = qu[qu_head];
 		qu_head++;
@@ -978,7 +978,7 @@ void routing_arrange(Line *trgt_line) {
 
 		// トラックを一時退避
 		Point tmp_track[MAX_TRACKS];
-//#pragma HLS ARRAY_PARTITION variable=tmp_track cyclic factor=8 dim=1 partition
+//#pragma HLS ARRAY_PARTITION variable=tmp_track cyclic factor=8 dim=1
 		int tmp_track_index = 0;
 		for (ap_int<16> i = 0; i < trgt_line->track_index; i++) {
 #pragma HLS LOOP_TRIPCOUNT min=10 max=160 avg=40
@@ -1011,7 +1011,7 @@ void routing_arrange(Line *trgt_line) {
 }
 
 bool isInserted_1(ap_int<7> x, ap_int<7> y, ap_int<5> z, Board *board){ // ソース層用
-//#pragma HLS INLINE
+#pragma HLS INLINE
 
 	// 盤面の端
 	if(x<0 || x>(board->getSizeX()-1)) return false;
@@ -1025,7 +1025,7 @@ bool isInserted_1(ap_int<7> x, ap_int<7> y, ap_int<5> z, Board *board){ // ソ�
 }
 
 bool isInserted_2(ap_int<7> x, ap_int<7> y, ap_int<5> z, Board *board){ // シンク層用
-//#pragma HLS INLINE
+#pragma HLS INLINE
 
 	// 盤面の端
 	if(x<0 || x>(board->getSizeX()-1)) return false;
@@ -1039,7 +1039,7 @@ bool isInserted_2(ap_int<7> x, ap_int<7> y, ap_int<5> z, Board *board){ // シ�
 }
 
 int countLine(ap_int<7> x, ap_int<7> y, ap_int<5> z, Board *board){
-//#pragma HLS INLINE
+#pragma HLS INLINE
 
 	Box* trgt_box = board->box(x,y,z);
 
@@ -1086,6 +1086,7 @@ void recordLine(ap_int<8> trgt_line_id, Board *board){
 
 	for (ap_int<16> i = 2; i < (trgt_line->track_index) - 1; i++) {
 #pragma HLS LOOP_TRIPCOUNT min=2 max=160 avg=40
+#pragma HLS PIPELINE
 
 		new_x = (trgt_track[i]).x; //new_x = (trgt_track + i)->x;
 		new_y = (trgt_track[i]).y; //new_y = (trgt_track + i)->y;
@@ -1170,6 +1171,7 @@ void deleteLine(ap_int<8> trgt_line_id, Board *board) {
 
 	for (ap_int<16> i = 2; i < trgt_line->track_index - 1; i++) {
 #pragma HLS LOOP_TRIPCOUNT min=2 max=160 avg=40
+#pragma HLS PIPELINE
 
 		new_x = (trgt_track)[i].x;
 		new_y = (trgt_track)[i].y;
