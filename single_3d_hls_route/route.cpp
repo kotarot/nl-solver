@@ -39,12 +39,6 @@ unsigned long mt_genrand_int32(int a, int b) {
 }
 
 
-//Board* board; // 対象ボード
-
-//int penalty_T; // penalty of "touch"
-//int penalty_C; // penalty of "cross"
-//int penalty_V; // penalty of "via duplication"
-
 /**
  * 問題盤の初期化 (テスト用)
  */
