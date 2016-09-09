@@ -250,7 +250,7 @@ void initialize(ap_int<8> boardmat[MAX_LAYER][MAX_BOXES][MAX_BOXES], Board *boar
 //	}
 
 	ap_int<7> size_x = 8, size_y = 5; ap_int<5> size_z = 2;
-	ap_int<8> line_num = 2;
+	ap_int<8> line_num = 3;
 	ap_int<8> via_num = 1;
 	//map<int,int> lx_0, ly_0, lz_0, lx_1, ly_1, lz_1;
 	//map<int,int> vx_0, vy_0, vz_0, vx_1, vy_1, vz_1;
@@ -273,6 +273,7 @@ void initialize(ap_int<8> boardmat[MAX_LAYER][MAX_BOXES][MAX_BOXES], Board *boar
 
 	for (ap_int<8> i = 0; i < MAX_LINES; i++) {
 #pragma HLS PIPELINE
+		adjacents[i] = false;
 		appear_line[i] = false;
 	}
 	for (ap_int<8> i = 0; i < MAX_VIAS; i++) {
