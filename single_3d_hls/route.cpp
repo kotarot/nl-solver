@@ -40,7 +40,7 @@ bool routing(const ap_int<8> trgt_line_id, const ap_uint<16> penalty_T, const ap
 #pragma HLS LOOP_TRIPCOUNT min=10 max=40 avg=20
 		for (ap_int<7> x = 0; x < board->getSizeX(); x++) {
 #pragma HLS LOOP_TRIPCOUNT min=10 max=40 avg=20
-#pragma HLS PIPELINE
+//#pragma HLS PIPELINE
 			my_board_1[y][x] = init;
 			my_board_2[y][x] = init;
 		}
@@ -389,7 +389,7 @@ bool routing(const ap_int<8> trgt_line_id, const ap_uint<16> penalty_T, const ap
 
 		for(ap_int<8> i=1;i<=board->getViaNum();i++){
 #pragma HLS LOOP_TRIPCOUNT min=5 max=45 avg=25
-#pragma HLS PIPELINE
+//#pragma HLS PIPELINE
 			Via* trgt_via = board->via(i);
 			if(trgt_via->getSourceZ()!=start_z || trgt_via->getSinkZ()!=end_z) continue;
 			if(sp_via_id > 0 && sp_via_id != i) continue;
@@ -968,7 +968,7 @@ if( debug_option ) { cout << endl; }
 }
 
 void routing_arrange(Line *trgt_line) {
-#pragma HLS INLINE
+//#pragma HLS INLINE
 
 	bool retry = true;
 	while(retry){
@@ -984,7 +984,7 @@ void routing_arrange(Line *trgt_line) {
 #pragma HLS LOOP_TRIPCOUNT min=10 max=160 avg=40
 //#pragma HLS PIPELINE rewind
 //#pragma HLS UNROLL factor=8
-#pragma HLS PIPELINE
+//#pragma HLS PIPELINE
 			tmp_track[tmp_track_index] = trgt_line->track[i];
 			tmp_track_index++;
 		}
@@ -993,7 +993,7 @@ void routing_arrange(Line *trgt_line) {
 		trgt_line->track_index = 0;
 		for (ap_int<16> i = 0; i < tmp_track_index; i++) {
 #pragma HLS LOOP_TRIPCOUNT min=10 max=160 avg=40
-#pragma HLS PIPELINE
+//#pragma HLS PIPELINE
 			if (tmp_track_index - 2 <= i) {
 				trgt_line->track[trgt_line->track_index] = tmp_track[i];
 				(trgt_line->track_index)++;
@@ -1011,7 +1011,7 @@ void routing_arrange(Line *trgt_line) {
 }
 
 bool isInserted_1(ap_int<7> x, ap_int<7> y, ap_int<5> z, Board *board){ // ソース層用
-#pragma HLS INLINE
+//#pragma HLS INLINE
 
 	// 盤面の端
 	if(x<0 || x>(board->getSizeX()-1)) return false;
@@ -1025,7 +1025,7 @@ bool isInserted_1(ap_int<7> x, ap_int<7> y, ap_int<5> z, Board *board){ // ソ�
 }
 
 bool isInserted_2(ap_int<7> x, ap_int<7> y, ap_int<5> z, Board *board){ // シンク層用
-#pragma HLS INLINE
+//#pragma HLS INLINE
 
 	// 盤面の端
 	if(x<0 || x>(board->getSizeX()-1)) return false;
@@ -1039,7 +1039,7 @@ bool isInserted_2(ap_int<7> x, ap_int<7> y, ap_int<5> z, Board *board){ // シ�
 }
 
 int countLine(ap_int<7> x, ap_int<7> y, ap_int<5> z, Board *board){
-#pragma HLS INLINE
+//#pragma HLS INLINE
 
 	Box* trgt_box = board->box(x,y,z);
 
@@ -1086,7 +1086,7 @@ void recordLine(ap_int<8> trgt_line_id, Board *board){
 
 	for (ap_int<16> i = 2; i < (trgt_line->track_index) - 1; i++) {
 #pragma HLS LOOP_TRIPCOUNT min=2 max=160 avg=40
-#pragma HLS PIPELINE
+//#pragma HLS PIPELINE
 
 		new_x = (trgt_track[i]).x; //new_x = (trgt_track + i)->x;
 		new_y = (trgt_track[i]).y; //new_y = (trgt_track + i)->y;
@@ -1171,7 +1171,7 @@ void deleteLine(ap_int<8> trgt_line_id, Board *board) {
 
 	for (ap_int<16> i = 2; i < trgt_line->track_index - 1; i++) {
 #pragma HLS LOOP_TRIPCOUNT min=2 max=160 avg=40
-#pragma HLS PIPELINE
+//#pragma HLS PIPELINE
 
 		new_x = (trgt_track)[i].x;
 		new_y = (trgt_track)[i].y;

@@ -272,17 +272,17 @@ void initialize(ap_int<8> boardmat[MAX_LAYER][MAX_BOXES][MAX_BOXES], Board *boar
 //#pragma HLS ARRAY_PARTITION variable=appear_via cyclic factor=10 dim=0
 
 	for (ap_int<8> i = 0; i < MAX_LINES; i++) {
-#pragma HLS PIPELINE
+//#pragma HLS PIPELINE
 		appear_line[i] = false;
 	}
 	for (ap_int<8> i = 0; i < MAX_VIAS; i++) {
-#pragma HLS PIPELINE
+//#pragma HLS PIPELINE
 		appear_via[i] = false;
 	}
 	for (ap_int<5> z = 0; z < MAX_LAYER; z++) {
 		for (ap_int<7> y = 0; y < MAX_BOXES; y++) {
 			for (ap_int<7> x = 0; x < MAX_BOXES; x++) {
-#pragma HLS PIPELINE
+//#pragma HLS PIPELINE
 				ap_int<8> val = boardmat[z][y][x];
 				// LINE
 				if (0 < val && val < 100) {
@@ -340,7 +340,7 @@ void initialize(ap_int<8> boardmat[MAX_LAYER][MAX_BOXES][MAX_BOXES], Board *boar
 		}
 		for (ap_int<5> z = trgt_via->getSourceZ() + 1; z < trgt_via->getSinkZ(); z++) {
 #pragma HLS LOOP_TRIPCOUNT min=0 max=6 avg=1
-#pragma HLS PIPELINE
+//#pragma HLS PIPELINE
 			Box* trgt_box_2 = board->box(vx_0[i],vy_0[i],z);
 			trgt_box_2->setTypeInterVia();
 			trgt_box_2->setIndex(i);
@@ -353,7 +353,7 @@ void initialize(ap_int<8> boardmat[MAX_LAYER][MAX_BOXES][MAX_BOXES], Board *boar
 #pragma HLS LOOP_TRIPCOUNT min=10 max=40 avg=20
 			for (ap_int<7> x = 0; x < size_x; x++) {
 #pragma HLS LOOP_TRIPCOUNT min=10 max=40 avg=20
-#pragma HLS PIPELINE
+//#pragma HLS PIPELINE
 				Box* trgt_box = board->box(x,y,z);
 				if(!(trgt_box->isTypeNumber() || trgt_box->isTypeVia() || trgt_box->isTypeInterVia())) trgt_box->setTypeBlank();
 			}
@@ -513,17 +513,17 @@ void initialize(char* filename){
 #endif
 
 bool isFinished(Board *board) {
-#pragma HLS INLINE
+//#pragma HLS INLINE
 
 	bool for_check[MAX_LAYER][MAX_BOXES][MAX_BOXES];
-#pragma HLS ARRAY_PARTITION variable=for_check block factor=40 dim=3
+//#pragma HLS ARRAY_PARTITION variable=for_check block factor=40 dim=3
 	for (ap_int<5> z = 0; z < board->getSizeZ(); z++) {
 #pragma HLS LOOP_TRIPCOUNT min=1 max=8 avg=2
 		for (ap_int<7> y = 0; y < board->getSizeY(); y++){
 #pragma HLS LOOP_TRIPCOUNT min=10 max=40 avg=20
 			for (ap_int<7> x = 0; x < board->getSizeX(); x++) {
 #pragma HLS LOOP_TRIPCOUNT min=10 max=40 avg=20
-#pragma HLS PIPELINE
+//#pragma HLS PIPELINE
 				for_check[z][y][x] = false;
 			}
 		}
@@ -555,7 +555,7 @@ void generateSolution(ap_int<8> boardmat[MAX_LAYER][MAX_BOXES][MAX_BOXES], Board
 #pragma HLS LOOP_TRIPCOUNT min=10 max=40 avg=20
 			for (ap_int<7> x = 0; x < board->getSizeX(); x++) {
 #pragma HLS LOOP_TRIPCOUNT min=10 max=40 avg=20
-#pragma HLS PIPELINE
+//#pragma HLS PIPELINE
 				boardmat[z][y][x] = 0;
 			}
 		}
@@ -570,7 +570,7 @@ void generateSolution(ap_int<8> boardmat[MAX_LAYER][MAX_BOXES][MAX_BOXES], Board
 		}
 		for (ap_int<8> j = 0; j < trgt_line->track_index; j++) {
 #pragma HLS LOOP_TRIPCOUNT min=10 max=160 avg=40
-#pragma HLS PIPELINE
+//#pragma HLS PIPELINE
 			Point p = (trgt_line->track)[j];
 			int point_x = p.x;
 			int point_y = p.y;
@@ -587,7 +587,7 @@ void generateSolution(ap_int<8> boardmat[MAX_LAYER][MAX_BOXES][MAX_BOXES], Board
 		int line_num = boardmat[via_z][via_y][via_x]; 
 		for (ap_int<5> z = via_z + 1; z < trgt_via->getSinkZ(); z++) {
 #pragma HLS LOOP_TRIPCOUNT min=0 max=6 avg=1
-#pragma HLS PIPELINE
+//#pragma HLS PIPELINE
 			boardmat[z][via_y][via_x] = line_num;
 		}
 	}
