@@ -50,6 +50,9 @@ int main() {
 #endif
 
 	// 初期ボード表示
+	cout << endl;
+	cout << "PROBLEM" << endl;
+	cout << "========" << endl;
 	for (int z = 0; z < size_z; z++) {
 		cout << "LAYER " << (z + 1) << endl;
 		for (int y = 0; y < size_y; y++) {
@@ -67,12 +70,15 @@ int main() {
 	ap_int<8> status;
 	bool result = nlsolver(boardmat, &status);
 	if (result)
-		cout << "Test Passed!" << endl;
+		cout << endl << "Test Passed!" << endl;
 	else
-		cout << "Test Failed!" << endl;
+		cout << endl << "Test Failed!" << endl;
 	cout << "(status = " << status << ")" << endl << endl;
 
 	// 解表示
+	cout << endl;
+	cout << "SOLUTION" << endl;
+	cout << "========" << endl;
 	for (int z = 0; z < size_z; z++) {
 		cout << "LAYER " << (z + 1) << endl;
 		for (int y = 0; y < size_y; y++) {

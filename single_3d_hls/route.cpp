@@ -37,7 +37,9 @@ bool routing(const ap_int<8> trgt_line_id, const ap_uint<16> penalty_T, const ap
 		{false,false,false,false},
 		{false,false,false,false}};
 	for (ap_int<7> y = 0; y < board->getSizeY(); y++) {
+#pragma HLS LOOP_TRIPCOUNT min=10 max=40 avg=20
 		for (ap_int<7> x = 0; x < board->getSizeX(); x++) {
+#pragma HLS LOOP_TRIPCOUNT min=10 max=40 avg=20
 #pragma HLS PIPELINE
 			my_board_1[y][x] = init;
 			my_board_2[y][x] = init;
@@ -386,6 +388,7 @@ bool routing(const ap_int<8> trgt_line_id, const ap_uint<16> penalty_T, const ap
 		}
 
 		for(ap_int<8> i=1;i<=board->getViaNum();i++){
+#pragma HLS LOOP_TRIPCOUNT min=5 max=45 avg=25
 #pragma HLS PIPELINE
 			Via* trgt_via = board->via(i);
 			if(trgt_via->getSourceZ()!=start_z || trgt_via->getSinkZ()!=end_z) continue;
@@ -978,6 +981,7 @@ void routing_arrange(Line *trgt_line) {
 //#pragma HLS ARRAY_PARTITION variable=tmp_track cyclic factor=8 dim=1 partition
 		int tmp_track_index = 0;
 		for (ap_int<16> i = 0; i < trgt_line->track_index; i++) {
+#pragma HLS LOOP_TRIPCOUNT min=10 max=160 avg=40
 //#pragma HLS PIPELINE rewind
 //#pragma HLS UNROLL factor=8
 #pragma HLS PIPELINE
@@ -988,7 +992,7 @@ void routing_arrange(Line *trgt_line) {
 		// 冗長部分を排除してトラックを整理
 		trgt_line->track_index = 0;
 		for (ap_int<16> i = 0; i < tmp_track_index; i++) {
-#pragma HLS LOOP_TRIPCOUNT min=10 max=80 avg=20
+#pragma HLS LOOP_TRIPCOUNT min=10 max=160 avg=40
 #pragma HLS PIPELINE
 			if (tmp_track_index - 2 <= i) {
 				trgt_line->track[trgt_line->track_index] = tmp_track[i];
