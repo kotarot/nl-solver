@@ -13,6 +13,7 @@
 *.original
 !issue*
 *.zip
+!README.txt
 
 # Executables
 *.exe
