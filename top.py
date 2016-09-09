@@ -91,11 +91,13 @@ def worker_2015(level):
 
     return
 
-def worker_2016():
+def worker_2016(i):
     """ 2016手法: タッチアンドクロス3D """
     p = multiprocessing.current_process()
     print 'Worker 2016 Starting:', p.name, p.pid
     sys.stdout.flush()
+
+    time.sleep((i+1)/1000.0)
 
     cmd = './single_3d/solver --loop 500 --output A{}.txt {}.txt'.format(args.input, args.input)
     print 'Worker 2016 [1]:', cmd
@@ -106,13 +108,13 @@ def worker_2016():
 
     return
 
-def worker_2016_ml():
+def worker_2016_ml(th):
     """ 2016手法: 機械学習3D＋タッチアンドクロス3D """
     p = multiprocessing.current_process()
     print 'Worker 2016 (with ml) Starting:', p.name, p.pid
     sys.stdout.flush()
 
-    cmd = 'python ./ml_3d/test_3d.py --pickle {} --output {}_ml.txt {}.txt'.format(PICKLE, args.input, args.input)
+    cmd = 'python ./ml_3d/test_3d.py --pickle {} --output {}_ml.txt --threshold {} {}.txt'.format(PICKLE, args.input, th, args.input)
     print 'Worker 2016 (with ml) [0]:', cmd
     subprocess.call(cmd.strip().split(' '))
 
@@ -130,15 +132,16 @@ if __name__ == '__main__':
     jobs = []
 
     # 2016手法: タッチアンドクロス3D
-    for i in range(0, 1):
-        p = multiprocessing.Process(name='a-2016-{}'.format(i), target=worker_2016)
+    for i in range(0, 2):
+        p = multiprocessing.Process(name='a-2016-{}'.format(i), target=worker_2016, args=(i,))
         #p.daemon = True
         jobs.append(p)
         p.start()
 
     # 2016手法: 機械学習3D＋タッチアンドクロス3D
-    for i in range(0, 1):
-        p = multiprocessing.Process(name='a-2016-ml-{}'.format(i), target=worker_2016_ml)
+    ths = [0, 5]
+    for i in range(0, 2):
+        p = multiprocessing.Process(name='a-2016-ml-{}'.format(i), target=worker_2016_ml, args=(ths[i],))
         #p.daemon = True
         jobs.append(p)
         p.start()

@@ -34,6 +34,8 @@ parser.add_argument('--output', '-o', default=None, type=str,
                     help='Path to output fix-file')
 parser.add_argument('--mode', '-m', default='multi', type=str,
                     help='Output mode : single, *multi (* is default)')
+parser.add_argument('--threshold', '-t', default=0, type=float,
+                    help='Threshold value for multi mode')
 parser.add_argument('--debug', '-d', default=False, action="store_true",
                     help='Debug option')
 args = parser.parse_args()
@@ -42,6 +44,7 @@ input_problem = args.input
 input_pickle  = args.pickle
 output_path   = args.output
 mode = args.mode
+threshold = args.threshold
 debug = args.debug
 
 # (1) pickle ファイル名から dims を読み取る
@@ -255,7 +258,7 @@ random.shuffle(not_assigned_via)
 
 for idx, (k, v) in enumerate(sorted(assigned_vias.items(), key=lambda x: x[1]['prob'], reverse=True)):
     if debug : print idx, k, v
-    if mode == 'single' or v['prob']>0:
+    if mode == 'single' or v['prob']>threshold:
         b.set_via_to_line(k, v['line'])
         b.set_via_priority(k, idx)
 
