@@ -95,7 +95,7 @@ bool routing(const ap_int<8> trgt_line_id, const ap_uint<4> penalty_T, const ap_
 #pragma HLS INTERFACE s_axilite port=penalty_V bundle=AXI4LS
 //#pragma HLS INTERFACE s_axilite port=board bundle=AXI4LS
 //#pragma HLS INTERFACE s_axilite port=output bundle=AXI4LS
-#pragma HLS INTERFACE s_axilite port=bbb bundle=AXI4LS
+#pragma HLS INTERFACE s_axilite port=rawboard bundle=AXI4LS
 #pragma HLS INTERFACE s_axilite port=return bundle=AXI4LS
 
 	Board boardobj;
