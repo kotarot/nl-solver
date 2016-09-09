@@ -7,7 +7,8 @@ CXXFLAGS = -Wall -Wno-unknown-pragmas -DSOFTWARE
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	$(CXX) -o $@ $(OBJS)
+#	$(CXX) -o $@ $(OBJS)  # <- for linux
+	$(CXX) -Wl,--stack,4194304 -o $@ $(OBJS)  # <- for cygwin
 
 clean:
 	rm *.o

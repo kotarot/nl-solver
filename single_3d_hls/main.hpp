@@ -7,6 +7,12 @@
 #ifndef _MAIN_HPP_
 #define _MAIN_HPP_
 
+#ifdef SOFTWARE
+#include "ap_int.h"
+#else
+#include <ap_int.h>
+#endif
+
 #include <iomanip>
 #include <iostream>
 #include <fstream>
@@ -46,13 +52,11 @@ using namespace std;
 #define I_LOOP 2000 // 内ループ回数
 
 // 各種設定値
-//#define MAX_BOXES 40
-#define MAX_BOXES 20
-//#define MAX_LAYER 8
-#define MAX_LAYER 2
+#define MAX_BOXES 40
+#define MAX_LAYER 8
 #define MAX_LINES 100
-//#define MAX_TRACKS 160
-#define MAX_TRACKS 80
+#define MAX_VIAS  100
+#define MAX_TRACKS 160
 #define MAX_SEARCH 1000
 
 struct Point{
@@ -108,5 +112,16 @@ struct IntraBox_1{
 	ap_int<16> cost;
 	Direction_R d;
 };
+
+
+// メルセンヌ・ツイスタ
+void mt_init_genrand(unsigned long s);
+unsigned long mt_genrand_int32(int a, int b);
+
+bool nlsolver(ap_int<8> boardmat[MAX_LAYER][MAX_BOXES][MAX_BOXES], ap_int<8> *status);
+void initialize(ap_int<8> boardmat[MAX_LAYER][MAX_BOXES][MAX_BOXES], Board *board);
+bool isFinished(Board *board);
+void generateSolution(ap_int<8> boardmat[MAX_LAYER][MAX_BOXES][MAX_BOXES], Board *board);
+
 
 #endif /*_MAIN_HPP_*/

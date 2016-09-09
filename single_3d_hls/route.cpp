@@ -18,103 +18,9 @@
 
 #include "./main.hpp"
 #include "./route.hpp"
-//#include "./utils.hpp"
 
 
-// ================================ //
-// メルセンヌ・ツイスタ
-// ================================ //
-#include "mt19937ar.hpp"
-
-#if 0
-void mt_init_genrand(unsigned long s) {
-	init_genrand(s);
-}
-#endif
-
-// AからBの範囲の整数の乱数が欲しいとき
-// 参考 http://www.sat.t.u-tokyo.ac.jp/~omi/random_variables_generation.html
-unsigned long mt_genrand_int32(int a, int b) {
-	return genrand_int32() % (b - a + 1) + a;
-}
-
-
-//Board* board; // 対象ボード
-
-//int penalty_T; // penalty of "touch"
-//int penalty_C; // penalty of "cross"
-//int penalty_V; // penalty of "via duplication"
-
-/**
- * 問題盤の初期化 (テスト用)
- */
-void initialize_test(Board *board, ap_int<7> size_x, ap_int<7> size_y, ap_int<5> size_z){
-
-	{
-		Box* trgt_box_0 = board->box(0, 0, 0);
-		Box* trgt_box_1 = board->box(4, 4, 1);
-		trgt_box_0->setTypeNumber();
-		trgt_box_1->setTypeNumber();
-		trgt_box_0->setIndex(1);
-		trgt_box_1->setIndex(1);
-		Line* trgt_line = board->line(1);
-		trgt_line->setSourcePort(0, 0, 0);
-		trgt_line->setSinkPort(4, 4, 1);
-		trgt_line->setHasLine(true);
-	}
-
-	{
-		Box* trgt_box_0 = board->box(2, 2, 0);
-		Box* trgt_box_1 = board->box(2, 2, 1);
-		trgt_box_0->setTypeVia();
-		trgt_box_1->setTypeVia();
-		trgt_box_0->setIndex(1);
-		trgt_box_1->setIndex(1);
-		Via* trgt_via = board->via(1);
-		trgt_via->setSourcePort(2, 2, 0);
-		trgt_via->setSinkPort(2, 2, 1);
-	}
-
-	for(ap_int<5> z=0;z<size_z;z++){
-		for(ap_int<7> y=0;y<size_y;y++){
-			for(ap_int<7> x=0;x<size_x;x++){
-				Box* trgt_box = board->box(x,y,z);
-				if(!(trgt_box->isTypeNumber() || trgt_box->isTypeVia() || trgt_box->isTypeInterVia()))
-					trgt_box->setTypeBlank();
-			}
-		}
-	}
-
-}
-
-bool routing(const ap_int<8> trgt_line_id, const ap_uint<4> penalty_T, const ap_uint<4> penalty_C, const ap_uint<4> penalty_V,
-    /*Board *board, ap_int<8> *output*/ ap_int<8> rawboard[MAX_LAYER][MAX_BOXES][MAX_BOXES]) {
-#pragma HLS INTERFACE s_axilite port=trgt_line_id bundle=AXI4LS
-#pragma HLS INTERFACE s_axilite port=penalty_T bundle=AXI4LS
-#pragma HLS INTERFACE s_axilite port=penalty_C bundle=AXI4LS
-#pragma HLS INTERFACE s_axilite port=penalty_V bundle=AXI4LS
-//#pragma HLS INTERFACE s_axilite port=board bundle=AXI4LS
-//#pragma HLS INTERFACE s_axilite port=output bundle=AXI4LS
-#pragma HLS INTERFACE s_axilite port=rawboard bundle=AXI4LS
-#pragma HLS INTERFACE s_axilite port=return bundle=AXI4LS
-
-	Board boardobj;
-	ap_int<7> size_x = 5, size_y = 6; ap_int<5> size_z = 2;
-	ap_int<8> line_num = 1;
-	ap_int<8> via_num = 1;
-
-	boardobj.init(size_x, size_y, size_z, line_num, via_num);
-	//Board *board = new Board(size_x, size_y, size_z, line_num, via_num);
-	initialize_test(&boardobj, size_x, size_y, size_z);
-
-	ap_int<8> output;
-	bool ret = routing_proc(trgt_line_id, penalty_T, penalty_C, penalty_V, &boardobj, &output);
-	recordLine(trgt_line_id, &boardobj);
-
-	return ret;
-}
-
-bool routing_proc(const ap_int<8> trgt_line_id, const ap_uint<4> penalty_T, const ap_uint<4> penalty_C, const ap_uint<4> penalty_V, Board *board, ap_int<8> *output){
+bool routing(const ap_int<8> trgt_line_id, const ap_uint<16> penalty_T, const ap_uint<16> penalty_C, const ap_uint<16> penalty_V, Board *board, ap_int<8> *output){
 
 	Line* trgt_line = board->line(trgt_line_id);
 	trgt_line->track_index = 0;
@@ -125,7 +31,7 @@ bool routing_proc(const ap_int<8> trgt_line_id, const ap_uint<4> penalty_T, cons
 	IntraBox_4 my_board_2[MAX_BOXES][MAX_BOXES]; // シンク側のボード
 //#pragma HLS ARRAY_PARTITION variable=my_board_2 dim=1 complete
 	IntraBox_4 init = {
-		32767, 32767, 32767, 32767, //INT_MAX,INT_MAX,INT_MAX,INT_MAX,
+		COST_MAX,COST_MAX,COST_MAX,COST_MAX,
 		{false,false,false,false},
 		{false,false,false,false},
 		{false,false,false,false},
@@ -144,8 +50,8 @@ bool routing_proc(const ap_int<8> trgt_line_id, const ap_uint<4> penalty_T, cons
 	ap_int<32> qu_head = 0;
 	ap_int<32> qu_tail = 0;
 
-	ap_int<7> start_z = trgt_line->getSourceZ();
-	ap_int<7> end_z = trgt_line->getSinkZ();
+	ap_int<5> start_z = trgt_line->getSourceZ();
+	ap_int<5> end_z = trgt_line->getSinkZ();
 
 
 /* ********************************
@@ -471,8 +377,8 @@ bool routing_proc(const ap_int<8> trgt_line_id, const ap_uint<4> penalty_T, cons
 			}
 			ap_int<7> sp_x = sp_via->getSourceX();
 			ap_int<7> sp_y = sp_via->getSourceY();
-			if(my_board_1[sp_y][sp_x].ne == INT_MAX || my_board_1[sp_y][sp_x].nw == INT_MAX ||
-			my_board_1[sp_y][sp_x].se == INT_MAX || my_board_1[sp_y][sp_x].sw == INT_MAX){
+			if(my_board_1[sp_y][sp_x].ne == COST_MAX || my_board_1[sp_y][sp_x].nw == COST_MAX ||
+			my_board_1[sp_y][sp_x].se == COST_MAX || my_board_1[sp_y][sp_x].sw == COST_MAX){
 				*output = 21; return false;
 				/*cout << "error! (error: 21)" << endl;
 				exit(21);*/
@@ -488,9 +394,9 @@ bool routing_proc(const ap_int<8> trgt_line_id, const ap_uint<4> penalty_T, cons
 			start_y = trgt_via->getSourceY();
 			start = &(my_board_2[start_y][start_x]);
 
-			// ソース層にINT_MAXのコスト値が含まれている場合は引き継がない (issue #82)
-			if(my_board_1[start_y][start_x].ne == INT_MAX || my_board_1[start_y][start_x].nw == INT_MAX ||
-			my_board_1[start_y][start_x].se == INT_MAX || my_board_1[start_y][start_x].sw == INT_MAX) continue;
+			// ソース層に COST_MAX のコスト値が含まれている場合は引き継がない (issue #82)
+			if(my_board_1[start_y][start_x].ne == COST_MAX || my_board_1[start_y][start_x].nw == COST_MAX ||
+			my_board_1[start_y][start_x].se == COST_MAX || my_board_1[start_y][start_x].sw == COST_MAX) continue;
 
 			start->ne = my_board_1[start_y][start_x].ne + trgt_via->getUsedLineNum() * penalty_V;
 			start->nw = my_board_1[start_y][start_x].nw + trgt_via->getUsedLineNum() * penalty_V;
@@ -1227,18 +1133,17 @@ void recordLine(ap_int<8> trgt_line_id, Board *board){
 	}
 }
 
-#if 0
-void deleteLine(int trgt_line_id){
+void deleteLine(ap_int<8> trgt_line_id, Board *board) {
 
 	Line* trgt_line = board->line(trgt_line_id);
-	vector<Point>* trgt_track = trgt_line->getTrack();
+	Point *trgt_track = trgt_line->track;
 
-	int old_x = trgt_line->getSinkX();
-	int old_y = trgt_line->getSinkY();
-	int old_z = trgt_line->getSinkZ();
-	int new_x = (*trgt_track)[1].x;
-	int new_y = (*trgt_track)[1].y;
-	int new_z = (*trgt_track)[1].z;
+	ap_int<7> old_x = trgt_line->getSinkX();
+	ap_int<7> old_y = trgt_line->getSinkY();
+	ap_int<5> old_z = trgt_line->getSinkZ();
+	ap_int<7> new_x = (trgt_track[1]).x;
+	ap_int<7> new_y = (trgt_track[1]).y;
+	ap_int<5> new_z = (trgt_track[1]).z;
 	Box* old_box = board->box(old_x,old_y,old_z);
 	Box* new_box = board->box(new_x,new_y,new_z);
 
@@ -1259,10 +1164,12 @@ void deleteLine(int trgt_line_id){
 	old_x = new_x; old_y = new_y; old_z = new_z;
 	old_box = new_box;
 
-	for(int i=2;i<(int)(trgt_track->size()-1);i++){
-		new_x = (*trgt_track)[i].x;
-		new_y = (*trgt_track)[i].y;
-		new_z = (*trgt_track)[i].z;
+	for (ap_int<16> i = 2; i < trgt_line->track_index - 1; i++) {
+#pragma HLS LOOP_TRIPCOUNT min=2 max=160 avg=40
+
+		new_x = (trgt_track)[i].x;
+		new_y = (trgt_track)[i].y;
+		new_z = (trgt_track)[i].z;
 		new_box = board->box(new_x,new_y,new_z);
 
 		if(new_box->isTypeVia() && old_box->isTypeVia()){
@@ -1309,7 +1216,7 @@ void deleteLine(int trgt_line_id){
 		old_box->decrementWestNum();
 	}
 }
-#endif
+
 
 #if 0
 bool final_routing(int trgt_line_id, bool debug_option){
@@ -1320,7 +1227,7 @@ bool final_routing(int trgt_line_id, bool debug_option){
 	// ボードの初期化
 	vector<vector<IntraBox_1*> > my_board_1(board->getSizeY(), vector<IntraBox_1*>(board->getSizeX())); // ソース側のボード
 	vector<vector<IntraBox_1*> > my_board_2(board->getSizeY(), vector<IntraBox_1*>(board->getSizeX())); // シンク側のボード
-	IntraBox_1 init = { INT_MAX, {false,false,false,false,NOT_USE,NOT_USE,NOT_USE,NOT_USE} };
+	IntraBox_1 init = { COST_MAX, {false,false,false,false,NOT_USE,NOT_USE,NOT_USE,NOT_USE} };
 	for(int y=0;y<board->getSizeY();y++){
 		for(int x=0;x<board->getSizeX();x++){
 			my_board_1[y][x] = new IntraBox_1;
@@ -1509,7 +1416,7 @@ bool final_routing(int trgt_line_id, bool debug_option){
 			start_y = trgt_via->getSourceY();
 			start = my_board_2[start_y][start_x];
 
-			if(my_board_1[start_y][start_x]->cost == INT_MAX) continue;
+			if(my_board_1[start_y][start_x]->cost == COST_MAX) continue;
 			if(trgt_via->getUsedLineNum() > 0) continue;
 
 			start->cost = my_board_1[start_y][start_x]->cost;
