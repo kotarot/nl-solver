@@ -55,7 +55,9 @@ def read_ansfile(filename, n_dims):
                       + [[{'data': -1, 'type': -1, 'shape': -1} for i in range(0, board_x + n_dims - 1)] for j in range(0, n_dims_half)]
 
         boards.append(_board_banpei)
-        line_num = line_num + 1 # 空行をスキップ
+
+        if line_num < len(board_lines) and not "LAYER" in board_lines[line_num]:
+            line_num = line_num + 1 # 空行をスキップ
 
     # 属性を記録する
     for z in range(board_z):
@@ -137,7 +139,7 @@ def read_probfile(filename, n_dims):
             line_tokens = tokens[0].split('#')
             via_id = line_tokens[1]
             src = tokens[1].split(',')
-            snk = tokens[2].split(',')
+            snk = tokens[-1].split(',')
             _boards[int(src[2]) - 1][int(src[1])][int(src[0])] = {'data': via_id, 'type': 'via', 'shape': via_cnt}
             _boards[int(snk[2]) - 1][int(snk[1])][int(snk[0])] = {'data': via_id, 'type': 'via', 'shape': via_cnt}
             via_cnt += 1
