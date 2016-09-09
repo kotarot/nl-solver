@@ -87,7 +87,7 @@ void initialize_test(Board *board, ap_int<7> size_x, ap_int<7> size_y, ap_int<5>
 
 }
 
-bool routing(const ap_int<8> trgt_line_id, const ap_uint<4> penalty_T, const ap_uint<4> penalty_C, const ap_uint<4> penalty_V,
+bool routing(const ap_int<8> trgt_line_id, const ap_uint<16> penalty_T, const ap_uint<16> penalty_C, const ap_uint<16> penalty_V,
     /*Board *board, ap_int<8> *output*/ ap_int<8> rawboard[MAX_LAYER][MAX_BOXES][MAX_BOXES]) {
 #pragma HLS INTERFACE s_axilite port=trgt_line_id bundle=AXI4LS
 #pragma HLS INTERFACE s_axilite port=penalty_T bundle=AXI4LS
@@ -114,7 +114,7 @@ bool routing(const ap_int<8> trgt_line_id, const ap_uint<4> penalty_T, const ap_
 	return ret;
 }
 
-bool routing_proc(const ap_int<8> trgt_line_id, const ap_uint<4> penalty_T, const ap_uint<4> penalty_C, const ap_uint<4> penalty_V, Board *board, ap_int<8> *output){
+bool routing_proc(const ap_int<8> trgt_line_id, const ap_uint<16> penalty_T, const ap_uint<16> penalty_C, const ap_uint<16> penalty_V, Board *board, ap_int<8> *output){
 
 	Line* trgt_line = board->line(trgt_line_id);
 	trgt_line->track_index = 0;
