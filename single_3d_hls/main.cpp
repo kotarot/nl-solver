@@ -18,6 +18,7 @@
 
 #include "./main.hpp"
 #include "./route.hpp"
+#include "./route_final.hpp"
 
 
 // ================================ //
@@ -154,16 +155,17 @@ bool nlsolver(ap_int<8> boardmat[MAX_LAYER][MAX_BOXES][MAX_BOXES], ap_int<8> *st
 			// 終了判定（解導出できた場合，正解を出力）
 			if(isFinished(board)){
 
-#if 0
 				// 最終ルーティング
 				for (ap_int<8> i = 1; i <= board->getLineNum(); i++) {
+#pragma HLS LOOP_TRIPCOUNT min=10 max=90 avg=50
+
 					// 数字が隣接する場合スキップ
 					if(board->line(i)->getHasLine() == false) continue;
 		
 					// 経路の削除
-					deleteLine(i);
+					deleteLine(i, board);
 
-					if( !final_routing(i, board) ){
+					if( !final_routing(i, board, &output) ){
 						//cerr << "Cannot solve!! (error: 3)" << endl;
 						//exit(3);
 						*status = 3; return false;
@@ -172,7 +174,6 @@ bool nlsolver(ap_int<8> boardmat[MAX_LAYER][MAX_BOXES][MAX_BOXES], ap_int<8> *st
 					// 経路の記録
 					recordLine(i, board);
 				}
-#endif
 
 				//finish_time = clock();
 
@@ -250,7 +251,7 @@ void initialize(ap_int<8> boardmat[MAX_LAYER][MAX_BOXES][MAX_BOXES], Board *boar
 //	}
 
 	ap_int<7> size_x = 8, size_y = 5; ap_int<5> size_z = 2;
-	ap_int<8> line_num = 2;
+	ap_int<8> line_num = 3;
 	ap_int<8> via_num = 1;
 	//map<int,int> lx_0, ly_0, lz_0, lx_1, ly_1, lz_1;
 	//map<int,int> vx_0, vy_0, vz_0, vx_1, vy_1, vz_1;
@@ -305,6 +306,7 @@ void initialize(ap_int<8> boardmat[MAX_LAYER][MAX_BOXES][MAX_BOXES], Board *boar
 			}
 		}
 	}
+	adjacents[3] = true;
 
 	board->init(size_x, size_y, size_z, line_num, via_num);
 
