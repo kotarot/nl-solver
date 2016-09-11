@@ -16,18 +16,18 @@
 
 int main()
 {
-    int x, y, z;
-
     //init_platform();
 
     print("\r\n\r\n");
     print("Hello World\r\n");
 
-    int size_x = 8, size_y = 5, size_z = 2;
-    //int line_num = 3;
-    //int via_num = 1;
+    int size_x = 10, size_y = 5, size_z = 3;
+    //int line_num = 4;
+    //int via_num = 2;
 
+#if 0
     // テストデータ (マトリックス形式)
+    int x, y, z;
     char boardmat[MAX_LAYER][MAX_BOXES][MAX_BOXES];
     for (z = 0; z < MAX_LAYER; z++)
         for (y = 0; y < MAX_BOXES; y++)
@@ -45,6 +45,7 @@ int main()
     boardmat[0][2][1] = 3; boardmat[0][2][2] = 3;
     // Via#a (x=4, y=2, z=0-1)
     boardmat[0][2][4] = 100; boardmat[1][2][4] = 100;
+#endif
 
     XNlsolver nlsolver;
     XNlsolver *p_nlsolver = &nlsolver;
@@ -65,10 +66,11 @@ int main()
     }
 
     while (1) {
-        int val;
+        char str[12800];
         xil_printf("Start?\r\n");
-        scanf("%d", &val);
-        XNlsolver_Write_boardmat_V_Bytes (p_nlsolver, 0, (char *)boardmat, XNLSOLVER_AXI4LS_DEPTH_BOARDMAT_V);
+        scanf("%s", str);
+        xil_printf("%s\r\n", str);
+        XNlsolver_Write_boardstr_Bytes (p_nlsolver, 0, str, XNLSOLVER_AXI4LS_DEPTH_BOARDSTR);
 
         while ( !XNlsolver_IsIdle (p_nlsolver) );
 
@@ -78,20 +80,18 @@ int main()
         while ( !XNlsolver_IsDone (p_nlsolver) );
 
         xil_printf("XNlsolver_Reading\r\n");
-        XNlsolver_Read_boardmat_V_Bytes (p_nlsolver, 0, (char *)boardmat, XNLSOLVER_AXI4LS_DEPTH_BOARDMAT_V);
+        XNlsolver_Read_boardstr_Bytes (p_nlsolver, 0, str, XNLSOLVER_AXI4LS_DEPTH_BOARDSTR);
 
         // 解表示
         xil_printf ("SOLUTION\r\n");
         xil_printf ("========\r\n");
-        int x, y, z;
+        int x, y, z, i = 0;
         for (z = 0; z < size_z; z++) {
             xil_printf ("LAYER %d\r\n", z + 1);
             for (y = 0; y < size_y; y++) {
                 for (x = 0; x < size_x; x++) {
-                    if (boardmat[z][y][x] < 100)
-                        xil_printf (" %d", boardmat[z][y][x]);
-                    else
-                        xil_printf (" X");
+                    xil_printf (" %d", (int)(str[i]));
+                    i++;
                 }
                 xil_printf ("\r\n");
             }
