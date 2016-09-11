@@ -37,7 +37,7 @@ bool final_routing(const ap_int<8> trgt_line_id, Board *board, ap_int<8> *output
 #pragma HLS LOOP_TRIPCOUNT min=10 max=40 avg=20
 		for(ap_int<7> x = 0; x < board->getSizeX(); x++) {
 #pragma HLS LOOP_TRIPCOUNT min=10 max=40 avg=20
-//#pragma HLS PIPELINE
+#pragma HLS PIPELINE
 			my_board_1[y][x] = init;
 			my_board_2[y][x] = init;
 		}
@@ -86,7 +86,7 @@ bool final_routing(const ap_int<8> trgt_line_id, Board *board, ap_int<8> *output
 
 	while (qu_head != qu_tail) {
 #pragma HLS LOOP_TRIPCOUNT min=100 max=100 avg=100
-//#pragma HLS PIPELINE
+//#pragma HLS PIPELINE // ONにするといろいろだめ
 
 		Search trgt = qu[qu_head];
 		qu_head++;
@@ -227,7 +227,7 @@ bool final_routing(const ap_int<8> trgt_line_id, Board *board, ap_int<8> *output
 
 		for (ap_int<8> i = 1; i <= board->getViaNum(); i++) {
 #pragma HLS LOOP_TRIPCOUNT min=5 max=45 avg=25
-//#pragma HLS PIPELINE
+#pragma HLS PIPELINE
 			Via* trgt_via = board->via(i);
 			if(trgt_via->getSourceZ()!=start_z || trgt_via->getSinkZ()!=end_z) continue;
 			start_x = trgt_via->getSourceX();
@@ -270,7 +270,7 @@ bool final_routing(const ap_int<8> trgt_line_id, Board *board, ap_int<8> *output
 
 	while (qu_head != qu_tail) {
 #pragma HLS LOOP_TRIPCOUNT min=100 max=100 avg=100
-//#pragma HLS PIPELINE
+//#pragma HLS PIPELINE // ONにするといろいろだめ
 
 		Search trgt = qu[qu_head];
 		qu_head++;
@@ -441,7 +441,7 @@ if (debug_option) { /*** デバッグ用*/
 	ap_int<7> now_x = trgt_line->getSinkX();
 	ap_int<7> now_y = trgt_line->getSinkY();
 	ap_int<8> next_direction_array[4];
-//#pragma HLS ARRAY_PARTITION variable=next_direction_array dim=0 complete
+#pragma HLS ARRAY_PARTITION variable=next_direction_array complete dim=0
 	ap_int<8> next_direction_array_index = 0;
 	ap_int<8> next_count, next_id;
 
@@ -483,6 +483,7 @@ if (debug_option) { cout << "(" << now_x << "," << now_y << "," << end_z << ")";
 
 		while(1){
 #pragma HLS LOOP_TRIPCOUNT min=10 max=160 avg=40
+#pragma HLS PIPELINE
 
 			Point p = {now_x, now_y, end_z};
 			trgt_line->track[trgt_line->track_index] = p; (trgt_line->track_index)++;
@@ -559,6 +560,7 @@ if (debug_option) { cout << "(" << now_x << "," << now_y << "," << start_z << ")
 
 	while(1){
 #pragma HLS LOOP_TRIPCOUNT min=10 max=160 avg=40
+#pragma HLS PIPELINE
 
 		Point p = {now_x, now_y, start_z};
 		trgt_line->track[trgt_line->track_index] = p; (trgt_line->track_index)++;
@@ -617,7 +619,7 @@ if( debug_option ) { cout << endl; }
 }
 
 bool isInserted_3(ap_int<7> x, ap_int<7> y, ap_int<5> z, Board *board){ // ソース層用
-//#pragma HLS INLINE
+//#pragma HLS INLINE // だめ
 
 	// 盤面の端
 	if(x<0 || x>(board->getSizeX()-1)) return false;
@@ -632,7 +634,7 @@ bool isInserted_3(ap_int<7> x, ap_int<7> y, ap_int<5> z, Board *board){ // ソ�
 }
 
 bool isInserted_4(ap_int<7> x, ap_int<7> y, ap_int<5> z, Board *board){ // シンク層用
-//#pragma HLS INLINE
+//#pragma HLS INLINE // だめ
 
 	// 盤面の端
 	if(x<0 || x>(board->getSizeX()-1)) return false;
