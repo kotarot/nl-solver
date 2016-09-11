@@ -259,6 +259,7 @@ void initialize(char* filename){
 	map<int,bool> adjacents; // 初期状態で数字が隣接している
 
 	while(getline(ifs,str)){
+		if(str == "") continue; // 問題ファイルの改行コードがLFのときにこれ入れないとエラーになる
 		if(str.at(0) == '#') continue;
 		else if(str.at(0) == 'S'){ // 盤面サイズの読み込み
 			str.replace(str.find("S"),5,"");
