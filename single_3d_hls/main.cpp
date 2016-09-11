@@ -298,7 +298,7 @@ void initialize(char boardstr[BOARDSTR_SIZE], Board *board){
 			lx_1[i] = (boardstr[idx+8] - '0') * 10 + (boardstr[idx+9] - '0');
 			ly_1[i] = (boardstr[idx+10] - '0') * 10 + (boardstr[idx+11] - '0');
 			lz_1[i] = (boardstr[idx+12] - '0') - 1;
-			//cout << "L " << i << ": " << lx_0[i] << " " << ly_0[i] << " " << lz_0[i] << " " << lx_1[i] << " " << ly_1[i] << " " << lx_1[i] << endl;
+			//cout << "L " << i << ": " << lx_0[i] << " " << ly_0[i] << " " << lz_0[i] << " " << lx_1[i] << " " << ly_1[i] << " " << lz_1[i] << endl;
 			idx = idx + 13;
 
 			// ViaIDが割り当てられている場合は辞書に追加
@@ -332,7 +332,7 @@ void initialize(char boardstr[BOARDSTR_SIZE], Board *board){
 			vx_1[i] = (boardstr[idx+8] - '0') * 10 + (boardstr[idx+9] - '0');
 			vy_1[i] = (boardstr[idx+10] - '0') * 10 + (boardstr[idx+11] - '0');
 			vz_1[i] = (boardstr[idx+12] - '0') - 1;
-			//cout << "V " << i << ": " << lx_0[i] << " " << ly_0[i] << " " << lz_0[i] << " " << lx_1[i] << " " << ly_1[i] << " " << lx_1[i] << endl;
+			//cout << "V " << i << ": " << vx_0[i] << " " << vy_0[i] << " " << vz_0[i] << " " << vx_1[i] << " " << vy_1[i] << " " << vz_1[i] << endl;
 			idx = idx + 13;
 		}
 
