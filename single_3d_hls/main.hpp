@@ -59,6 +59,8 @@ using namespace std;
 #define MAX_TRACKS 160
 #define MAX_SEARCH 1000
 
+#define BOARDSTR_SIZE 12800 // = 8 * 40 * 40
+
 struct Point{
 	ap_int<7> x;
 	ap_int<7> y;
@@ -118,10 +120,10 @@ struct IntraBox_1{
 void mt_init_genrand(unsigned long s);
 unsigned long mt_genrand_int32(int a, int b);
 
-bool nlsolver(ap_int<8> boardmat[MAX_LAYER][MAX_BOXES][MAX_BOXES], ap_int<8> *status);
-void initialize(ap_int<8> boardmat[MAX_LAYER][MAX_BOXES][MAX_BOXES], Board *board);
+bool nlsolver(char boardstr[BOARDSTR_SIZE], ap_int<8> *status);
+void initialize(char boardstr[BOARDSTR_SIZE], Board *board);
 bool isFinished(Board *board);
-void generateSolution(ap_int<8> boardmat[MAX_LAYER][MAX_BOXES][MAX_BOXES], Board *board);
+void generateSolution(char boardstr[BOARDSTR_SIZE], Board *board);
 
 
 #endif /*_MAIN_HPP_*/

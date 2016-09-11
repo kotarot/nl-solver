@@ -39,8 +39,8 @@ unsigned long mt_genrand_int32(int a, int b) {
 }
 
 
-bool nlsolver(ap_int<8> boardmat[MAX_LAYER][MAX_BOXES][MAX_BOXES], ap_int<8> *status) {
-#pragma HLS INTERFACE s_axilite port=boardmat bundle=AXI4LS
+bool nlsolver(char boardstr[BOARDSTR_SIZE], ap_int<8> *status) {
+#pragma HLS INTERFACE s_axilite port=boardstr bundle=AXI4LS
 #pragma HLS INTERFACE s_axilite port=status bundle=AXI4LS
 #pragma HLS INTERFACE s_axilite port=return bundle=AXI4LS
 
@@ -57,7 +57,7 @@ bool nlsolver(ap_int<8> boardmat[MAX_LAYER][MAX_BOXES][MAX_BOXES], ap_int<8> *st
 	ap_int<16> penalty_V; // penalty of "via duplication"
 
 	Board boardobj;
-	initialize(boardmat, &boardobj); // 問題盤の生成
+	initialize(boardstr, &boardobj); // 問題盤の生成
 	Board *board = &boardobj;
 
 //if( print_option ) { printBoard(); }
@@ -178,7 +178,7 @@ bool nlsolver(ap_int<8> boardmat[MAX_LAYER][MAX_BOXES][MAX_BOXES], ap_int<8> *st
 				//finish_time = clock();
 
 //if( print_option ) { printSolution(); }
-				generateSolution(boardmat, board);
+				generateSolution(boardstr, board);
 
 #if 0
 				if (out_filename != NULL) {
@@ -238,6 +238,7 @@ bool nlsolver(ap_int<8> boardmat[MAX_LAYER][MAX_BOXES][MAX_BOXES], ap_int<8> *st
 	return true;
 }
 
+#if 0
 /**
  * 問題盤の初期化 (HLS ver.)
  * @args: boardmat, board
@@ -362,113 +363,121 @@ void initialize(ap_int<8> boardmat[MAX_LAYER][MAX_BOXES][MAX_BOXES], Board *boar
 		}
 	}
 }
+#endif
 
-#if 0
 /**
- * 問題盤の初期化
- * @args: 問題ファイル名
+ * 問題盤の初期化 (HLS ver.)
+ * @args: boardstr, board
  */
-void initialize(char* filename){
-
-	ifstream ifs(filename);
-	string str;
-	
-	if(ifs.fail()){
-		cerr << "Problem file does not exist." << endl;
-		exit(-1);
-	}
+void initialize(char boardstr[BOARDSTR_SIZE], Board *board){
 
 	// line_to_viaの初期化
-	for(int i=0; i<100; i++) line_to_viaid[i] = 0;
-	
-	int size_x, size_y, size_z;
-	int line_num;
-	int via_num = 0;
-	map<int,int> lx_0, ly_0, lz_0, lx_1, ly_1, lz_1;
-	map<int,int> vx_0, vy_0, vz_0, vx_1, vy_1, vz_1;
-	map<int,bool> adjacents; // 初期状態で数字が隣接している
+//	for (ap_int<8> i = 0; i < 100; i++) {
+//#pragma HLS PIPELINE
+//		line_to_viaid[i] = 0;
+//	}
 
-	while(getline(ifs,str)){
-		if(str.at(0) == '#') continue;
-		else if(str.at(0) == 'S'){ // 盤面サイズの読み込み
-			str.replace(str.find("S"),5,"");
-			str.replace(str.find("X"),1," ");
-			str.replace(str.find("X"),1," ");
-			istringstream is(str);
-			is >> size_x >> size_y >> size_z;
+	ap_int<7> size_x, size_y; ap_int<5> size_z;
+	ap_int<8> line_num = 0;
+	ap_int<8> via_num = 0;
+	ap_int<7> lx_0[MAX_LINES]; ap_int<7> lx_1[MAX_LINES];
+	ap_int<7> ly_0[MAX_LINES]; ap_int<7> ly_1[MAX_LINES];
+	ap_int<5> lz_0[MAX_LINES]; ap_int<5> lz_1[MAX_LINES];
+	ap_int<7> vx_0[MAX_VIAS]; ap_int<7> vx_1[MAX_VIAS];
+	ap_int<7> vy_0[MAX_VIAS]; ap_int<7> vy_1[MAX_VIAS];
+	ap_int<5> vz_0[MAX_VIAS]; ap_int<5> vz_1[MAX_VIAS];
+	bool adjacents[MAX_LINES]; // 初期状態で数字が隣接している
+//#pragma HLS ARRAY_PARTITION variable=adjacents complete dim=0
+//#pragma HLS ARRAY_PARTITION variable=adjacents cyclic factor=10 dim=0
+//	bool appear_line[MAX_LINES];
+//#pragma HLS ARRAY_PARTITION variable=appear_line complete dim=0
+//#pragma HLS ARRAY_PARTITION variable=appear_line cyclic factor=10 dim=0
+//	bool appear_via[MAX_VIAS];
+//#pragma HLS ARRAY_PARTITION variable=appear_via complete dim=0
+//#pragma HLS ARRAY_PARTITION variable=appear_via cyclic factor=10 dim=0
+
+	for (ap_int<8> i = 0; i < MAX_LINES; i++) {
+//#pragma HLS PIPELINE
+		adjacents[i] = false;
+//		appear_line[i] = false;
+	}
+//	for (ap_int<8> i = 0; i < MAX_VIAS; i++) {
+//#pragma HLS PIPELINE
+//		appear_via[i] = false;
+//	}
+
+	// unsigned 14bit は 12800 に収まるため
+	for (ap_uint<14> idx = 0; ; ) {
+		if (boardstr[idx] == 'X') {
+			size_x = (boardstr[idx+1] - '0') * 10 + (boardstr[idx+2] - '0');
+			//cout << size_x << endl;
+			idx = idx + 3;
 		}
-		else if(str.at(0) == 'L' && str.at(4) == '_'){ // ライン個数の読み込み
-			str.replace(str.find("L"),9,"");
-			istringstream is(str);
-			is >> line_num;
+		else if (boardstr[idx] == 'Y') {
+			size_y = (boardstr[idx+1] - '0') * 10 + (boardstr[idx+2] - '0');
+			//cout << size_y << endl;
+			idx = idx + 3;
 		}
-		else if(str.at(0) == 'L' && str.at(4) == '#'){ // ライン情報の読み込み
-			str.replace(str.find("L"),5,"");
-			int index;
-			while((index=str.find("("))!=-1){
-				str.replace(index,1,"");
-			}
-			while((index=str.find(")"))!=-1){
-				str.replace(index,1,"");
-			}
-			while((index=str.find(","))!=-1){
-				str.replace(index,1," ");
-			}
-			int i, a, b, c, d, e, f;
-			istringstream is(str);
-			is >> i >> a >> b >> c >> d >> e >> f;
-			lx_0[i] = a; ly_0[i] = b; lz_0[i] = c-1; lx_1[i] = d; ly_1[i] = e; lz_1[i] = f-1;
+		else if (boardstr[idx] == 'Z') {
+			size_z = boardstr[idx+1] - '0';
+			//cout << size_z << endl;
+			idx = idx + 2;
+		}
+		else if (boardstr[idx] == 'L') {
+			line_num++;
+
+			ap_int<8> i = (boardstr[idx+1] - '0') * 10 + (boardstr[idx+2] - '0');
+			lx_0[i] = (boardstr[idx+3] - '0') * 10 + (boardstr[idx+4] - '0');
+			ly_0[i] = (boardstr[idx+5] - '0') * 10 + (boardstr[idx+6] - '0');
+			lz_0[i] = (boardstr[idx+7] - '0') - 1;
+			lx_1[i] = (boardstr[idx+8] - '0') * 10 + (boardstr[idx+9] - '0');
+			ly_1[i] = (boardstr[idx+10] - '0') * 10 + (boardstr[idx+11] - '0');
+			lz_1[i] = (boardstr[idx+12] - '0') - 1;
+			//cout << "L " << i << ": " << lx_0[i] << " " << ly_0[i] << " " << lz_0[i] << " " << lx_1[i] << " " << ly_1[i] << " " << lx_1[i] << endl;
+			idx = idx + 13;
 
 			// ViaIDが割り当てられている場合は辞書に追加
-			if(!is.eof()){
-				int vid, vp;
-				is >> vid >> vp;
-				if(vid>=0 && vid<100){
-					line_to_viaid[i] = vid;
-					line_to_via_priority[i] = vp;
-				}
-			}
+			//if(!is.eof()){
+			//	int vid, vp;
+			//	is >> vid >> vp;
+			//	if(vid>=0 && vid<100){
+			//		line_to_viaid[i] = vid;
+			//		line_to_via_priority[i] = vp;
+			//	}
+			//}
 
 			// 初期状態で数字が隣接しているか判断
-			int dx = lx_0[i] - lx_1[i];
-			int dy = ly_0[i] - ly_1[i];
-			int dz = lz_0[i] - lz_1[i];
+			ap_int<7> dx = lx_0[i] - lx_1[i];
+			ap_int<7> dy = ly_0[i] - ly_1[i];
+			ap_int<5> dz = lz_0[i] - lz_1[i];
 			if ((dz == 0 && dx == 0 && (dy == 1 || dy == -1)) || (dz == 0 && (dx == 1 || dx == -1) && dy == 0)) {
 				adjacents[i] = true;
 			} else {
 				adjacents[i] = false;
 			}
-		}
-		else if(str.at(0) == 'V'){ // ビア情報の読み込み
-			via_num++;
-			str.replace(str.find("V"),4,"");
-			int index;
-			while((index=str.find("("))!=-1){
-				str.replace(index,1,"");
-			}
-			while((index=str.find(")"))!=-1){
-				str.replace(index,1,"");
-			}
-			while((index=str.find(","))!=-1){
-				str.replace(index,1," ");
-			}
-			string s;
-			int i, a, b, c, d, e, f;
-			i = via_num;
-			istringstream is(str);
-			is >> s	>> a >> b >> c >> d >> e >> f;
 
-			while(!is.eof()){
-				is >> d >> e >> f;
-			}
-			vx_0[i] = a; vy_0[i] = b; vz_0[i] = c-1; vx_1[i] = d; vy_1[i] = e; vz_1[i] = f-1;
 		}
-		else continue;
+		else if (boardstr[idx] == 'V') {
+			via_num++;
+
+			ap_int<8> i = (boardstr[idx+1] - '0') * 10 + (boardstr[idx+2] - '0');
+			vx_0[i] = (boardstr[idx+3] - '0') * 10 + (boardstr[idx+4] - '0');
+			vy_0[i] = (boardstr[idx+5] - '0') * 10 + (boardstr[idx+6] - '0');
+			vz_0[i] = (boardstr[idx+7] - '0') - 1;
+			vx_1[i] = (boardstr[idx+8] - '0') * 10 + (boardstr[idx+9] - '0');
+			vy_1[i] = (boardstr[idx+10] - '0') * 10 + (boardstr[idx+11] - '0');
+			vz_1[i] = (boardstr[idx+12] - '0') - 1;
+			//cout << "V " << i << ": " << lx_0[i] << " " << ly_0[i] << " " << lz_0[i] << " " << lx_1[i] << " " << ly_1[i] << " " << lx_1[i] << endl;
+			idx = idx + 13;
+		}
+
+		if (boardstr[idx] == 0) break;
 	}
 
-	board = new Board(size_x,size_y,size_z,line_num,via_num);
-	
-	for(int i=1;i<=line_num;i++){
+	board->init(size_x, size_y, size_z, line_num, via_num);
+
+	for (ap_int<8> i = 1; i <= line_num; i++) {
+#pragma HLS LOOP_TRIPCOUNT min=10 max=90 avg=50
 		Box* trgt_box_0 = board->box(lx_0[i],ly_0[i],lz_0[i]);
 		Box* trgt_box_1 = board->box(lx_1[i],ly_1[i],lz_1[i]);
 		trgt_box_0->setTypeNumber();
@@ -483,7 +492,8 @@ void initialize(char* filename){
 		}
 		trgt_line->setHasLine(!adjacents[i]);
 	}
-	for(int i=1;i<=via_num;i++){
+	for (ap_int<8> i = 1; i <= via_num; i++) {
+#pragma HLS LOOP_TRIPCOUNT min=5 max=45 avg=25
 		Box* trgt_box_0 = board->box(vx_0[i],vy_0[i],vz_0[i]);
 		Box* trgt_box_1 = board->box(vx_1[i],vy_1[i],vz_1[i]);
 		trgt_box_0->setTypeVia();
@@ -496,23 +506,29 @@ void initialize(char* filename){
 		if(trgt_via->getSourceZ() > trgt_via->getSinkZ()){
 			trgt_via->changePort();
 		}
-		for(int z=trgt_via->getSourceZ()+1;z<trgt_via->getSinkZ();z++){
+		for (ap_int<5> z = trgt_via->getSourceZ() + 1; z < trgt_via->getSinkZ(); z++) {
+#pragma HLS LOOP_TRIPCOUNT min=0 max=6 avg=1
+//#pragma HLS PIPELINE
 			Box* trgt_box_2 = board->box(vx_0[i],vy_0[i],z);
 			trgt_box_2->setTypeInterVia();
 			trgt_box_2->setIndex(i);
 		}
 	}
-	
-	for(int z=0;z<size_z;z++){
-		for(int y=0;y<size_y;y++){
-			for(int x=0;x<size_x;x++){
+
+	for (ap_int<5> z = 0; z < size_z; z++) {
+#pragma HLS LOOP_TRIPCOUNT min=1 max=8 avg=2
+		for (ap_int<7> y = 0; y < size_y; y++) {
+#pragma HLS LOOP_TRIPCOUNT min=10 max=40 avg=20
+			for (ap_int<7> x = 0; x < size_x; x++) {
+#pragma HLS LOOP_TRIPCOUNT min=10 max=40 avg=20
+//#pragma HLS PIPELINE
 				Box* trgt_box = board->box(x,y,z);
 				if(!(trgt_box->isTypeNumber() || trgt_box->isTypeVia() || trgt_box->isTypeInterVia())) trgt_box->setTypeBlank();
 			}
 		}
 	}
 }
-#endif
+
 
 bool isFinished(Board *board) {
 //#pragma HLS INLINE
@@ -549,7 +565,9 @@ bool isFinished(Board *board) {
 }
 
 // 解ボードを生成
-void generateSolution(ap_int<8> boardmat[MAX_LAYER][MAX_BOXES][MAX_BOXES], Board *board) {
+void generateSolution(char boardstr[BOARDSTR_SIZE], Board *board) {
+
+	ap_int<8> boardmat[MAX_LAYER][MAX_BOXES][MAX_BOXES];
 
 	for (ap_int<5> z = 0; z < board->getSizeZ(); z++) {
 #pragma HLS LOOP_TRIPCOUNT min=1 max=8 avg=2
@@ -574,23 +592,38 @@ void generateSolution(ap_int<8> boardmat[MAX_LAYER][MAX_BOXES][MAX_BOXES], Board
 #pragma HLS LOOP_TRIPCOUNT min=10 max=160 avg=40
 //#pragma HLS PIPELINE
 			Point p = (trgt_line->track)[j];
-			int point_x = p.x;
-			int point_y = p.y;
-			int point_z = p.z;
+			ap_int<7> point_x = p.x;
+			ap_int<7> point_y = p.y;
+			ap_int<5> point_z = p.z;
 			boardmat[point_z][point_y][point_x] = i;
 		}
 	}
 	for (ap_int<8> i = 1; i <= board->getViaNum(); i++) {
 #pragma HLS LOOP_TRIPCOUNT min=5 max=45 avg=25
 		Via* trgt_via = board->via(i);
-		int via_x = trgt_via->getSourceX();
-		int via_y = trgt_via->getSourceY();
-		int via_z = trgt_via->getSourceZ();
-		int line_num = boardmat[via_z][via_y][via_x]; 
+		ap_int<7> via_x = trgt_via->getSourceX();
+		ap_int<7> via_y = trgt_via->getSourceY();
+		ap_int<5> via_z = trgt_via->getSourceZ();
+		ap_int<8> line_num = boardmat[via_z][via_y][via_x]; 
 		for (ap_int<5> z = via_z + 1; z < trgt_via->getSinkZ(); z++) {
 #pragma HLS LOOP_TRIPCOUNT min=0 max=6 avg=1
 //#pragma HLS PIPELINE
 			boardmat[z][via_y][via_x] = line_num;
+		}
+	}
+
+	// 文字列化
+	ap_int<14> i = 0;
+	for (ap_int<5> z = 0; z < board->getSizeZ(); z++) {
+#pragma HLS LOOP_TRIPCOUNT min=1 max=8 avg=2
+		for (ap_int<7> y = 0; y < board->getSizeY(); y++) {
+#pragma HLS LOOP_TRIPCOUNT min=10 max=40 avg=20
+			for (ap_int<7> x = 0; x < board->getSizeX(); x++) {
+#pragma HLS LOOP_TRIPCOUNT min=10 max=40 avg=20
+//#pragma HLS PIPELINE
+				boardstr[i] = boardmat[z][y][x];
+				i++;
+			}
 		}
 	}
 
