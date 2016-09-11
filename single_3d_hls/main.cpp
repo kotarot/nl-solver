@@ -238,132 +238,6 @@ bool nlsolver(char boardstr[BOARDSTR_SIZE], ap_int<8> *status) {
 	return true;
 }
 
-#if 0
-/**
- * 問題盤の初期化 (HLS ver.)
- * @args: boardmat, board
- */
-void initialize(ap_int<8> boardmat[MAX_LAYER][MAX_BOXES][MAX_BOXES], Board *board) {
-
-	// line_to_viaの初期化
-//	for (ap_int<8> i = 0; i < 100; i++) {
-//#pragma HLS PIPELINE
-//		line_to_viaid[i] = 0;
-//	}
-
-	ap_int<7> size_x = 8, size_y = 5; ap_int<5> size_z = 2;
-	ap_int<8> line_num = 3;
-	ap_int<8> via_num = 1;
-	//map<int,int> lx_0, ly_0, lz_0, lx_1, ly_1, lz_1;
-	//map<int,int> vx_0, vy_0, vz_0, vx_1, vy_1, vz_1;
-	//map<int,bool> adjacents; // 初期状態で数字が隣接している
-	ap_int<7> lx_0[MAX_LINES]; ap_int<7> lx_1[MAX_LINES];
-	ap_int<7> ly_0[MAX_LINES]; ap_int<7> ly_1[MAX_LINES];
-	ap_int<5> lz_0[MAX_LINES]; ap_int<5> lz_1[MAX_LINES];
-	ap_int<7> vx_0[MAX_VIAS]; ap_int<7> vx_1[MAX_VIAS];
-	ap_int<7> vy_0[MAX_VIAS]; ap_int<7> vy_1[MAX_VIAS];
-	ap_int<5> vz_0[MAX_VIAS]; ap_int<5> vz_1[MAX_VIAS];
-	bool adjacents[MAX_LINES];
-//#pragma HLS ARRAY_PARTITION variable=adjacents complete dim=0
-//#pragma HLS ARRAY_PARTITION variable=adjacents cyclic factor=10 dim=0
-	bool appear_line[MAX_LINES];
-//#pragma HLS ARRAY_PARTITION variable=appear_line complete dim=0
-//#pragma HLS ARRAY_PARTITION variable=appear_line cyclic factor=10 dim=0
-	bool appear_via[MAX_VIAS];
-//#pragma HLS ARRAY_PARTITION variable=appear_via complete dim=0
-//#pragma HLS ARRAY_PARTITION variable=appear_via cyclic factor=10 dim=0
-
-	for (ap_int<8> i = 0; i < MAX_LINES; i++) {
-//#pragma HLS PIPELINE
-		appear_line[i] = false;
-	}
-	for (ap_int<8> i = 0; i < MAX_VIAS; i++) {
-//#pragma HLS PIPELINE
-		appear_via[i] = false;
-	}
-	for (ap_int<5> z = 0; z < MAX_LAYER; z++) {
-		for (ap_int<7> y = 0; y < MAX_BOXES; y++) {
-			for (ap_int<7> x = 0; x < MAX_BOXES; x++) {
-//#pragma HLS PIPELINE
-				ap_int<8> val = boardmat[z][y][x];
-				// LINE
-				if (0 < val && val < 100) {
-					if (appear_line[val] == false) {
-						appear_line[val] = true;
-						lx_0[val] = x; ly_0[val] = y; lz_0[val] = z;
-					} else {
-						lx_1[val] = x; ly_1[val] = y; lz_1[val] = z;
-					}
-				}
-				// VIA
-				else if (val == 100) {
-					if (appear_via[1] == false) {
-						appear_via[1] = true;
-						vx_0[1] = x; vy_0[1] = y; vz_0[1] = z;
-					} else {
-						vx_1[1] = x; vy_1[1] = y; vz_1[1] = z;
-					}
-				}
-			}
-		}
-	}
-	adjacents[3] = true;
-
-	board->init(size_x, size_y, size_z, line_num, via_num);
-
-	for (ap_int<8> i = 1; i <= line_num; i++) {
-#pragma HLS LOOP_TRIPCOUNT min=10 max=90 avg=50
-		Box* trgt_box_0 = board->box(lx_0[i],ly_0[i],lz_0[i]);
-		Box* trgt_box_1 = board->box(lx_1[i],ly_1[i],lz_1[i]);
-		trgt_box_0->setTypeNumber();
-		trgt_box_1->setTypeNumber();
-		trgt_box_0->setIndex(i);
-		trgt_box_1->setIndex(i);
-		Line* trgt_line = board->line(i);
-		trgt_line->setSourcePort(lx_0[i],ly_0[i],lz_0[i]);
-		trgt_line->setSinkPort(lx_1[i],ly_1[i],lz_1[i]);
-		if(trgt_line->getSourceZ() > trgt_line->getSinkZ()){
-			trgt_line->changePort();
-		}
-		trgt_line->setHasLine(!adjacents[i]);
-	}
-	for (ap_int<8> i = 1; i <= via_num; i++) {
-#pragma HLS LOOP_TRIPCOUNT min=5 max=45 avg=25
-		Box* trgt_box_0 = board->box(vx_0[i],vy_0[i],vz_0[i]);
-		Box* trgt_box_1 = board->box(vx_1[i],vy_1[i],vz_1[i]);
-		trgt_box_0->setTypeVia();
-		trgt_box_1->setTypeVia();
-		trgt_box_0->setIndex(i);
-		trgt_box_1->setIndex(i);
-		Via* trgt_via = board->via(i);
-		trgt_via->setSourcePort(vx_0[i],vy_0[i],vz_0[i]);
-		trgt_via->setSinkPort(vx_1[i],vy_1[i],vz_1[i]);
-		if(trgt_via->getSourceZ() > trgt_via->getSinkZ()){
-			trgt_via->changePort();
-		}
-		for (ap_int<5> z = trgt_via->getSourceZ() + 1; z < trgt_via->getSinkZ(); z++) {
-#pragma HLS LOOP_TRIPCOUNT min=0 max=6 avg=1
-//#pragma HLS PIPELINE
-			Box* trgt_box_2 = board->box(vx_0[i],vy_0[i],z);
-			trgt_box_2->setTypeInterVia();
-			trgt_box_2->setIndex(i);
-		}
-	}
-
-	for (ap_int<5> z = 0; z < size_z; z++) {
-#pragma HLS LOOP_TRIPCOUNT min=1 max=8 avg=2
-		for (ap_int<7> y = 0; y < size_y; y++) {
-#pragma HLS LOOP_TRIPCOUNT min=10 max=40 avg=20
-			for (ap_int<7> x = 0; x < size_x; x++) {
-#pragma HLS LOOP_TRIPCOUNT min=10 max=40 avg=20
-//#pragma HLS PIPELINE
-				Box* trgt_box = board->box(x,y,z);
-				if(!(trgt_box->isTypeNumber() || trgt_box->isTypeVia() || trgt_box->isTypeInterVia())) trgt_box->setTypeBlank();
-			}
-		}
-	}
-}
-#endif
 
 /**
  * 問題盤の初期化 (HLS ver.)
@@ -389,25 +263,16 @@ void initialize(char boardstr[BOARDSTR_SIZE], Board *board){
 	bool adjacents[MAX_LINES]; // 初期状態で数字が隣接している
 //#pragma HLS ARRAY_PARTITION variable=adjacents complete dim=0
 //#pragma HLS ARRAY_PARTITION variable=adjacents cyclic factor=10 dim=0
-//	bool appear_line[MAX_LINES];
-//#pragma HLS ARRAY_PARTITION variable=appear_line complete dim=0
-//#pragma HLS ARRAY_PARTITION variable=appear_line cyclic factor=10 dim=0
-//	bool appear_via[MAX_VIAS];
-//#pragma HLS ARRAY_PARTITION variable=appear_via complete dim=0
-//#pragma HLS ARRAY_PARTITION variable=appear_via cyclic factor=10 dim=0
 
 	for (ap_int<8> i = 0; i < MAX_LINES; i++) {
 //#pragma HLS PIPELINE
 		adjacents[i] = false;
-//		appear_line[i] = false;
 	}
-//	for (ap_int<8> i = 0; i < MAX_VIAS; i++) {
-//#pragma HLS PIPELINE
-//		appear_via[i] = false;
-//	}
 
 	// unsigned 14bit は 12800 に収まるため
 	for (ap_uint<14> idx = 0; ; ) {
+#pragma HLS LOOP_TRIPCOUNT min=1280 max=12800 avg=2000
+
 		if (boardstr[idx] == 'X') {
 			size_x = (boardstr[idx+1] - '0') * 10 + (boardstr[idx+2] - '0');
 			//cout << size_x << endl;

@@ -28,8 +28,11 @@ public:
 		via_num = _vi;
 
 		for(ap_int<5> z=0;z<size_z;z++){
+#pragma HLS LOOP_TRIPCOUNT min=1 max=8 avg=2
 			for(ap_int<7> y=0;y<size_y;y++){
+#pragma HLS LOOP_TRIPCOUNT min=10 max=40 avg=20
 				for(ap_int<7> x=0;x<size_x;x++){
+#pragma HLS LOOP_TRIPCOUNT min=10 max=40 avg=20
 //#pragma HLS PIPELINE
 					boxes[z][y][x].setX(x);
 					boxes[z][y][x].setY(y);
@@ -38,10 +41,12 @@ public:
 			}
 		}
 		for(ap_int<8> i=1;i<=line_num;i++){
+#pragma HLS LOOP_TRIPCOUNT min=10 max=90 avg=50
 //#pragma HLS PIPELINE
 			lines[i].setIndex(i);
 		}
 		for(ap_int<8> v=1;v<=via_num;v++){
+#pragma HLS LOOP_TRIPCOUNT min=5 max=45 avg=25
 //#pragma HLS PIPELINE
 			vias[v].setIndex(v);
 		}
@@ -58,8 +63,11 @@ public:
 		via_num = _vi;
 
 		for(ap_int<5> z=0;z<size_z;z++){
+#pragma HLS LOOP_TRIPCOUNT min=1 max=8 avg=2
 			for(ap_int<7> y=0;y<size_y;y++){
+#pragma HLS LOOP_TRIPCOUNT min=10 max=40 avg=20
 				for(ap_int<7> x=0;x<size_x;x++){
+#pragma HLS LOOP_TRIPCOUNT min=10 max=40 avg=20
 //#pragma HLS PIPELINE
 					boxes[z][y][x].setX(x);
 					boxes[z][y][x].setY(y);
@@ -68,10 +76,12 @@ public:
 			}
 		}
 		for(ap_int<8> i=1;i<=line_num;i++){
+#pragma HLS LOOP_TRIPCOUNT min=10 max=90 avg=50
 //#pragma HLS PIPELINE
 			lines[i].setIndex(i);
 		}
 		for(ap_int<8> v=1;v<=via_num;v++){
+#pragma HLS LOOP_TRIPCOUNT min=5 max=45 avg=25
 //#pragma HLS PIPELINE
 			vias[v].setIndex(v);
 		}
