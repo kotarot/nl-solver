@@ -50,38 +50,35 @@ int main()
     XNlsolver *p_nlsolver = &nlsolver;
     XNlsolver_Config *p_nlsolver_config = NULL;
 
+    // Look Up the device configuratoin
     p_nlsolver_config = XNlsolver_LookupConfig (XPAR_NLSOLVER_0_DEVICE_ID);
     if (!p_nlsolver_config) {
         fprintf (stderr, "XNlsolver Config Lookup failed.\r\n");
         return -1;
     }
 
+    // Initialize the Device
     int XNlsolver_status = XNlsolver_CfgInitialize (p_nlsolver, p_nlsolver_config);
     if (XNlsolver_status != XST_SUCCESS) {
         fprintf (stderr, "XNlsolver Configuration failed.\r\n");
         return -1;
     }
 
-    xil_printf("XNLSOLVER_SLV0_ADDR_BOARDMAT_BASE=%d\r\n", XNLSOLVER_SLV0_ADDR_BOARDMAT_BASE);
-
-    int length = XNlsolver_Write_boardmat_Words(p_nlsolver, 0,
-                                                (int *)boardmat,
-                                                XNLSOLVER_SLV0_DEPTH_BOARDMAT);
-    xil_printf("length=%d\r\n", length);
-
     while (1) {
         int val;
         xil_printf("Start?\r\n");
         scanf("%d", &val);
+        XNlsolver_Write_boardmat_V_Bytes (p_nlsolver, 0, (char *)boardmat, XNLSOLVER_AXI4LS_DEPTH_BOARDMAT_V);
+
+        while ( !XNlsolver_IsIdle (p_nlsolver) );
 
         xil_printf("XNlsolver_Start\r\n");
-
         XNlsolver_Start (p_nlsolver);
 
-        while (!XNlsolver_IsDone (p_nlsolver));
+        while ( !XNlsolver_IsDone (p_nlsolver) );
 
         xil_printf("XNlsolver_Reading\r\n");
-        XMatrix_mul_Read_boardmat_Words (p_boardmat, 0, (int *)boardmat, XNLSOLVER_SLV0_DEPTH_BOARDMAT);
+        XNlsolver_Read_boardmat_V_Bytes (p_nlsolver, 0, (char *)boardmat, XNLSOLVER_AXI4LS_DEPTH_BOARDMAT_V);
 
         // 解表示
         xil_printf ("SOLUTION\r\n");
