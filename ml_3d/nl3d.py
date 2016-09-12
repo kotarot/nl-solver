@@ -142,6 +142,11 @@ def read_probfile(filename, n_dims):
             snk = tokens[-1].split(',')
             _boards[int(src[2]) - 1][int(src[1])][int(src[0])] = {'data': via_id, 'type': 'via', 'shape': via_cnt}
             _boards[int(snk[2]) - 1][int(snk[1])][int(snk[0])] = {'data': via_id, 'type': 'via', 'shape': via_cnt}
+            # Inter viaがある時，中間のviaは障害物として扱う
+            if len(tokens) > 3:
+                for tcnt in range(2, len(tokens)-1):
+                    tvia = tokens[tcnt].split(',')
+                    _boards[int(tvia[2]) - 1][int(tvia[1])][int(tvia[0])] = {'data': -1, 'type': -1, 'shape': -1}
             via_cnt += 1
 
     # 左右の番兵
