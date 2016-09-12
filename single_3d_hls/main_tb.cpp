@@ -40,9 +40,9 @@ int main() {
 	ap_int<8> status;
 	bool result = nlsolver(boardstr, &status);
 	if (result)
-		cout << endl << "Test Passed!" << endl;
+		cout << "Test Passed!" << endl;
 	else
-		cout << endl << "Test Failed!" << endl;
+		cout << "Test Failed!" << endl;
 	cout << "status = " << status << endl << endl;
 
 	// 解表示
