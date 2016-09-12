@@ -46,8 +46,7 @@ bool final_routing(const ap_int<8> trgt_line_id, Board *board, ap_int<8> *output
 	IntraBox_1* start;
 	Search qu[MAX_SEARCH];
 //#pragma HLS ARRAY_PARTITION variable=qu cyclic factor=10 dim=0
-	ap_int<32> qu_head = 0;
-	ap_int<32> qu_tail = 0;
+	ap_int<16> qu_head, qu_tail;
 
 	ap_int<5> start_z = trgt_line->getSourceZ();
 	ap_int<5> end_z = trgt_line->getSinkZ();
@@ -56,6 +55,9 @@ bool final_routing(const ap_int<8> trgt_line_id, Board *board, ap_int<8> *output
 /* ********************************
  * Phase 1: ソース層の探索
  ******************************** */
+
+	qu_head = 0;
+	qu_tail = 0;
 
 	// スタート地点の設定
 	start_x = trgt_line->getSourceX();
@@ -224,6 +226,9 @@ bool final_routing(const ap_int<8> trgt_line_id, Board *board, ap_int<8> *output
  ******************************** */
 
 	if(start_z != end_z){
+
+		qu_head = 0;
+		qu_tail = 0;
 
 		for (ap_int<8> i = 1; i <= board->getViaNum(); i++) {
 #pragma HLS LOOP_TRIPCOUNT min=5 max=45 avg=25

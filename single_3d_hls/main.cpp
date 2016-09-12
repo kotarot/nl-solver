@@ -52,9 +52,9 @@ bool nlsolver(char boardstr[BOARDSTR_SIZE], ap_int<8> *status) {
 	//int line_to_via_priority[100];	// Lineに対応するViaの優先度(*数字が高いほど重要！)
 	//int via_priority;				// 採用するViaの優先度
 
-	ap_int<12> penalty_T; // penalty of "touch"
-	ap_int<12> penalty_C; // penalty of "cross"
-	ap_int<12> penalty_V; // penalty of "via duplication"
+	ap_int<16> penalty_T; // penalty of "touch"
+	ap_int<16> penalty_C; // penalty of "cross"
+	ap_int<16> penalty_V; // penalty of "via duplication"
 
 	Board boardobj;
 	initialize(boardstr, &boardobj); // 問題盤の生成
