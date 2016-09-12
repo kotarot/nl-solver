@@ -36,7 +36,7 @@ args = parser.parse_args()
 
 # 学習データ
 # PICKLE = './ml/dump/s{}_u200_e2000_dwindowxb_tnone.pkl'.format(args.size)
-PICKLE = './ml_3d/dump/s{}_u200_e1000_mddv8_tT01A06.pkl'.format(args.size)
+PICKLE = './ml_3d/dump/s{}_u500_e2000_mddv8_tnone.pkl'.format(args.size)
 
 
 def worker_2014():
