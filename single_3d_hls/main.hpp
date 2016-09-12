@@ -36,10 +36,10 @@ using namespace std;
 #define WEST  3
 
 // Intra-Box
-#define NE 1
-#define NW 2
-#define SE 3
-#define SW 4
+#define NE 0
+#define NW 1
+#define SE 2
+#define SW 3
 
 // Touch & Cross
 #define NT 1  // ループ毎にペナルティの更新するときの定数 (タッチ)
