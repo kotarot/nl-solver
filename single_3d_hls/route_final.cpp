@@ -440,10 +440,10 @@ if (debug_option) { /*** デバッグ用*/
 
 	ap_int<7> now_x = trgt_line->getSinkX();
 	ap_int<7> now_y = trgt_line->getSinkY();
-	ap_int<8> next_direction_array[4];
+	ap_uint<2> next_direction_array[4];
 #pragma HLS ARRAY_PARTITION variable=next_direction_array complete dim=0
-	ap_int<8> next_direction_array_index = 0;
-	ap_int<8> next_count, next_id;
+	ap_uint<3> next_direction_array_index = 0;
+	ap_int<8> next_count; ap_uint<2> next_id;
 
 	Direction_R trgt_d;
 

@@ -30,10 +30,10 @@ using namespace std;
 #define NOT_USE -1
 
 // Inter-Box
-#define NORTH 1
-#define EAST  2
-#define SOUTH 3
-#define WEST  4
+#define NORTH 0
+#define EAST  1
+#define SOUTH 2
+#define WEST  3
 
 // Intra-Box
 #define NE 1
@@ -57,7 +57,7 @@ using namespace std;
 #define MAX_LINES 100
 #define MAX_VIAS  100
 #define MAX_TRACKS 160
-#define MAX_SEARCH 1000
+#define MAX_SEARCH 8000
 
 #define BOARDSTR_SIZE 12800 // = 8 * 40 * 40
 
