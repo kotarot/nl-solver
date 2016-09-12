@@ -83,12 +83,17 @@ int main()
         XNlsolver_Start (p_nlsolver);
 
         while ( !XNlsolver_IsDone (p_nlsolver) );
+        xil_printf("Done!\r\n");
 
-        xil_printf("XNlsolver_Read_boardstr_Bytes\r\n");
+        //xil_printf("XNlsolver_Read_boardstr_Bytes\r\n");
         XNlsolver_Read_boardstr_Bytes (p_nlsolver, 0, str, XNLSOLVER_AXI4LS_DEPTH_BOARDSTR);
         int status = XNlsolver_Get_status_V (p_nlsolver);
 
-        xil_printf("status = %d\r\n", status);
+        if (status == 0)
+            xil_printf("Passed!\r\n");
+        else
+            xil_printf("Failed!\r\n");
+        xil_printf("status = %d\r\n\r\n", status);
 
         // 解表示
         xil_printf ("SOLUTION\r\n");
@@ -107,7 +112,7 @@ int main()
                 xil_printf ("\r\n");
             }
         }
-        xil_printf("\r\n");
+        xil_printf ("========\r\n\r\n");
     }
 
     //cleanup_platform();
