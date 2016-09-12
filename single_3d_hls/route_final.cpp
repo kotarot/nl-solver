@@ -105,7 +105,7 @@ bool final_routing(const ap_int<8> trgt_line_id, Board *board, ap_int<8> *output
 			else if((find_ibox->d).e){ previous = EAST; turn_count++; }
 			else if((find_ibox->d).w){ previous = WEST; turn_count++; }
 			// コスト
-			ap_int<16> cost = (find_ibox->cost) + ML + turn_count * BT;
+			ap_int<12> cost = (find_ibox->cost) + ML + turn_count * BT;
 			if(cost < trgt_ibox->cost){
 				update = true;
 				trgt_ibox->cost = cost;
@@ -129,7 +129,7 @@ bool final_routing(const ap_int<8> trgt_line_id, Board *board, ap_int<8> *output
 			else if((find_ibox->d).n){ previous = NORTH; turn_count++; }
 			else if((find_ibox->d).s){ previous = SOUTH; turn_count++; }
 			// コスト
-			ap_int<16> cost = (find_ibox->cost) + ML + turn_count * BT;
+			ap_int<12> cost = (find_ibox->cost) + ML + turn_count * BT;
 			if(cost < trgt_ibox->cost){
 				update = true;
 				trgt_ibox->cost = cost;
@@ -153,7 +153,7 @@ bool final_routing(const ap_int<8> trgt_line_id, Board *board, ap_int<8> *output
 			else if((find_ibox->d).e){ previous = EAST; turn_count++; }
 			else if((find_ibox->d).w){ previous = WEST; turn_count++; }
 			// コスト
-			ap_int<16> cost = (find_ibox->cost) + ML + turn_count * BT;
+			ap_int<12> cost = (find_ibox->cost) + ML + turn_count * BT;
 			if(cost < trgt_ibox->cost){
 				update = true;
 				trgt_ibox->cost = cost;
@@ -177,7 +177,7 @@ bool final_routing(const ap_int<8> trgt_line_id, Board *board, ap_int<8> *output
 			else if((find_ibox->d).n){ previous = NORTH; turn_count++; }
 			else if((find_ibox->d).s){ previous = SOUTH; turn_count++; }
 			// コスト
-			ap_int<16> cost = (find_ibox->cost) + ML + turn_count * BT;
+			ap_int<12> cost = (find_ibox->cost) + ML + turn_count * BT;
 			if(cost < trgt_ibox->cost){
 				update = true;
 				trgt_ibox->cost = cost;
@@ -289,7 +289,7 @@ bool final_routing(const ap_int<8> trgt_line_id, Board *board, ap_int<8> *output
 			else if((find_ibox->d).e){ previous = EAST; turn_count++; }
 			else if((find_ibox->d).w){ previous = WEST; turn_count++; }
 			// コスト
-			ap_int<16> cost = (find_ibox->cost) + ML + turn_count * BT;
+			ap_int<12> cost = (find_ibox->cost) + ML + turn_count * BT;
 			if(cost < trgt_ibox->cost){
 				update = true;
 				trgt_ibox->cost = cost;
@@ -313,7 +313,7 @@ bool final_routing(const ap_int<8> trgt_line_id, Board *board, ap_int<8> *output
 			else if((find_ibox->d).n){ previous = NORTH; turn_count++; }
 			else if((find_ibox->d).s){ previous = SOUTH; turn_count++; }
 			// コスト
-			ap_int<16> cost = (find_ibox->cost) + ML + turn_count * BT;
+			ap_int<12> cost = (find_ibox->cost) + ML + turn_count * BT;
 			if(cost < trgt_ibox->cost){
 				update = true;
 				trgt_ibox->cost = cost;
@@ -337,7 +337,7 @@ bool final_routing(const ap_int<8> trgt_line_id, Board *board, ap_int<8> *output
 			else if((find_ibox->d).e){ previous = EAST; turn_count++; }
 			else if((find_ibox->d).w){ previous = WEST; turn_count++; }
 			// コスト
-			ap_int<16> cost = (find_ibox->cost) + ML + turn_count * BT;
+			ap_int<12> cost = (find_ibox->cost) + ML + turn_count * BT;
 			if(cost < trgt_ibox->cost){
 				update = true;
 				trgt_ibox->cost = cost;
@@ -361,7 +361,7 @@ bool final_routing(const ap_int<8> trgt_line_id, Board *board, ap_int<8> *output
 			else if((find_ibox->d).n){ previous = NORTH; turn_count++; }
 			else if((find_ibox->d).s){ previous = SOUTH; turn_count++; }
 			// コスト
-			ap_int<16> cost = (find_ibox->cost) + ML + turn_count * BT;
+			ap_int<12> cost = (find_ibox->cost) + ML + turn_count * BT;
 			if(cost < trgt_ibox->cost){
 				update = true;
 				trgt_ibox->cost = cost;
