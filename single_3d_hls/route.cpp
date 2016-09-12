@@ -40,7 +40,7 @@ bool routing(const ap_int<8> trgt_line_id, const ap_uint<16> penalty_T, const ap
 #pragma HLS LOOP_TRIPCOUNT min=10 max=40 avg=20
 		for (ap_int<7> x = 0; x < board->getSizeX(); x++) {
 #pragma HLS LOOP_TRIPCOUNT min=10 max=40 avg=20
-#pragma HLS PIPELINE
+////#pragma HLS PIPELINE
 			my_board_1[y][x] = init;
 			my_board_2[y][x] = init;
 		}
@@ -389,7 +389,7 @@ bool routing(const ap_int<8> trgt_line_id, const ap_uint<16> penalty_T, const ap
 
 		for(ap_int<8> i=1;i<=board->getViaNum();i++){
 #pragma HLS LOOP_TRIPCOUNT min=5 max=45 avg=25
-#pragma HLS PIPELINE
+////#pragma HLS PIPELINE
 			Via* trgt_via = board->via(i);
 			if(trgt_via->getSourceZ()!=start_z || trgt_via->getSinkZ()!=end_z) continue;
 			if(sp_via_id > 0 && sp_via_id != i) continue;
@@ -809,7 +809,6 @@ if (debug_option) { /*** デバッグ用*/
 		intra_box = NE;
 		for (ap_int<16> loop_count = 0; loop_count <= MAX_TRACKS; loop_count++) {
 //#pragma HLS PIPELINE // ONにするとLUTリソースオーバーする
-
 			Point p = {now_x, now_y, end_z};
 			trgt_line->track[trgt_line->track_index] = p; (trgt_line->track_index)++;
 
@@ -978,11 +977,11 @@ void routing_arrange(Line *trgt_line) {
 
 		// トラックを一時退避
 		Point tmp_track[MAX_TRACKS];
-#pragma HLS ARRAY_PARTITION variable=tmp_track complete dim=0
+////#pragma HLS ARRAY_PARTITION variable=tmp_track complete dim=0
 		int tmp_track_index = 0;
 		for (ap_int<16> i = 0; i < trgt_line->track_index; i++) {
 #pragma HLS LOOP_TRIPCOUNT min=10 max=160 avg=40
-#pragma HLS PIPELINE
+////#pragma HLS PIPELINE
 			tmp_track[tmp_track_index] = trgt_line->track[i];
 			tmp_track_index++;
 		}
@@ -991,7 +990,7 @@ void routing_arrange(Line *trgt_line) {
 		trgt_line->track_index = 0;
 		for (ap_int<16> i = 0; i < tmp_track_index; i++) {
 #pragma HLS LOOP_TRIPCOUNT min=10 max=160 avg=40
-#pragma HLS PIPELINE
+////#pragma HLS PIPELINE
 			if (tmp_track_index - 2 <= i) {
 				trgt_line->track[trgt_line->track_index] = tmp_track[i];
 				(trgt_line->track_index)++;

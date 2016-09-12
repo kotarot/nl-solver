@@ -27,14 +27,14 @@
 #include "mt19937ar.hpp"
 
 void mt_init_genrand(unsigned long s) {
-#pragma HLS INLINE
+////#pragma HLS INLINE
 	init_genrand(s);
 }
 
 // AからBの範囲の整数の乱数が欲しいとき
 // 参考 http://www.sat.t.u-tokyo.ac.jp/~omi/random_variables_generation.html
 unsigned long mt_genrand_int32(int a, int b) {
-#pragma HLS INLINE
+////#pragma HLS INLINE
 	return genrand_int32() % (b - a + 1) + a;
 }
 
