@@ -21,11 +21,11 @@ int main()
     print("\r\n\r\n");
     print("Hello World\r\n");
 
+#if 0
     int size_x = 10, size_y = 5, size_z = 3;
     //int line_num = 4;
     //int via_num = 2;
 
-#if 0
     // テストデータ (マトリックス形式)
     int x, y, z;
     char boardmat[MAX_LAYER][MAX_BOXES][MAX_BOXES];
@@ -66,10 +66,16 @@ int main()
     }
 
     while (1) {
+        char boardstr[12800];
         char str[12800];
-        xil_printf("Start?\r\n");
-        scanf("%s", str);
-        xil_printf("%s\r\n", str);
+        int i, x, y, z;
+
+        xil_printf("Problem?\r\n");
+        scanf("%s", boardstr);
+        xil_printf("%s\r\n", boardstr);
+        for (i = 0; i < 12800; i++)
+            str[i] = boardstr[i];
+
         XNlsolver_Write_boardstr_Bytes (p_nlsolver, 0, str, XNLSOLVER_AXI4LS_DEPTH_BOARDSTR);
 
         while ( !XNlsolver_IsIdle (p_nlsolver) );
@@ -79,13 +85,16 @@ int main()
 
         while ( !XNlsolver_IsDone (p_nlsolver) );
 
-        xil_printf("XNlsolver_Reading\r\n");
+        xil_printf("XNlsolver_Read_boardstr_Bytes\r\n");
         XNlsolver_Read_boardstr_Bytes (p_nlsolver, 0, str, XNLSOLVER_AXI4LS_DEPTH_BOARDSTR);
 
         // 解表示
         xil_printf ("SOLUTION\r\n");
         xil_printf ("========\r\n");
-        int x, y, z, i = 0;
+        int size_x = (boardstr[1] - '0') * 10 + (boardstr[2] - '0');
+        int size_y = (boardstr[4] - '0') * 10 + (boardstr[5] - '0');
+        int size_z = (boardstr[7] - '0');
+        i = 0;
         for (z = 0; z < size_z; z++) {
             xil_printf ("LAYER %d\r\n", z + 1);
             for (y = 0; y < size_y; y++) {
