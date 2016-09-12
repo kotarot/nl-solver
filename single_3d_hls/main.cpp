@@ -97,7 +97,7 @@ bool nlsolver(char boardstr[BOARDSTR_SIZE], ap_int<8> *status) {
 
 	// 探索スタート!!
 	// 外ループ
-	for (ap_int<16> m = 2; m <= outer_loops + 1; m++) {
+	for (ap_uint<12> m = 2; m <= outer_loops + 1; m++) {
 #pragma HLS LOOP_TRIPCOUNT min=10 max=1000 avg=100
 
 		// 解導出フラグ
@@ -109,7 +109,7 @@ bool nlsolver(char boardstr[BOARDSTR_SIZE], ap_int<8> *status) {
 //		}
 
 		// 内ループ
-		for (ap_int<16> n = 1; n <= I_LOOP; n++) { // 内ループ
+		for (ap_uint<12> n = 1; n <= I_LOOP; n++) { // 内ループ
 #pragma HLS LOOP_TRIPCOUNT min=10 max=1000 avg=100
 
 			//cout << m-1 << ":" << n << endl;
