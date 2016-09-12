@@ -46,7 +46,7 @@ bool nlsolver(char boardstr[BOARDSTR_SIZE], ap_int<8> *status) {
 
 	*status = -127;
 
-	ap_int<16> outer_loops = O_LOOP;  // 外ループ回数
+	//ap_int<16> outer_loops = O_LOOP;  // 外ループ回数
 
 	//int line_to_viaid[100];			// Lineと対応するViaの内部ID対応
 	//int line_to_via_priority[100];	// Lineに対応するViaの優先度(*数字が高いほど重要！)
@@ -97,7 +97,7 @@ bool nlsolver(char boardstr[BOARDSTR_SIZE], ap_int<8> *status) {
 
 	// 探索スタート!!
 	// 外ループ
-	for (ap_uint<12> m = 2; m <= outer_loops + 1; m++) {
+	for (ap_uint<10> m = 2; m <= O_LOOP + 1; m++) {
 #pragma HLS LOOP_TRIPCOUNT min=10 max=1000 avg=100
 
 		// 解導出フラグ
@@ -109,7 +109,7 @@ bool nlsolver(char boardstr[BOARDSTR_SIZE], ap_int<8> *status) {
 //		}
 
 		// 内ループ
-		for (ap_uint<12> n = 1; n <= I_LOOP; n++) { // 内ループ
+		for (ap_uint<10> n = 1; n <= I_LOOP; n++) { // 内ループ
 #pragma HLS LOOP_TRIPCOUNT min=10 max=1000 avg=100
 
 			//cout << m-1 << ":" << n << endl;
