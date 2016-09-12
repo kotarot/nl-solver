@@ -66,15 +66,14 @@ int main()
     }
 
     while (1) {
-        char boardstr[12800];
         char str[12800];
-        int i, x, y, z;
 
         xil_printf("Problem?\r\n");
-        scanf("%s", boardstr);
-        xil_printf("%s\r\n", boardstr);
-        for (i = 0; i < 12800; i++)
-            str[i] = boardstr[i];
+        scanf("%s", str);
+        xil_printf("%s\r\n", str);
+        int size_x = (str[1] - '0') * 10 + (str[2] - '0');
+        int size_y = (str[4] - '0') * 10 + (str[5] - '0');
+        int size_z = (str[7] - '0');
 
         XNlsolver_Write_boardstr_Bytes (p_nlsolver, 0, str, XNLSOLVER_AXI4LS_DEPTH_BOARDSTR);
 
@@ -87,24 +86,28 @@ int main()
 
         xil_printf("XNlsolver_Read_boardstr_Bytes\r\n");
         XNlsolver_Read_boardstr_Bytes (p_nlsolver, 0, str, XNLSOLVER_AXI4LS_DEPTH_BOARDSTR);
+        int status = XNlsolver_Get_status_V (p_nlsolver);
+
+        xil_printf("status = %d\r\n", status);
 
         // 解表示
         xil_printf ("SOLUTION\r\n");
         xil_printf ("========\r\n");
-        int size_x = (boardstr[1] - '0') * 10 + (boardstr[2] - '0');
-        int size_y = (boardstr[4] - '0') * 10 + (boardstr[5] - '0');
-        int size_z = (boardstr[7] - '0');
-        i = 0;
+        int x, y, z, i = 0;
+        xil_printf("SIZE %dX%dX%d\r\n", size_x, size_y, size_z);
         for (z = 0; z < size_z; z++) {
             xil_printf ("LAYER %d\r\n", z + 1);
             for (y = 0; y < size_y; y++) {
                 for (x = 0; x < size_x; x++) {
-                    xil_printf (" %d", (int)(str[i]));
+                    if (x != 0)
+                        xil_printf (",");
+                    xil_printf ("%02d", (int)(str[i]));
                     i++;
                 }
                 xil_printf ("\r\n");
             }
         }
+        xil_printf("\r\n");
     }
 
     //cleanup_platform();
