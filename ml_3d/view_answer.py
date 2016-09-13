@@ -54,6 +54,7 @@ def show_board(_boards, _pboards=None, show_float=False):
             print ''
 
 board_x, board_y, board_z, boards = nl3d.read_ansfile(input_answer, n_dims)
+pboards = None
 if problem_file is not None:
     _, _, _, pboards = nl3d.read_probfile(problem_file, n_dims)
 show_board(boards, pboards)
