@@ -21,6 +21,7 @@ http://ja.pymotw.com/2/multiprocessing/basics.html
 
 import argparse
 import multiprocessing
+import os
 import shutil
 import subprocess
 import sys
@@ -111,10 +112,19 @@ def worker_2016(i, results):
     #sys.stdout.flush()
     print out
 
-    judges = nlc.check(nlc.read_input_file('{}.txt'.format(args.input)), nlc.read_target_file('A{}_{}.txt'.format(args.input, i)))
-    print judges
+    # ベスト解答ファイルと品質を比較する
+    judges_this = nlc.check(nlc.read_input_file('{}.txt'.format(args.input)), nlc.read_target_file('A{}_{}.txt'.format(args.input, i)))
+    print judges_this
     sys.stdout.flush()
-    results['A{}_{}.txt'.format(args.input, i)] = judges
+    if not os.path.isfile('T03_A%s.txt' % (args.input[4:6])):
+        shutil.copyfile('A{}_{}.txt'.format(args.input, i), 'T03_A%s.txt' % (args.input[4:6]))
+    else:
+        judges = nlc.check(nlc.read_input_file('{}.txt'.format(args.input)), nlc.read_target_file('T03_A%s.txt' % args.input[4:6]))
+        print judges
+        sys.stdout.flush()
+        if judges_this[0][0] and judges[0][1] < judges_this[0][1]:
+            shutil.copyfile('A{}_{}.txt'.format(args.input, i), 'T03_A%s.txt' % (args.input[4:6]))
+    results['A{}_{}.txt'.format(args.input, i)] = judges_this
 
     return
 
@@ -135,10 +145,19 @@ def worker_2016_ml(th, results):
     print 'Worker 2016 (with ml) Exiting :', p.name, p.pid
     sys.stdout.flush()
 
-    judges = nlc.check(nlc.read_input_file('{}_ml.txt'.format(args.input)), nlc.read_target_file('A{}ml_{}.txt'.format(args.input, th)))
-    print judges
+    # ベスト解答ファイルと品質を比較する
+    judges_this = nlc.check(nlc.read_input_file('{}_ml.txt'.format(args.input)), nlc.read_target_file('A{}ml_{}.txt'.format(args.input, th)))
+    print judges_this
     sys.stdout.flush()
-    results['A{}ml_{}.txt'.format(args.input, th)] = judges
+    if not os.path.isfile('T03_A%s.txt' % (args.input[4:6])):
+        shutil.copyfile('A{}ml_{}.txt'.format(args.input, th), 'T03_A%s.txt' % (args.input[4:6]))
+    else:
+        judges = nlc.check(nlc.read_input_file('{}_ml.txt'.format(args.input)), nlc.read_target_file('T03_A%s.txt' % args.input[4:6]))
+        print judges
+        sys.stdout.flush()
+        if judges_this[0][0] and judges[0][1] < judges_this[0][1]:
+            shutil.copyfile('A{}ml_{}.txt'.format(args.input, th), 'T03_A%s.txt' % (args.input[4:6]))
+    results['A{}ml_{}.txt'.format(args.input, th)] = judges_this
 
     return
 
@@ -189,7 +208,7 @@ if __name__ == '__main__':
         # このスクリプトは最大10分実行する
         time.sleep(600)
 
-        post_proc(results)
+        #post_proc(results)
 
 #    except:
 #        print 'Exception!'
