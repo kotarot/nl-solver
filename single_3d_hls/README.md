@@ -8,7 +8,13 @@ Vivado HLS 用 single_3d
 * Vivado HLS 2016.2
 * Vivado 2016.2
 
-高位合成は、Clock period 10.0ns, Uncertainty 2.0ns で合成。
+高位合成オプション:
+* Clock Period: 10.0
+* Clock Uncertainty 2.0ns
+
+論理合成のオプション:
+* Synthesis strategy: Vivado Synthesis Defaults
+* Implementation strategy: Performance_ExplorePostRoutePhysOpt
 
 
 ## 入出力
