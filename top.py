@@ -21,10 +21,14 @@ http://ja.pymotw.com/2/multiprocessing/basics.html
 
 import argparse
 import multiprocessing
+import shutil
 import subprocess
 import sys
 import time
 
+sys.path.append('../conmgr/server')
+import nlcheck
+nlc = nlcheck.NLCheck()
 
 parser = argparse.ArgumentParser(description='Top script')
 parser.add_argument('input', nargs=None, default=None, type=str,
@@ -91,7 +95,7 @@ def worker_2015(level):
 
     return
 
-def worker_2016(i):
+def worker_2016(i, results):
     """ 2016手法: タッチアンドクロス3D """
     p = multiprocessing.current_process()
     print 'Worker 2016 Starting:', p.name, p.pid
@@ -99,16 +103,22 @@ def worker_2016(i):
 
     time.sleep((i+1)/1000.0)
 
-    cmd = './single_3d/solver --loop 500 --output A{}.txt {}.txt'.format(args.input, args.input)
+    cmd = './single_3d/solver --output A{}_{}.txt {}.txt'.format(args.input, i, args.input)
     print 'Worker 2016 [1]:', cmd
-    subprocess.call(cmd.strip().split(' '))
+    out = subprocess.check_output(cmd.strip().split(' '))
 
     print 'Worker 2016 Exiting :', p.name, p.pid
+    #sys.stdout.flush()
+    print out
+
+    judges = nlc.check(nlc.read_input_file('{}.txt'.format(args.input)), nlc.read_target_file('A{}_{}.txt'.format(args.input, i)))
+    print judges
     sys.stdout.flush()
+    results['A{}_{}.txt'.format(args.input, i)] = judges
 
     return
 
-def worker_2016_ml(th):
+def worker_2016_ml(th, results):
     """ 2016手法: 機械学習3D＋タッチアンドクロス3D """
     p = multiprocessing.current_process()
     print 'Worker 2016 (with ml) Starting:', p.name, p.pid
@@ -118,33 +128,72 @@ def worker_2016_ml(th):
     print 'Worker 2016 (with ml) [0]:', cmd
     subprocess.call(cmd.strip().split(' '))
 
-    cmd = './single_3d/solver --loop 500 --output A{}ml.txt {}_ml.txt'.format(args.input, args.input)
+    cmd = './single_3d/solver --output A{}ml_{}.txt {}_ml.txt'.format(args.input, th, args.input)
     print 'Worker 2016 (with ml) [1]:', cmd
     subprocess.call(cmd.strip().split(' '))
 
     print 'Worker 2016 (with ml) Exiting :', p.name, p.pid
     sys.stdout.flush()
 
+    judges = nlc.check(nlc.read_input_file('{}_ml.txt'.format(args.input)), nlc.read_target_file('A{}ml_{}.txt'.format(args.input, th)))
+    print judges
+    sys.stdout.flush()
+    results['A{}ml_{}.txt'.format(args.input, th)] = judges
+
     return
 
 
+# (その時点で) 最も良い答えを採用する
+def post_proc(results):
+    print ''
+    print 'Top script Finished!'
+    print results
+
+    if len(results) != 0:
+        best_answer = None
+        best_quality = -1.0
+        for fn, result in results.items():
+            if best_quality < result[0][1]:
+                best_answer = fn
+                best_quality = result[0][1]
+
+        print 'Best answer: %s (%lf)' % (best_answer, best_quality)
+        shutil.copyfile(best_answer, 'T03_A%s.txt' % (best_answer[5:7]))
+
+
 if __name__ == '__main__':
-    jobs = []
+        jobs = []
+        manager = multiprocessing.Manager()
+        results = manager.dict()
 
-    # 2016手法: タッチアンドクロス3D
-    for i in range(0, 2):
-        p = multiprocessing.Process(name='a-2016-{}'.format(i), target=worker_2016, args=(i,))
-        #p.daemon = True
-        jobs.append(p)
-        p.start()
+    # Ctrl-C シグナルを捕まえても終了処理をする
+#    try:
 
-    # 2016手法: 機械学習3D＋タッチアンドクロス3D
-    ths = [0, 5]
-    for i in range(0, 2):
-        p = multiprocessing.Process(name='a-2016-ml-{}'.format(i), target=worker_2016_ml, args=(ths[i],))
-        #p.daemon = True
-        jobs.append(p)
-        p.start()
+        # 2016手法: タッチアンドクロス3D
+        for i in range(0, 2):
+            p = multiprocessing.Process(name='a-2016-{}'.format(i), target=worker_2016, args=(i, results))
+            #p.daemon = True
+            jobs.append(p)
+            p.start()
+            #p.join()
 
-    # このスクリプトは最大10分実行する
-    time.sleep(600)
+        # 2016手法: 機械学習3D＋タッチアンドクロス3D
+        ths = [0, 5]
+        for i in range(0, 2):
+            p = multiprocessing.Process(name='a-2016-ml-{}'.format(i), target=worker_2016_ml, args=(ths[i], results))
+            #p.daemon = True
+            jobs.append(p)
+            p.start()
+            #p.join()
+
+        # このスクリプトは最大10分実行する
+        time.sleep(600)
+
+        post_proc(results)
+
+#    except:
+#        print 'Exception!'
+#        raise
+#
+#    finally:
+#        post_proc(results)
