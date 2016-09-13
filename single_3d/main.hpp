@@ -40,8 +40,8 @@ using namespace std;
 #define ML 1  // コストの計算（配線長）
 #define BT 1  // コストの計算（曲がり回数）
 
-#define O_LOOP  500 // 外ループ回数
-#define I_LOOP 2000 // 内ループ回数
+#define O_LOOP 1000 // 外ループ回数
+#define I_LOOP 1000 // 内ループ回数
 
 struct Point{
 	int x;
