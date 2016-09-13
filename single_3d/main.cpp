@@ -81,7 +81,7 @@ int main(int argc, char *argv[]){
 if( print_option ) { printBoard(); }
 
 	// 乱数の初期化
-	mt_init_genrand((unsigned long)time(NULL));
+	mt_init_genrand((unsigned long)getpid());
 	// ペナルティの初期化
 	penalty_T = 0;
 	penalty_C = 0;
