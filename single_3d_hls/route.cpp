@@ -986,7 +986,7 @@ void routing_arrange(Line *trgt_line) {
 		int tmp_track_index = 0;
 		for (ap_uint<8> i = 0; i < trgt_line->track_index; i++) {
 #pragma HLS LOOP_TRIPCOUNT min=10 max=160 avg=40
-////#pragma HLS PIPELINE
+#pragma HLS PIPELINE
 			tmp_track[tmp_track_index] = trgt_line->track[i];
 			tmp_track_index++;
 		}
@@ -995,7 +995,7 @@ void routing_arrange(Line *trgt_line) {
 		trgt_line->track_index = 0;
 		for (ap_uint<8> i = 0; i < tmp_track_index; i++) {
 #pragma HLS LOOP_TRIPCOUNT min=10 max=160 avg=40
-////#pragma HLS PIPELINE
+#pragma HLS PIPELINE
 			if (tmp_track_index - 2 <= i) {
 				trgt_line->track[trgt_line->track_index] = tmp_track[i];
 				(trgt_line->track_index)++;
