@@ -18,115 +18,29 @@
 
 #include "./main.hpp"
 #include "./route.hpp"
-//#include "./utils.hpp"
 
 
-// ================================ //
-// メルセンヌ・ツイスタ
-// ================================ //
-#include "mt19937ar.hpp"
-
-#if 0
-void mt_init_genrand(unsigned long s) {
-	init_genrand(s);
-}
-#endif
-
-// AからBの範囲の整数の乱数が欲しいとき
-// 参考 http://www.sat.t.u-tokyo.ac.jp/~omi/random_variables_generation.html
-unsigned long mt_genrand_int32(int a, int b) {
-	return genrand_int32() % (b - a + 1) + a;
-}
-
-
-/**
- * 問題盤の初期化 (テスト用)
- */
-void initialize_test(Board *board, ap_int<7> size_x, ap_int<7> size_y, ap_int<5> size_z){
-
-	{
-		Box* trgt_box_0 = board->box(0, 0, 0);
-		Box* trgt_box_1 = board->box(4, 4, 1);
-		trgt_box_0->setTypeNumber();
-		trgt_box_1->setTypeNumber();
-		trgt_box_0->setIndex(1);
-		trgt_box_1->setIndex(1);
-		Line* trgt_line = board->line(1);
-		trgt_line->setSourcePort(0, 0, 0);
-		trgt_line->setSinkPort(4, 4, 1);
-		trgt_line->setHasLine(true);
-	}
-
-	{
-		Box* trgt_box_0 = board->box(2, 2, 0);
-		Box* trgt_box_1 = board->box(2, 2, 1);
-		trgt_box_0->setTypeVia();
-		trgt_box_1->setTypeVia();
-		trgt_box_0->setIndex(1);
-		trgt_box_1->setIndex(1);
-		Via* trgt_via = board->via(1);
-		trgt_via->setSourcePort(2, 2, 0);
-		trgt_via->setSinkPort(2, 2, 1);
-	}
-
-	for(ap_int<5> z=0;z<size_z;z++){
-		for(ap_int<7> y=0;y<size_y;y++){
-			for(ap_int<7> x=0;x<size_x;x++){
-				Box* trgt_box = board->box(x,y,z);
-				if(!(trgt_box->isTypeNumber() || trgt_box->isTypeVia() || trgt_box->isTypeInterVia()))
-					trgt_box->setTypeBlank();
-			}
-		}
-	}
-
-}
-
-bool routing(const ap_int<8> trgt_line_id, const ap_uint<16> penalty_T, const ap_uint<16> penalty_C, const ap_uint<16> penalty_V,
-    /*Board *board, ap_int<8> *output*/ ap_int<8> rawboard[MAX_LAYER][MAX_BOXES][MAX_BOXES]) {
-#pragma HLS INTERFACE s_axilite port=trgt_line_id bundle=AXI4LS
-#pragma HLS INTERFACE s_axilite port=penalty_T bundle=AXI4LS
-#pragma HLS INTERFACE s_axilite port=penalty_C bundle=AXI4LS
-#pragma HLS INTERFACE s_axilite port=penalty_V bundle=AXI4LS
-//#pragma HLS INTERFACE s_axilite port=board bundle=AXI4LS
-//#pragma HLS INTERFACE s_axilite port=output bundle=AXI4LS
-#pragma HLS INTERFACE s_axilite port=rawboard bundle=AXI4LS
-#pragma HLS INTERFACE s_axilite port=return bundle=AXI4LS
-
-	Board boardobj;
-	ap_int<7> size_x = 5, size_y = 6; ap_int<5> size_z = 2;
-	ap_int<8> line_num = 1;
-	ap_int<8> via_num = 1;
-
-	boardobj.init(size_x, size_y, size_z, line_num, via_num);
-	//Board *board = new Board(size_x, size_y, size_z, line_num, via_num);
-	initialize_test(&boardobj, size_x, size_y, size_z);
-
-	ap_int<8> output;
-	bool ret = routing_proc(trgt_line_id, penalty_T, penalty_C, penalty_V, &boardobj, &output);
-	recordLine(trgt_line_id, &boardobj);
-
-	return ret;
-}
-
-bool routing_proc(const ap_int<8> trgt_line_id, const ap_uint<16> penalty_T, const ap_uint<16> penalty_C, const ap_uint<16> penalty_V, Board *board, ap_int<8> *output){
+bool routing(const ap_int<8> trgt_line_id, const ap_uint<16> penalty_T, const ap_uint<16> penalty_C, const ap_uint<16> penalty_V, Board *board, ap_int<8> *output){
 
 	Line* trgt_line = board->line(trgt_line_id);
 	trgt_line->track_index = 0;
 
 	// ボードの初期化
 	IntraBox_4 my_board_1[MAX_BOXES][MAX_BOXES]; // ソース側のボード
-//#pragma HLS ARRAY_PARTITION variable=my_board_1 dim=1 complete
+//#pragma HLS ARRAY_PARTITION variable=my_board_1 complete dim=1
 	IntraBox_4 my_board_2[MAX_BOXES][MAX_BOXES]; // シンク側のボード
-//#pragma HLS ARRAY_PARTITION variable=my_board_2 dim=1 complete
+//#pragma HLS ARRAY_PARTITION variable=my_board_2 complete dim=2
 	IntraBox_4 init = {
-		32767, 32767, 32767, 32767, //INT_MAX,INT_MAX,INT_MAX,INT_MAX,
+		COST_MAX,COST_MAX,COST_MAX,COST_MAX,
 		{false,false,false,false},
 		{false,false,false,false},
 		{false,false,false,false},
 		{false,false,false,false}};
 	for (ap_int<7> y = 0; y < board->getSizeY(); y++) {
+#pragma HLS LOOP_TRIPCOUNT min=10 max=40 avg=20
 		for (ap_int<7> x = 0; x < board->getSizeX(); x++) {
-#pragma HLS PIPELINE
+#pragma HLS LOOP_TRIPCOUNT min=10 max=40 avg=20
+////#pragma HLS PIPELINE
 			my_board_1[y][x] = init;
 			my_board_2[y][x] = init;
 		}
@@ -134,17 +48,19 @@ bool routing_proc(const ap_int<8> trgt_line_id, const ap_uint<16> penalty_T, con
 	ap_int<7> start_x, start_y;
 	IntraBox_4* start;
 	Search qu[MAX_SEARCH];
-//#pragma HLS ARRAY_PARTITION variable=qu dim=0 complete
-	ap_int<32> qu_head = 0;
-	ap_int<32> qu_tail = 0;
+//#pragma HLS ARRAY_PARTITION variable=qu cyclic factor=20 dim=0
+	ap_int<16> qu_head, qu_tail;
 
-	ap_int<7> start_z = trgt_line->getSourceZ();
-	ap_int<7> end_z = trgt_line->getSinkZ();
+	ap_int<5> start_z = trgt_line->getSourceZ();
+	ap_int<5> end_z = trgt_line->getSinkZ();
 
 
 /* ********************************
  * Phase 1: ソース層の探索
  ******************************** */
+
+	qu_head = 0;
+	qu_tail = 0;
 
 	// スタート地点の設定
 	start_x = trgt_line->getSourceX();
@@ -176,7 +92,7 @@ bool routing_proc(const ap_int<8> trgt_line_id, const ap_uint<16> penalty_T, con
 
 	while (qu_head != qu_tail) {
 #pragma HLS LOOP_TRIPCOUNT min=100 max=100 avg=100
-//#pragma HLS PIPELINE
+//#pragma HLS PIPELINE // これONにするとメモリ使用率100%になる
 
 		Search trgt = qu[qu_head];
 		qu_head++;
@@ -455,6 +371,9 @@ bool routing_proc(const ap_int<8> trgt_line_id, const ap_uint<16> penalty_T, con
 
 	if(start_z != end_z){
 
+		qu_head = 0;
+		qu_tail = 0;
+
 		ap_int<8> sp_via_id = trgt_line->getSpecifiedVia();
 		if(sp_via_id >= 1 && sp_via_id <= board->getViaNum()){
 			Via* sp_via = board->via(sp_via_id);
@@ -465,8 +384,8 @@ bool routing_proc(const ap_int<8> trgt_line_id, const ap_uint<16> penalty_T, con
 			}
 			ap_int<7> sp_x = sp_via->getSourceX();
 			ap_int<7> sp_y = sp_via->getSourceY();
-			if(my_board_1[sp_y][sp_x].ne == INT_MAX || my_board_1[sp_y][sp_x].nw == INT_MAX ||
-			my_board_1[sp_y][sp_x].se == INT_MAX || my_board_1[sp_y][sp_x].sw == INT_MAX){
+			if(my_board_1[sp_y][sp_x].ne == COST_MAX || my_board_1[sp_y][sp_x].nw == COST_MAX ||
+			my_board_1[sp_y][sp_x].se == COST_MAX || my_board_1[sp_y][sp_x].sw == COST_MAX){
 				*output = 21; return false;
 				/*cout << "error! (error: 21)" << endl;
 				exit(21);*/
@@ -474,7 +393,8 @@ bool routing_proc(const ap_int<8> trgt_line_id, const ap_uint<16> penalty_T, con
 		}
 
 		for(ap_int<8> i=1;i<=board->getViaNum();i++){
-#pragma HLS PIPELINE
+#pragma HLS LOOP_TRIPCOUNT min=5 max=45 avg=25
+////#pragma HLS PIPELINE
 			Via* trgt_via = board->via(i);
 			if(trgt_via->getSourceZ()!=start_z || trgt_via->getSinkZ()!=end_z) continue;
 			if(sp_via_id > 0 && sp_via_id != i) continue;
@@ -482,9 +402,9 @@ bool routing_proc(const ap_int<8> trgt_line_id, const ap_uint<16> penalty_T, con
 			start_y = trgt_via->getSourceY();
 			start = &(my_board_2[start_y][start_x]);
 
-			// ソース層にINT_MAXのコスト値が含まれている場合は引き継がない (issue #82)
-			if(my_board_1[start_y][start_x].ne == INT_MAX || my_board_1[start_y][start_x].nw == INT_MAX ||
-			my_board_1[start_y][start_x].se == INT_MAX || my_board_1[start_y][start_x].sw == INT_MAX) continue;
+			// ソース層に COST_MAX のコスト値が含まれている場合は引き継がない (issue #82)
+			if(my_board_1[start_y][start_x].ne == COST_MAX || my_board_1[start_y][start_x].nw == COST_MAX ||
+			my_board_1[start_y][start_x].se == COST_MAX || my_board_1[start_y][start_x].sw == COST_MAX) continue;
 
 			start->ne = my_board_1[start_y][start_x].ne + trgt_via->getUsedLineNum() * penalty_V;
 			start->nw = my_board_1[start_y][start_x].nw + trgt_via->getUsedLineNum() * penalty_V;
@@ -522,7 +442,7 @@ bool routing_proc(const ap_int<8> trgt_line_id, const ap_uint<16> penalty_T, con
 
 	while (qu_head != qu_tail) {
 #pragma HLS LOOP_TRIPCOUNT min=100 max=100 avg=100
-//#pragma HLS PIPELINE
+//#pragma HLS PIPELINE // これONにするとメモリ使用率100%になる
 
 		Search trgt = qu[qu_head];
 		qu_head++;
@@ -878,11 +798,11 @@ if (debug_option) { /*** デバッグ用*/
 
 	ap_int<7> now_x = trgt_line->getSinkX();
 	ap_int<7> now_y = trgt_line->getSinkY();
-	ap_int<8> intra_box = -1;
-	ap_int<8> next_direction_array[4];
-//#pragma HLS ARRAY_PARTITION variable=next_direction_array dim=0 complete
-	ap_int<8> next_direction_array_index = 0;
-	ap_int<8> next_count, next_id;
+	ap_uint<2> intra_box;
+	ap_uint<2> next_direction_array[4];
+#pragma HLS ARRAY_PARTITION variable=next_direction_array complete dim=0
+	ap_uint<3> next_direction_array_index = 0;
+	ap_int<8> next_count; ap_uint<2> next_id;
 
 
 /* ********************************
@@ -892,9 +812,8 @@ if (debug_option) { /*** デバッグ用*/
 	if(start_z != end_z){
 
 		intra_box = NE;
-		for (ap_int<16> loop_count = 0; loop_count <= MAX_TRACKS; loop_count++) {
-//#pragma HLS PIPELINE II=10000
-
+		for (ap_uint<8> loop_count = 0; loop_count <= MAX_TRACKS; loop_count++) {
+//#pragma HLS PIPELINE // ONにするとLUTリソースオーバーする
 			Point p = {now_x, now_y, end_z};
 			trgt_line->track[trgt_line->track_index] = p; (trgt_line->track_index)++;
 
@@ -927,7 +846,7 @@ if( debug_option ) { cout << "(" << now_x << "," << now_y << "," << end_z << ")"
 			if(trgt_d.e) { next_direction_array[next_direction_array_index] = EAST; next_direction_array_index++; }
 			if(trgt_d.s) { next_direction_array[next_direction_array_index] = SOUTH; next_direction_array_index++; }
 			if(trgt_d.w) { next_direction_array[next_direction_array_index] = WEST; next_direction_array_index++; }
-			next_count = (int)mt_genrand_int32(0, next_direction_array_index - 1);
+			next_count = /*(int)*/mt_genrand_int32(0, next_direction_array_index - 1);
 			next_id = next_direction_array[next_count];
 
 			switch(next_id){
@@ -964,8 +883,8 @@ if( debug_option ) { cout << "(" << now_x << "," << now_y << "," << end_z << ")"
  ******************************** */
 
 	intra_box = NE;
-	for (ap_int<16> loop_count = 0; loop_count <= MAX_TRACKS; loop_count++) {
-//#pragma HLS PIPELINE II=10000
+	for (ap_uint<8> loop_count = 0; loop_count <= MAX_TRACKS; loop_count++) {
+//#pragma HLS PIPELINE // ONにするとLUTリソースオーバーする
 
 		Point p = {now_x, now_y, start_z};
 		trgt_line->track[trgt_line->track_index] = p; (trgt_line->track_index)++;
@@ -999,7 +918,7 @@ if( debug_option ){ cout << "(" << now_x << "," << now_y << "," << start_z << ")
 		if(trgt_d.e) { next_direction_array[next_direction_array_index] = EAST; next_direction_array_index++; }
 		if(trgt_d.s) { next_direction_array[next_direction_array_index] = SOUTH; next_direction_array_index++; }
 		if(trgt_d.w) { next_direction_array[next_direction_array_index] = WEST; next_direction_array_index++; }
-		next_count = (int)mt_genrand_int32(0, next_direction_array_index - 1);
+		next_count = /*(int)*/mt_genrand_int32(0, next_direction_array_index - 1);
 		next_id = next_direction_array[next_count];
 
 		switch(next_id){
@@ -1053,7 +972,7 @@ if( debug_option ) { cout << endl; }
 }
 
 void routing_arrange(Line *trgt_line) {
-#pragma HLS INLINE
+//#pragma HLS INLINE // ONにするとレイテンシ増える
 
 	bool retry = true;
 	while(retry){
@@ -1063,11 +982,10 @@ void routing_arrange(Line *trgt_line) {
 
 		// トラックを一時退避
 		Point tmp_track[MAX_TRACKS];
-//#pragma HLS ARRAY_PARTITION variable=tmp_track cyclic factor=8 dim=1 partition
+////#pragma HLS ARRAY_PARTITION variable=tmp_track complete dim=0
 		int tmp_track_index = 0;
-		for (ap_int<16> i = 0; i < trgt_line->track_index; i++) {
-//#pragma HLS PIPELINE rewind
-//#pragma HLS UNROLL factor=8
+		for (ap_uint<8> i = 0; i < trgt_line->track_index; i++) {
+#pragma HLS LOOP_TRIPCOUNT min=10 max=160 avg=40
 #pragma HLS PIPELINE
 			tmp_track[tmp_track_index] = trgt_line->track[i];
 			tmp_track_index++;
@@ -1075,8 +993,8 @@ void routing_arrange(Line *trgt_line) {
 
 		// 冗長部分を排除してトラックを整理
 		trgt_line->track_index = 0;
-		for (ap_int<16> i = 0; i < tmp_track_index; i++) {
-#pragma HLS LOOP_TRIPCOUNT min=10 max=80 avg=20
+		for (ap_uint<8> i = 0; i < tmp_track_index; i++) {
+#pragma HLS LOOP_TRIPCOUNT min=10 max=160 avg=40
 #pragma HLS PIPELINE
 			if (tmp_track_index - 2 <= i) {
 				trgt_line->track[trgt_line->track_index] = tmp_track[i];
@@ -1095,7 +1013,7 @@ void routing_arrange(Line *trgt_line) {
 }
 
 bool isInserted_1(ap_int<7> x, ap_int<7> y, ap_int<5> z, Board *board){ // ソース層用
-//#pragma HLS INLINE
+//#pragma HLS INLINE // ONにするとクリティカルパスが増える
 
 	// 盤面の端
 	if(x<0 || x>(board->getSizeX()-1)) return false;
@@ -1109,7 +1027,7 @@ bool isInserted_1(ap_int<7> x, ap_int<7> y, ap_int<5> z, Board *board){ // ソ�
 }
 
 bool isInserted_2(ap_int<7> x, ap_int<7> y, ap_int<5> z, Board *board){ // シンク層用
-//#pragma HLS INLINE
+//#pragma HLS INLINE // ONにするとクリティカルパスが増える
 
 	// 盤面の端
 	if(x<0 || x>(board->getSizeX()-1)) return false;
@@ -1123,7 +1041,7 @@ bool isInserted_2(ap_int<7> x, ap_int<7> y, ap_int<5> z, Board *board){ // シ�
 }
 
 int countLine(ap_int<7> x, ap_int<7> y, ap_int<5> z, Board *board){
-//#pragma HLS INLINE
+//#pragma HLS INLINE // ONにするとクリティカルパスが増える
 
 	Box* trgt_box = board->box(x,y,z);
 
@@ -1168,8 +1086,9 @@ void recordLine(ap_int<8> trgt_line_id, Board *board){
 	old_x = new_x; old_y = new_y; old_z = new_z;
 	old_box = new_box;
 
-	for (ap_int<16> i = 2; i < (trgt_line->track_index) - 1; i++) {
+	for (ap_uint<8> i = 2; i < (trgt_line->track_index) - 1; i++) {
 #pragma HLS LOOP_TRIPCOUNT min=2 max=160 avg=40
+//#pragma HLS PIPELINE
 
 		new_x = (trgt_track[i]).x; //new_x = (trgt_track + i)->x;
 		new_y = (trgt_track[i]).y; //new_y = (trgt_track + i)->y;
@@ -1221,18 +1140,17 @@ void recordLine(ap_int<8> trgt_line_id, Board *board){
 	}
 }
 
-#if 0
-void deleteLine(int trgt_line_id){
+void deleteLine(ap_int<8> trgt_line_id, Board *board) {
 
 	Line* trgt_line = board->line(trgt_line_id);
-	vector<Point>* trgt_track = trgt_line->getTrack();
+	Point *trgt_track = trgt_line->track;
 
-	int old_x = trgt_line->getSinkX();
-	int old_y = trgt_line->getSinkY();
-	int old_z = trgt_line->getSinkZ();
-	int new_x = (*trgt_track)[1].x;
-	int new_y = (*trgt_track)[1].y;
-	int new_z = (*trgt_track)[1].z;
+	ap_int<7> old_x = trgt_line->getSinkX();
+	ap_int<7> old_y = trgt_line->getSinkY();
+	ap_int<5> old_z = trgt_line->getSinkZ();
+	ap_int<7> new_x = (trgt_track[1]).x;
+	ap_int<7> new_y = (trgt_track[1]).y;
+	ap_int<5> new_z = (trgt_track[1]).z;
 	Box* old_box = board->box(old_x,old_y,old_z);
 	Box* new_box = board->box(new_x,new_y,new_z);
 
@@ -1253,10 +1171,13 @@ void deleteLine(int trgt_line_id){
 	old_x = new_x; old_y = new_y; old_z = new_z;
 	old_box = new_box;
 
-	for(int i=2;i<(int)(trgt_track->size()-1);i++){
-		new_x = (*trgt_track)[i].x;
-		new_y = (*trgt_track)[i].y;
-		new_z = (*trgt_track)[i].z;
+	for (ap_uint<8> i = 2; i < trgt_line->track_index - 1; i++) {
+#pragma HLS LOOP_TRIPCOUNT min=2 max=160 avg=40
+//#pragma HLS PIPELINE
+
+		new_x = (trgt_track)[i].x;
+		new_y = (trgt_track)[i].y;
+		new_z = (trgt_track)[i].z;
 		new_box = board->box(new_x,new_y,new_z);
 
 		if(new_box->isTypeVia() && old_box->isTypeVia()){
@@ -1303,585 +1224,3 @@ void deleteLine(int trgt_line_id){
 		old_box->decrementWestNum();
 	}
 }
-#endif
-
-#if 0
-bool final_routing(int trgt_line_id, bool debug_option){
-
-	Line* trgt_line = board->line(trgt_line_id);
-	trgt_line->clearTrack();
-
-	// ボードの初期化
-	vector<vector<IntraBox_1*> > my_board_1(board->getSizeY(), vector<IntraBox_1*>(board->getSizeX())); // ソース側のボード
-	vector<vector<IntraBox_1*> > my_board_2(board->getSizeY(), vector<IntraBox_1*>(board->getSizeX())); // シンク側のボード
-	IntraBox_1 init = { INT_MAX, {false,false,false,false,NOT_USE,NOT_USE,NOT_USE,NOT_USE} };
-	for(int y=0;y<board->getSizeY();y++){
-		for(int x=0;x<board->getSizeX();x++){
-			my_board_1[y][x] = new IntraBox_1;
-			*(my_board_1[y][x]) = init;
-			my_board_2[y][x] = new IntraBox_1;
-			*(my_board_2[y][x]) = init;
-		}
-	}
-	int start_x, start_y;
-	IntraBox_1* start;
-	queue<Search> qu;
-
-	int start_z = trgt_line->getSourceZ();
-	int end_z = trgt_line->getSinkZ();
-
-
-	/*** ソース層の探索 ***/
-
-	// スタート地点の設定
-	start_x = trgt_line->getSourceX();
-	start_y = trgt_line->getSourceY();
-	start = my_board_1[start_y][start_x];
-	start->cost = 0;
-
-	// 北方向を探索
-	if(isInserted_3(start_x,start_y-1,start_z)){
-		Search trgt = {start_x,start_y-1,SOUTH};
-		qu.push(trgt);
-	}
-	// 東方向を探索
-	if(isInserted_3(start_x+1,start_y,start_z)){
-		Search trgt = {start_x+1,start_y,WEST};
-		qu.push(trgt);
-	}
-	// 南方向を探索
-	if(isInserted_3(start_x,start_y+1,start_z)){
-		Search trgt = {start_x,start_y+1,NORTH};
-		qu.push(trgt);
-	}
-	// 西方向を探索
-	if(isInserted_3(start_x-1,start_y,start_z)){
-		Search trgt = {start_x-1,start_y,EAST};
-		qu.push(trgt);
-	}
-
-	while(!qu.empty()){
-
-		Search trgt = qu.front();
-		qu.pop();
-
-		Box* trgt_box = board->box(trgt.x,trgt.y,start_z);
-		IntraBox_1* trgt_ibox = my_board_1[trgt.y][trgt.x];
-
-		bool update = false; // コストの更新があったか？
-		// コスト計算
-		if(trgt.d == SOUTH){ // 南から来た
-			IntraBox_1* find_ibox = my_board_1[trgt.y+1][trgt.x];
-			// 折れ曲がりあり？
-			int turn_count = 0;
-			int previous = NOT_USE;
-			if((find_ibox->d).s){ previous = SOUTH; }
-			else if((find_ibox->d).e){ previous = EAST; turn_count++; }
-			else if((find_ibox->d).w){ previous = WEST; turn_count++; }
-			// コスト
-			int cost = (find_ibox->cost) + ML + turn_count * BT;
-			if(cost < trgt_ibox->cost){
-				update = true;
-				trgt_ibox->cost = cost;
-				(trgt_ibox->d).n = false;
-				(trgt_ibox->d).e = false;
-				(trgt_ibox->d).s = true;
-				(trgt_ibox->d).w = false;
-				(trgt_ibox->d).c_s = previous;
-			}
-			else if(cost == trgt_ibox->cost){
-				(trgt_ibox->d).s = true;
-				(trgt_ibox->d).c_s = previous;
-			}
-		}
-		if(trgt.d == WEST){ // 西から来た
-			IntraBox_1* find_ibox = my_board_1[trgt.y][trgt.x-1];
-			// 折れ曲がりあり？
-			int turn_count = 0;
-			int previous = NOT_USE;
-			if((find_ibox->d).w){ previous = WEST; }
-			else if((find_ibox->d).n){ previous = NORTH; turn_count++; }
-			else if((find_ibox->d).s){ previous = SOUTH; turn_count++; }
-			// コスト
-			int cost = (find_ibox->cost) + ML + turn_count * BT;
-			if(cost < trgt_ibox->cost){
-				update = true;
-				trgt_ibox->cost = cost;
-				(trgt_ibox->d).n = false;
-				(trgt_ibox->d).e = false;
-				(trgt_ibox->d).s = false;
-				(trgt_ibox->d).w = true;
-				(trgt_ibox->d).c_w = previous;
-			}
-			else if(cost == trgt_ibox->cost){
-				(trgt_ibox->d).w = true;
-				(trgt_ibox->d).c_w = previous;
-			}
-		}
-		if(trgt.d == NORTH){ // 北から来た
-			IntraBox_1* find_ibox = my_board_1[trgt.y-1][trgt.x];
-			// 折れ曲がりあり？
-			int turn_count = 0;
-			int previous = NOT_USE;
-			if((find_ibox->d).n){ previous = NORTH; }
-			else if((find_ibox->d).e){ previous = EAST; turn_count++; }
-			else if((find_ibox->d).w){ previous = WEST; turn_count++; }
-			// コスト
-			int cost = (find_ibox->cost) + ML + turn_count * BT;
-			if(cost < trgt_ibox->cost){
-				update = true;
-				trgt_ibox->cost = cost;
-				(trgt_ibox->d).n = true;
-				(trgt_ibox->d).e = false;
-				(trgt_ibox->d).s = false;
-				(trgt_ibox->d).w = false;
-				(trgt_ibox->d).c_n = previous;
-			}
-			else if(cost == trgt_ibox->cost){
-				(trgt_ibox->d).n = true;
-				(trgt_ibox->d).c_n = previous;
-			}
-		}
-		if(trgt.d == EAST){ // 東から来た
-			IntraBox_1* find_ibox = my_board_1[trgt.y][trgt.x+1];
-			// 折れ曲がりあり？
-			int turn_count = 0;
-			int previous = NOT_USE;
-			if((find_ibox->d).e){ previous = EAST; }
-			else if((find_ibox->d).n){ previous = NORTH; turn_count++; }
-			else if((find_ibox->d).s){ previous = SOUTH; turn_count++; }
-			// コスト
-			int cost = (find_ibox->cost) + ML + turn_count * BT;
-			if(cost < trgt_ibox->cost){
-				update = true;
-				trgt_ibox->cost = cost;
-				(trgt_ibox->d).n = false;
-				(trgt_ibox->d).e = true;
-				(trgt_ibox->d).s = false;
-				(trgt_ibox->d).w = false;
-				(trgt_ibox->d).c_e = previous;
-			}
-			else if(cost == trgt_ibox->cost){
-				(trgt_ibox->d).e = true;
-				(trgt_ibox->d).c_e = previous;
-			}
-		}
-
-		if(!update) continue;
-		if(trgt_box->isTypeNumber() || trgt_box->isTypeVia()) continue;
-
-		// 北方向
-		if(trgt.d!=NORTH && isInserted_3(trgt.x,trgt.y-1,start_z)){
-			Search next = {trgt.x,trgt.y-1,SOUTH};
-			qu.push(next);
-		}
-		// 東方向
-		if(trgt.d!=EAST && isInserted_3(trgt.x+1,trgt.y,start_z)){
-			Search next = {trgt.x+1,trgt.y,WEST};
-			qu.push(next);
-		}
-		// 南方向
-		if(trgt.d!=SOUTH && isInserted_3(trgt.x,trgt.y+1,start_z)){
-			Search next = {trgt.x,trgt.y+1,NORTH};
-			qu.push(next);
-		}
-		// 西方向
-		if(trgt.d!=WEST && isInserted_3(trgt.x-1,trgt.y,start_z)){
-			Search next = {trgt.x-1,trgt.y,EAST};
-			qu.push(next);
-		}
-	}
-
-
-	/*** シンク層の判定 ***/
-
-	if(start_z != end_z){
-		for(int i=1;i<=board->getViaNum();i++){
-			Via* trgt_via = board->via(i);
-			if(trgt_via->getSourceZ()!=start_z || trgt_via->getSinkZ()!=end_z) continue;
-			start_x = trgt_via->getSourceX();
-			start_y = trgt_via->getSourceY();
-			start = my_board_2[start_y][start_x];
-
-			if(my_board_1[start_y][start_x]->cost == INT_MAX) continue;
-			if(trgt_via->getUsedLineNum() > 0) continue;
-
-			start->cost = my_board_1[start_y][start_x]->cost;
-
-			// 北方向を探索
-			if(isInserted_4(start_x,start_y-1,end_z)){
-				Search trgt = {start_x,start_y-1,SOUTH};
-				qu.push(trgt);
-			}
-			// 東方向を探索
-			if(isInserted_4(start_x+1,start_y,end_z)){
-				Search trgt = {start_x+1,start_y,WEST};
-				qu.push(trgt);
-			}
-			// 南方向を探索
-			if(isInserted_4(start_x,start_y+1,end_z)){
-				Search trgt = {start_x,start_y+1,NORTH};
-				qu.push(trgt);
-			}
-			// 西方向を探索
-			if(isInserted_4(start_x-1,start_y,end_z)){
-				Search trgt = {start_x-1,start_y,EAST};
-				qu.push(trgt);
-			}
-		}
-
-	}
-
-
-	/*** シンク層の探索 ***/
-
-	while(!qu.empty()){
-
-		Search trgt = qu.front();
-		qu.pop();
-
-		Box* trgt_box = board->box(trgt.x,trgt.y,end_z);
-		IntraBox_1* trgt_ibox = my_board_2[trgt.y][trgt.x];
-
-		bool update = false; // コストの更新があったか？
-		// コスト計算
-		if(trgt.d == SOUTH){ // 南から来た
-			IntraBox_1* find_ibox = my_board_2[trgt.y+1][trgt.x];
-			// 折れ曲がりあり？
-			int turn_count = 0;
-			int previous = NOT_USE;
-			if((find_ibox->d).s){ previous = SOUTH; }
-			else if((find_ibox->d).e){ previous = EAST; turn_count++; }
-			else if((find_ibox->d).w){ previous = WEST; turn_count++; }
-			// コスト
-			int cost = (find_ibox->cost) + ML + turn_count * BT;
-			if(cost < trgt_ibox->cost){
-				update = true;
-				trgt_ibox->cost = cost;
-				(trgt_ibox->d).n = false;
-				(trgt_ibox->d).e = false;
-				(trgt_ibox->d).s = true;
-				(trgt_ibox->d).w = false;
-				(trgt_ibox->d).c_s = previous;
-			}
-			else if(cost == trgt_ibox->cost){
-				(trgt_ibox->d).s = true;
-				(trgt_ibox->d).c_s = previous;
-			}
-		}
-		if(trgt.d == WEST){ // 西から来た
-			IntraBox_1* find_ibox = my_board_2[trgt.y][trgt.x-1];
-			// 折れ曲がりあり？
-			int turn_count = 0;
-			int previous = NOT_USE;
-			if((find_ibox->d).w){ previous = WEST; }
-			else if((find_ibox->d).n){ previous = NORTH; turn_count++; }
-			else if((find_ibox->d).s){ previous = SOUTH; turn_count++; }
-			// コスト
-			int cost = (find_ibox->cost) + ML + turn_count * BT;
-			if(cost < trgt_ibox->cost){
-				update = true;
-				trgt_ibox->cost = cost;
-				(trgt_ibox->d).n = false;
-				(trgt_ibox->d).e = false;
-				(trgt_ibox->d).s = false;
-				(trgt_ibox->d).w = true;
-				(trgt_ibox->d).c_w = previous;
-			}
-			else if(cost == trgt_ibox->cost){
-				(trgt_ibox->d).w = true;
-				(trgt_ibox->d).c_w = previous;
-			}
-		}
-		if(trgt.d == NORTH){ // 北から来た
-			IntraBox_1* find_ibox = my_board_2[trgt.y-1][trgt.x];
-			// 折れ曲がりあり？
-			int turn_count = 0;
-			int previous = NOT_USE;
-			if((find_ibox->d).n){ previous = NORTH; }
-			else if((find_ibox->d).e){ previous = EAST; turn_count++; }
-			else if((find_ibox->d).w){ previous = WEST; turn_count++; }
-			// コスト
-			int cost = (find_ibox->cost) + ML + turn_count * BT;
-			if(cost < trgt_ibox->cost){
-				update = true;
-				trgt_ibox->cost = cost;
-				(trgt_ibox->d).n = true;
-				(trgt_ibox->d).e = false;
-				(trgt_ibox->d).s = false;
-				(trgt_ibox->d).w = false;
-				(trgt_ibox->d).c_n = previous;
-			}
-			else if(cost == trgt_ibox->cost){
-				(trgt_ibox->d).n = true;
-				(trgt_ibox->d).c_n = previous;
-			}
-		}
-		if(trgt.d == EAST){ // 東から来た
-			IntraBox_1* find_ibox = my_board_2[trgt.y][trgt.x+1];
-			// 折れ曲がりあり？
-			int turn_count = 0;
-			int previous = NOT_USE;
-			if((find_ibox->d).e){ previous = EAST; }
-			else if((find_ibox->d).n){ previous = NORTH; turn_count++; }
-			else if((find_ibox->d).s){ previous = SOUTH; turn_count++; }
-			// コスト
-			int cost = (find_ibox->cost) + ML + turn_count * BT;
-			if(cost < trgt_ibox->cost){
-				update = true;
-				trgt_ibox->cost = cost;
-				(trgt_ibox->d).n = false;
-				(trgt_ibox->d).e = true;
-				(trgt_ibox->d).s = false;
-				(trgt_ibox->d).w = false;
-				(trgt_ibox->d).c_e = previous;
-			}
-			else if(cost == trgt_ibox->cost){
-				(trgt_ibox->d).e = true;
-				(trgt_ibox->d).c_e = previous;
-			}
-		}
-
-		if(!update) continue;
-		if(trgt_box->isTypeNumber()) continue;
-
-		// 北方向
-		if(trgt.d!=NORTH && isInserted_4(trgt.x,trgt.y-1,end_z)){
-			Search next = {trgt.x,trgt.y-1,SOUTH};
-			qu.push(next);
-		}
-		// 東方向
-		if(trgt.d!=EAST && isInserted_4(trgt.x+1,trgt.y,end_z)){
-			Search next = {trgt.x+1,trgt.y,WEST};
-			qu.push(next);
-		}
-		// 南方向
-		if(trgt.d!=SOUTH && isInserted_4(trgt.x,trgt.y+1,end_z)){
-			Search next = {trgt.x,trgt.y+1,NORTH};
-			qu.push(next);
-		}
-		// 西方向
-		if(trgt.d!=WEST && isInserted_4(trgt.x-1,trgt.y,end_z)){
-			Search next = {trgt.x-1,trgt.y,EAST};
-			qu.push(next);
-		}
-	}
-
-if (debug_option) { /*** デバッグ用*/
-	cout << endl;
-	cout << "LAYER So (line_id: " << trgt_line_id << ") (z: " << (start_z + 1) << ")" << endl;
-	cout << "========" << endl;
-	for(int y=0;y<board->getSizeY();y++){
-		for(int x=0;x<board->getSizeX();x++){
-			IntraBox_1* trgt_box = my_board_1[y][x];
-			if(trgt_box->cost > 10000){
-				cout << " +";
-			}
-			else{
-				cout << setw(2) << trgt_box->cost;
-			}
-			cout << " ";
-		}
-		cout << endl;
-	}
-	cout << "LAYER Si (line_id: " << trgt_line_id << ") (z: " << (end_z + 1) << ")" << endl;
-	cout << "========" << endl;
-	for(int y=0;y<board->getSizeY();y++){
-		for(int x=0;x<board->getSizeX();x++){
-			IntraBox_1* trgt_box = my_board_2[y][x];
-			if(trgt_box->cost > 10000){
-				cout << " +";
-			}
-			else{
-				cout << setw(2) << trgt_box->cost;
-			}
-			cout << " ";
-		}
-		cout << endl;
-	}
-}
-
-	int now_x = trgt_line->getSinkX();
-	int now_y = trgt_line->getSinkY();
-	vector<int> next_direction_array;
-	int next_count, next_id;
-
-	Direction_R trgt_d;
-
-	/*** シンク層のバックトレース ***/
-
-	if(start_z != end_z){
-
-		Point p_s = {now_x, now_y, end_z};
-		trgt_line->pushPointToTrack(p_s);
-
-if (debug_option) { cout << "(" << now_x << "," << now_y << "," << end_z << ")"; }
-
-		trgt_d = my_board_2[now_y][now_x]->d;
-		next_direction_array.clear();
-		if(trgt_d.n) next_direction_array.push_back(NORTH);
-		if(trgt_d.e) next_direction_array.push_back(EAST);
-		if(trgt_d.s) next_direction_array.push_back(SOUTH);
-		if(trgt_d.w) next_direction_array.push_back(WEST);
-		next_count = (int)mt_genrand_int32(0, (int)(next_direction_array.size()) - 1);
-		next_id = next_direction_array[next_count];
-		switch(next_id){
-			case NORTH: // 北へ
-			now_y = now_y - 1; next_id = trgt_d.c_n; break;
-			case EAST:  // 東へ
-			now_x = now_x + 1; next_id = trgt_d.c_e; break;
-			case SOUTH: // 南へ
-			now_y = now_y + 1; next_id = trgt_d.c_s; break;
-			case WEST:  // 西へ
-			now_x = now_x - 1; next_id = trgt_d.c_w; break;
-		}
-
-		while(1){
-
-			Point p = {now_x, now_y, end_z};
-			trgt_line->pushPointToTrack(p);
-
-if (debug_option) { cout << "(" << now_x << "," << now_y << "," << end_z << ")"; }
-
-			if(board->box(now_x,now_y,end_z)->isTypeVia()) break;
-
-			trgt_d = my_board_2[now_y][now_x]->d;
-
-			switch(next_id){
-				case NORTH:
-				if(!trgt_d.n) next_id = -1;
-				break;
-				case EAST:
-				if(!trgt_d.e) next_id = -1;
-				break;
-				case SOUTH:
-				if(!trgt_d.s) next_id = -1;
-				break;
-				case WEST:
-				if(!trgt_d.w) next_id = -1;
-				break;
-			}
-
-			if(next_id < 0){ *output = 51; return false; /*cout << "error! (error: 51)" << endl; exit(51);*/ }
-
-			switch(next_id){
-				case NORTH: // 北へ
-				now_y = now_y - 1; next_id = trgt_d.c_n; break;
-				case EAST:  // 東へ
-				now_x = now_x + 1; next_id = trgt_d.c_e; break;
-				case SOUTH: // 南へ
-				now_y = now_y + 1; next_id = trgt_d.c_s; break;
-				case WEST:  // 西へ
-				now_x = now_x - 1; next_id = trgt_d.c_w; break;
-			}
-		}
-	}
-
-
-	/*** ソース層のバックトレース ***/
-
-	Point p_v = {now_x, now_y, start_z};
-	trgt_line->pushPointToTrack(p_v);
-
-if (debug_option) { cout << "(" << now_x << "," << now_y << "," << start_z << ")"; }
-
-	trgt_d = my_board_1[now_y][now_x]->d;
-	next_direction_array.clear();
-	if(trgt_d.n) next_direction_array.push_back(NORTH);
-	if(trgt_d.e) next_direction_array.push_back(EAST);
-	if(trgt_d.s) next_direction_array.push_back(SOUTH);
-	if(trgt_d.w) next_direction_array.push_back(WEST);
-	next_count = (int)mt_genrand_int32(0, (int)(next_direction_array.size()) - 1);
-	next_id = next_direction_array[next_count];
-	switch(next_id){
-		case NORTH: // 北へ
-		now_y = now_y - 1; next_id = trgt_d.c_n; break;
-		case EAST:  // 東へ
-		now_x = now_x + 1; next_id = trgt_d.c_e; break;
-		case SOUTH: // 南へ
-		now_y = now_y + 1; next_id = trgt_d.c_s; break;
-		case WEST:  // 西へ
-		now_x = now_x - 1; next_id = trgt_d.c_w; break;
-	}
-
-	while(1){
-
-		Point p = {now_x, now_y, start_z};
-		trgt_line->pushPointToTrack(p);
-
-if (debug_option) { cout << "(" << now_x << "," << now_y << "," << start_z << ")"; }
-
-		if(now_x==trgt_line->getSourceX() && now_y==trgt_line->getSourceY()) break;
-
-		trgt_d = my_board_1[now_y][now_x]->d;
-
-		switch(next_id){
-			case NORTH:
-			if(!trgt_d.n) next_id = -1;
-			break;
-			case EAST:
-			if(!trgt_d.e) next_id = -1;
-			break;
-			case SOUTH:
-			if(!trgt_d.s) next_id = -1;
-			break;
-			case WEST:
-			if(!trgt_d.w) next_id = -1;
-			break;
-		}
-
-		if(next_id < 0){ *output = 52; return false; /*cout << "error! (error: 52)" << endl; exit(52);*/ }
-
-		switch(next_id){
-			case NORTH: // 北へ
-			now_y = now_y - 1; next_id = trgt_d.c_n; break;
-			case EAST:  // 東へ
-			now_x = now_x + 1; next_id = trgt_d.c_e; break;
-			case SOUTH: // 南へ
-			now_y = now_y + 1; next_id = trgt_d.c_s; break;
-			case WEST:  // 西へ
-			now_x = now_x - 1; next_id = trgt_d.c_w; break;
-		}
-	}
-
-if( debug_option ) { cout << endl; }
-
-	for(int y=0;y<board->getSizeY();y++){
-		for(int x=0;x<board->getSizeX();x++){
-			delete my_board_1[y][x];
-			delete my_board_2[y][x];
-		}
-	}
-
-	*output = 0;
-	return true;
-}
-
-bool isInserted_3(int x,int y,int z){ // ソース層用
-
-	// 盤面の端
-	if(x<0 || x>(board->getSizeX()-1)) return false;
-	if(y<0 || y>(board->getSizeY()-1)) return false;
-
-	Box* trgt_box = board->box(x,y,z);
-
-	if(trgt_box->isTypeInterVia()) return false;
-	if(countLine(x,y,z) > 0) return false; // ラインがあるマスは探索しない
-
-	return true;
-}
-
-bool isInserted_4(int x,int y,int z){ // シンク層用
-
-	// 盤面の端
-	if(x<0 || x>(board->getSizeX()-1)) return false;
-	if(y<0 || y>(board->getSizeY()-1)) return false;
-
-	Box* trgt_box = board->box(x,y,z);
-
-	if(trgt_box->isTypeInterVia() || trgt_box->isTypeVia()) return false;
-	if(countLine(x,y,z) > 0) return false; // ラインがあるマスは探索しない
-
-	return true;
-}
-#endif

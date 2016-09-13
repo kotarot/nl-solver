@@ -7,6 +7,12 @@
 #ifndef _MAIN_HPP_
 #define _MAIN_HPP_
 
+#ifdef SOFTWARE
+#include "ap_int.h"
+#else
+#include <ap_int.h>
+#endif
+
 #include <iomanip>
 #include <iostream>
 #include <fstream>
@@ -24,16 +30,16 @@ using namespace std;
 #define NOT_USE -1
 
 // Inter-Box
-#define NORTH 1
-#define EAST  2
-#define SOUTH 3
-#define WEST  4
+#define NORTH 0
+#define EAST  1
+#define SOUTH 2
+#define WEST  3
 
 // Intra-Box
-#define NE 1
-#define NW 2
-#define SE 3
-#define SW 4
+#define NE 0
+#define NW 1
+#define SE 2
+#define SW 3
 
 // Touch & Cross
 #define NT 1  // ループ毎にペナルティの更新するときの定数 (タッチ)
@@ -42,15 +48,18 @@ using namespace std;
 #define ML 1  // コストの計算（配線長）
 #define BT 1  // コストの計算（曲がり回数）
 
-#define O_LOOP  500 // 外ループ回数
-#define I_LOOP 2000 // 内ループ回数
+#define O_LOOP 1000 // 外ループ回数
+#define I_LOOP 1000 // 内ループ回数
 
 // 各種設定値
 #define MAX_BOXES 40
 #define MAX_LAYER 8
 #define MAX_LINES 100
+#define MAX_VIAS  100
 #define MAX_TRACKS 160
-#define MAX_SEARCH 1000
+#define MAX_SEARCH 8000
+
+#define BOARDSTR_SIZE 12800 // = 8 * 40 * 40
 
 struct Point{
 	ap_int<7> x;
@@ -105,5 +114,16 @@ struct IntraBox_1{
 	ap_int<16> cost;
 	Direction_R d;
 };
+
+
+// メルセンヌ・ツイスタ
+void mt_init_genrand(unsigned long s);
+unsigned long mt_genrand_int32(int a, int b);
+
+bool nlsolver(char boardstr[BOARDSTR_SIZE], ap_int<8> *status);
+void initialize(char boardstr[BOARDSTR_SIZE], Board *board);
+bool isFinished(Board *board);
+void generateSolution(char boardstr[BOARDSTR_SIZE], Board *board);
+
 
 #endif /*_MAIN_HPP_*/

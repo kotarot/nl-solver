@@ -10,8 +10,10 @@
 
 # Problem files
 *.txt
-*.original
+!NL_Q00.txt
 !issue*
+!README.txt
+*.original
 *.zip
 
 # Executables

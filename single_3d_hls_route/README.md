@@ -1,5 +1,7 @@
 # single_3d_hls_route
 
+※ これは試しに高位合成・論理合成・配置配線までをやったやつだから動かない
+
 Vivado HLS 用 single_3d (routing関数部分)
 
 
