@@ -61,18 +61,30 @@ def read_probfile(filename):
 
 if __name__ == '__main__':
     boardstr = read_probfile(args.input)
-    print boardstr
+    #print boardstr
 
     # 入力書き込み
-    ser = serial.Serial(port='COM5', baudrate=115200, timeout=1.0)
+    ser = serial.Serial(port='COM5', baudrate=115200, timeout=30.0)
     ser.write(boardstr + '\n')
     #ser.close()
 
     # 出力読み込み
     #ser = serial.Serial(port='COM5', baudrate=115200, timeout=1.0)
-    #c = ser.read()  # 1文字読み込み
-    str = ser.read(1000)  # 指定も字数読み込み ただしtimeoutが設定されている婆は読み取れた分だけ
-    #line = ser.readline()  # 行終端'¥n'までリードする
+    str = ser.read(12800 * 4)
     ser.close()
 
-    print str
+    # 解答部分を切り出して書き込む
+    #print str
+    lines = str.split('\r\n')
+    #print lines
+    has_started = False
+    with open('ANL_Q%sfpga.txt' % (args.input[4:6]), 'w') as file:
+        for line in lines:
+            if has_started:
+                if line == '========':
+                    break
+                else:
+                    file.write(line + '\n')
+            elif line == '========':
+                has_started = True
+    print 'Wrote to ANL_Q%sfpga.txt' % (args.input[4:6])

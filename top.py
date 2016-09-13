@@ -120,8 +120,8 @@ def worker_2016(i, results):
         shutil.copyfile('A{}_{}.txt'.format(args.input, i), 'T03_A%s.txt' % (args.input[4:6]))
     else:
         judges = nlc.check(nlc.read_input_file('{}.txt'.format(args.input)), nlc.read_target_file('T03_A%s.txt' % args.input[4:6]))
-        print judges
-        sys.stdout.flush()
+        #print judges
+        #sys.stdout.flush()
         if judges_this[0][0] and judges[0][1] < judges_this[0][1]:
             shutil.copyfile('A{}_{}.txt'.format(args.input, i), 'T03_A%s.txt' % (args.input[4:6]))
     results['A{}_{}.txt'.format(args.input, i)] = judges_this
@@ -153,11 +153,41 @@ def worker_2016_ml(th, results):
         shutil.copyfile('A{}ml_{}.txt'.format(args.input, th), 'T03_A%s.txt' % (args.input[4:6]))
     else:
         judges = nlc.check(nlc.read_input_file('{}_ml.txt'.format(args.input)), nlc.read_target_file('T03_A%s.txt' % args.input[4:6]))
-        print judges
-        sys.stdout.flush()
+        #print judges
+        #sys.stdout.flush()
         if judges_this[0][0] and judges[0][1] < judges_this[0][1]:
             shutil.copyfile('A{}ml_{}.txt'.format(args.input, th), 'T03_A%s.txt' % (args.input[4:6]))
     results['A{}ml_{}.txt'.format(args.input, th)] = judges_this
+
+    return
+
+
+def worker_2016_fpga(results):
+    """ 2016手法: FPGA """
+    p = multiprocessing.current_process()
+    print 'Worker 2016 (fpga) Starting:', p.name, p.pid
+    sys.stdout.flush()
+
+    cmd = 'python zed.py {}.txt'.format(args.input)
+    print 'Worker 2016 (fpga) [0]:', cmd
+    subprocess.call(cmd.strip().split(' '))
+
+    print 'Worker 2016 (fpga) Exiting :', p.name, p.pid
+    sys.stdout.flush()
+
+    # ベスト解答ファイルと品質を比較する
+    judges_this = nlc.check(nlc.read_input_file('{}.txt'.format(args.input)), nlc.read_target_file('A{}fpga.txt'.format(args.input)))
+    print judges_this
+    sys.stdout.flush()
+    if not os.path.isfile('T03_A%s.txt' % (args.input[4:6])):
+        shutil.copyfile('A{}fpga.txt'.format(args.input), 'T03_A%s.txt' % (args.input[4:6]))
+    else:
+        judges = nlc.check(nlc.read_input_file('{}.txt'.format(args.input)), nlc.read_target_file('T03_A%s.txt' % args.input[4:6]))
+        #print judges
+        #sys.stdout.flush()
+        if judges_this[0][0] and judges[0][1] < judges_this[0][1]:
+            shutil.copyfile('A{}fpga.txt'.format(args.input), 'T03_A%s.txt' % (args.input[4:6]))
+    results['A{}fpga.txt'.format(args.input)] = judges_this
 
     return
 
@@ -204,6 +234,12 @@ if __name__ == '__main__':
             jobs.append(p)
             p.start()
             #p.join()
+
+        # FPGA
+        p = multiprocessing.Process(name='a-2016-fpga', target=worker_2016_fpga, args=(results,))
+        #p.daemon = True
+        jobs.append(p)
+        p.start()
 
         # このスクリプトは最大10分実行する
         time.sleep(600)

@@ -11,9 +11,6 @@
 
 #include "xnlsolver.h"
 
-#define MAX_BOXES 40
-#define MAX_LAYER 8
-
 int main()
 {
     //init_platform();
@@ -60,7 +57,7 @@ int main()
         xil_printf("Done!\r\n");
 
         //xil_printf("XNlsolver_Read_boardstr_Bytes\r\n");
-        XNlsolver_Read_boardstr_Bytes (p_nlsolver, 0, str, XNLSOLVER_AXI4LS_DEPTH_BOARDSTR);
+        XNlsolver_Read_boardstr_Bytes (p_nlsolver, 0, str, XNLSOLVER_AXI4LS_DEPTH_BOARDSTR * 4);
         int status = XNlsolver_Get_status_V (p_nlsolver);
 
         if (status == 0)
