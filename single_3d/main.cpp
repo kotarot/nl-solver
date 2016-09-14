@@ -7,8 +7,8 @@
 /*******************************************************/
 
 Board* board; // 対象ボード
-int line_to_viaid[100];			// Lineと対応するViaの内部ID対応
-int line_to_via_priority[100];	// Lineに対応するViaの優先度(*数字が高いほど重要！)
+int line_to_viaid[MAX_LINES];			// Lineと対応するViaの内部ID対応
+int line_to_via_priority[MAX_LINES];	// Lineに対応するViaの優先度(*数字が高いほど重要！)
 int via_priority;				// 採用するViaの優先度
 
 int penalty_T; // penalty of "touch"
@@ -249,7 +249,7 @@ void initialize(char* filename){
 	}
 
 	// line_to_viaの初期化
-	for(int i=0; i<100; i++) line_to_viaid[i] = 0;
+	for(int i=0; i<MAX_LINES; i++) line_to_viaid[i] = 0;
 	
 	int size_x, size_y, size_z;
 	int line_num;
@@ -294,7 +294,7 @@ void initialize(char* filename){
 			if(!is.eof()){
 				int vid, vp;
 				is >> vid >> vp;
-				if(vid>=0 && vid<100){
+				if(vid>=0 && vid<MAX_LINES){
 					line_to_viaid[i] = vid;
 					line_to_via_priority[i] = vp;
 				}
