@@ -42,7 +42,7 @@ def show_board(_boards):
                     sys.stdout.write('\033[1;30;47m %02d \033[0m' % _boards[z][y][x]['data'])
                 else:
                     sys.stdout.write('\033[1;30;47m    \033[0m')
-            print ''
+            sys.stdout.write('\n')
     return line_num, via_num
 
 board_x, board_y, board_z, boards = nl3d.read_probfile(problem_file, n_dims)

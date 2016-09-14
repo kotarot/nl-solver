@@ -112,6 +112,7 @@ def read_probfile(filename, n_dims):
     _boards = None
     via_cnt = 1;
     for line in open(filename, 'r'):
+        line = line.strip()
         # 1行目
         if 'SIZE'in line:
             tokens = line.split(' ')
