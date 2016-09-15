@@ -64,7 +64,7 @@ if __name__ == '__main__':
     #print boardstr
 
     # 入力書き込み
-    ser = serial.Serial(port='COM5', baudrate=115200, timeout=30.0)
+    ser = serial.Serial(port='COM5', baudrate=115200, timeout=90.0)
     ser.write(boardstr + '\n')
     #ser.close()
 
