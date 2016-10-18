@@ -41,4 +41,4 @@ python top.py -h  # ヘルプ表示
 
 ## License
 
-[LICENSE](/LICENSE)
+This software is released under GPL v3 License, see [LICENSE](/LICENSE).
